@@ -232,5 +232,8 @@ const data = [
       margin-bottom: -200px;
     }
   }
+  .home__button {
+    display: none;
+  }
 }
 </style>
