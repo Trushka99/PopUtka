@@ -7,7 +7,7 @@ import { RouterView } from "vue-router";
 <template>
   <v-app>
     <HeaderComponent />
-    <v-main>
+    <v-main style="background-color: rgb(238, 238, 238)">
       <RouterView />
     </v-main>
     <FooterComponent />

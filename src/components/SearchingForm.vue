@@ -1,11 +1,35 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { RouterLink } from "vue-router";
 
 const from = ref("");
 const to = ref("");
 const dateMenu = ref(false);
+const passengersMenu = ref(false);
 const date = ref(new Date().toISOString().substr(0, 10));
-const passengers = ref("1 пассажир");
+const passengers = ref(1);
+const passengersLabel = computed({
+  get: () => {
+    if (passengers.value === 1) {
+      return `${passengers.value} пассажир`;
+    } else if (passengers.value <= 5) {
+      return `${passengers.value} пассажира`;
+    } else if (passengers.value >= 6) {
+      return `${passengers.value} пассажиров`;
+    }
+  },
+  set: (val) => {
+    // убираем всё, кроме числа
+    const num = parseInt(val, 10);
+    if (!isNaN(num)) passengers.value = num;
+  },
+});
+const increase = () => {
+  if (passengers.value !== 8) passengers.value++;
+};
+const decrease = () => {
+  if (passengers.value !== 1) passengers.value--;
+};
 </script>
 
 <template>
@@ -61,18 +85,52 @@ const passengers = ref("1 пассажир");
     </v-menu>
 
     <!-- Кол-во пассажиров -->
-    <v-text-field
-      v-model="passengers"
-      density="compact"
-      variant="plain"
-      prepend-inner-icon="mdi-account"
-      hide-details
-    ></v-text-field>
+
+    <v-menu
+      v-model="passengersMenu"
+      transition="scale-transition"
+      :close-on-content-click="false"
+      offset-y
+    >
+      <template #activator="{ props }"
+        ><v-text-field
+          v-bind="props"
+          v-model="passengersLabel"
+          density="compact"
+          variant="plain"
+          prepend-inner-icon="mdi-account"
+          hide-details
+          readonly
+        ></v-text-field>
+      </template>
+      <div class="passengers-modal">
+        <h4>Пассажиров</h4>
+        <div style="display: flex; gap: 15px">
+          <button
+            :disabled="passengers === 1"
+            @click="decrease"
+            class="passengers-button"
+          >
+            -
+          </button>
+          <h4>{{ passengers }}</h4>
+          <button
+            :disabled="passengers === 8"
+            @click="increase"
+            class="passengers-button"
+          >
+            +
+          </button>
+        </div>
+      </div>
+    </v-menu>
 
     <!-- Кнопка поиска -->
-    <v-btn class="search-btn" color="#00AEEF" rounded="lg" height="48">
-      Поиск
-    </v-btn>
+    <RouterLink class="header__link" to="/search">
+      <v-btn class="search-btn" color="#00AEEF" rounded="lg" height="48">
+        Поиск
+      </v-btn></RouterLink
+    >
   </div>
 </template>
 
@@ -91,7 +149,32 @@ const passengers = ref("1 пассажир");
   z-index: 2;
   position: relative;
 }
-
+.passengers-modal {
+  display: flex;
+  margin-top: 20px;
+  background-color: white;
+  justify-content: space-between;
+  border: 1px solid black;
+  border-radius: 15px;
+  padding: 20px;
+  width: 370px;
+  margin-left: -120px;
+}
+.passengers-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid blue;
+  font-size: 25px;
+  color: blue;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &:disabled {
+    border-color: grey;
+    color: grey;
+  }
+}
 .search-bar .v-text-field {
   min-width: 0;
 }
@@ -118,6 +201,9 @@ const passengers = ref("1 пассажир");
 
   .search-btn {
     width: 100%;
+  }
+  .passengers-modal {
+    margin-left: 0;
   }
 }
 </style>
