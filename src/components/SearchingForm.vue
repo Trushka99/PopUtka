@@ -8,18 +8,17 @@ const dateMenu = ref(false);
 const passengersMenu = ref(false);
 const date = ref(new Date().toISOString().substr(0, 10));
 const passengers = ref(1);
-const passengersLabel = computed({
+const passengersLabel = computed<string>({
   get: () => {
     if (passengers.value === 1) {
       return `${passengers.value} пассажир`;
     } else if (passengers.value <= 5) {
       return `${passengers.value} пассажира`;
-    } else if (passengers.value >= 6) {
+    } else {
       return `${passengers.value} пассажиров`;
     }
   },
-  set: (val) => {
-    // убираем всё, кроме числа
+  set: (val: string) => {
     const num = parseInt(val, 10);
     if (!isNaN(num)) passengers.value = num;
   },
