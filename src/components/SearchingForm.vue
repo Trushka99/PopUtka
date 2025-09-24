@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import { ref, computed } from "vue";
 import { RouterLink } from "vue-router";
 

@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";
+import { ru } from "vuetify/locale";
 
 // Vuetify
 import "vuetify/styles";
@@ -13,6 +14,17 @@ import "@mdi/font/css/materialdesignicons.css";
 const vuetify = createVuetify({
   components,
   directives,
+  locale: {
+    locale: "ru",
+    messages: {
+      ru: {
+        ...ru,
+        timePicker: {
+          title: "Выберите время",
+        },
+      },
+    },
+  },
 });
 
 createApp(App).use(createPinia()).use(router).use(vuetify).mount("#app");

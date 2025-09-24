@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TripComponent from "@/components/TripComponent.vue";
 import SearchingForm from "@/components/SearchingForm.vue";
+import Filters from "@/components/Filters.vue";
 const trips: any = [
   {
     departure: "Москва",
@@ -63,7 +64,7 @@ const trips: any = [
     <SearchingForm />
   </div>
   <div class="trip-list">
-    <div></div>
+    <Filters />
     <div class="trip-list__trips">
       <TripComponent v-for="(item, index) in trips" :key="index" :trip="item" />
     </div>
@@ -74,8 +75,7 @@ const trips: any = [
   margin: 0 auto;
   padding: 40px 0;
   display: flex;
-  flex-direction: column;
-  align-items: end;
+  justify-content: center;
   background-color: rgb(241, 239, 239);
 }
 .trip-list__trips {

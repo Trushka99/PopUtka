@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import "@mdi/font/css/materialdesignicons.css";
-
 const menuOpen = ref(false);
 </script>
 
@@ -29,8 +28,14 @@ const menuOpen = ref(false);
 
     <!-- Кнопки и селект для десктопа -->
     <div class="header__buttons">
-      <v-btn class="header__driver">Я водитель</v-btn>
-      <v-btn class="header__driver" color="#5865f2">Я пассажир</v-btn>
+      <RouterLink class="header__link" to="/login">
+        <v-btn class="header__driver">Я водитель</v-btn></RouterLink
+      >
+      <RouterLink class="header__link" to="/login">
+        <v-btn class="header__driver" color="#5865f2"
+          >Я пассажир</v-btn
+        ></RouterLink
+      >
       <v-select
         class="header__select"
         :items="['Руский', 'English', 'Ozbekcha']"

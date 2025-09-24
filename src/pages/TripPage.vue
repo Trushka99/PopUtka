@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RouterLink } from "vue-router";
 const trip = {
   departure: "Москва",
   arrival: "Киев",
@@ -42,16 +43,17 @@ const trip = {
           </div>
         </div>
         <v-card class="trip-card" elevation="2" rounded="lg">
-          <div class="trip-flex hover">
-            <v-avatar size="40" class="mr-3">
-              <img :src="trip.driver.avatar" alt="Driver" />
-            </v-avatar>
-            <div class="driver-info flex-grow-1">
-              <span class="font-weight-medium">{{ trip.driver.name }}</span>
-              <span class="ml-1">★ {{ trip.driver.rating }}</span>
-            </div>
-            <v-icon icon="mdi-chevron-right" size="24" />
-          </div>
+          <RouterLink class="link" to="/usermock">
+            <div class="trip-flex hover">
+              <v-avatar size="40" class="mr-3">
+                <img :src="trip.driver.avatar" alt="Driver" />
+              </v-avatar>
+              <div class="driver-info flex-grow-1">
+                <span class="font-weight-medium">{{ trip.driver.name }}</span>
+                <span class="ml-1">★ {{ trip.driver.rating }}</span>
+              </div>
+              <v-icon icon="mdi-chevron-right" size="24" /></div
+          ></RouterLink>
           <v-divider></v-divider>
           <div style="display: flex">
             <v-icon
@@ -116,6 +118,10 @@ const trip = {
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+.link {
+  text-decoration: none;
+  color: black;
 }
 .trip-info {
   display: flex;

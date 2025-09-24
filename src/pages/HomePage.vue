@@ -13,7 +13,7 @@ const updateScrollButtons = () => {
 
   const el = slider.value;
   canScrollLeft.value = el.scrollLeft > 0;
-  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1; // -1 для устранения багов округления
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1; 
 };
 
 const scrollLeft = () => {
