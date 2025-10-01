@@ -1,75 +1,43 @@
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
 import TripComponent from "@/components/TripComponent.vue";
 import SearchingForm from "@/components/SearchingForm.vue";
 import Filters from "@/components/Filters.vue";
-const trips: any = [
-  {
-    departure: "Москва",
-    arrival: "Киев",
-    price: 19000,
-    duration: "8 часов",
-    departureTime: "19:30",
-    arrivalTime: "25:30",
-    seatsAvailable: 9,
-    driver: {
-      avatar:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwjvv_gWyyWWlFgnGJ1L8hfSpnYAaWmWiqAg&s",
-      name: "Futa DOM",
-      rating: 5,
-      varified: true,
-    },
-    instantBooking: true,
-    maxTwoBackSeats: true,
-  },
-  {
-    departure: "Москва",
-    arrival: "Киев",
-    price: 19000,
-    duration: "8 часов",
-    departureTime: "19:30",
-    arrivalTime: "25:30",
-    seatsAvailable: 9,
-    driver: {
-      avatar:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwjvv_gWyyWWlFgnGJ1L8hfSpnYAaWmWiqAg&s",
-      name: "Futa DOM",
-      rating: 5,
-      varified: true,
-    },
-    instantBooking: true,
-    maxTwoBackSeats: true,
-  },
-  {
-    departure: "Москва",
-    arrival: "Киев",
-    price: 19000,
-    duration: "8 часов",
-    departureTime: "19:30",
-    arrivalTime: "25:30",
-    seatsAvailable: 9,
-    driver: {
-      avatar:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwjvv_gWyyWWlFgnGJ1L8hfSpnYAaWmWiqAg&s",
-      name: "Futa DOM",
-      rating: 5,
-      varified: true,
-    },
-    instantBooking: true,
-    maxTwoBackSeats: true,
-  },
-];
+import { getTrips } from "@/api";
+import Loading from "@/components/Loading.vue";
+const trips = ref<any[]>([]);
+const loading = ref<boolean>(false);
+const fetchTrips = async () => {
+  loading.value = true;
+  try {
+    const response = await getTrips();
+    console.log(response.data.data);
+    trips.value = response.data.data || [];
+  } catch (err) {
+    console.error("Ошибка при получении поездок:", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchTrips();
+});
 </script>
+
 <template>
-  <div class="searching">
+  <Loading v-if="loading" />
+  <div v-else class="searching">
     <SearchingForm />
   </div>
-  <div class="trip-list">
+  <div v-else class="trip-list">
     <Filters />
     <div class="trip-list__trips">
       <TripComponent v-for="(item, index) in trips" :key="index" :trip="item" />
     </div>
   </div>
 </template>
+
 <style lang="scss" scoped>
 .trip-list {
   margin: 0 auto;
@@ -86,6 +54,10 @@ const trips: any = [
   margin: 30px 0;
 }
 @media (max-width: 920px) {
+  .trip-list {
+    flex-direction: column;
+    gap: 50px;
+  }
   .trip-list__trips {
     width: 100%;
   }

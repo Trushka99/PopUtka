@@ -22,6 +22,9 @@ interface Trip {
 }
 
 const { trip } = defineProps<{ trip: Trip }>();
+const date = new Date(trip.departureTime);
+const hours = date.getHours().toString().padStart(2, "0");
+const minutes = date.getMinutes().toString().padStart(2, "0");
 </script>
 
 <template>
@@ -29,10 +32,10 @@ const { trip } = defineProps<{ trip: Trip }>();
     <v-card class="trip-card pa-4 mb-4" elevation="2" rounded="lg">
       <!-- Верхняя часть: время и цена -->
 
-      <div class="time-line d-flex align-center justify-space-between mb-2">
+      <div class="time-line d-flex justify-space-between mb-2">
         <div class="time-route">
           <div class="trip_progress">
-            <span class="time">{{ trip.departureTime }}</span>
+            <span class="time">{{ `${hours}:${minutes}` }}</span>
             <div class="line left"></div>
             <span class="duration">{{ trip.duration }}</span>
             <div class="line right"></div>

@@ -8,7 +8,8 @@ const showMenuTo = ref(false);
 const formattedFrom = computed(() => timeFrom.value || "");
 const formattedTo = computed(() => timeTo.value || "");
 
-const radios = ref("one");
+const radios = ref("");
+const sex = ref("");
 </script>
 <template>
   <div class="filters">
@@ -111,6 +112,21 @@ const radios = ref("one");
           </v-col>
         </v-row>
       </v-container>
+      <v-radio-group v-model="sex" class="sex-row">
+        <v-radio color="primary" value="male">
+          <template #label>
+            <v-icon color="pink">mdi-gender-male</v-icon>
+            <div>Хуемрази</div>
+          </template>
+        </v-radio>
+
+        <v-radio color="primary" value="female">
+          <template #label>
+            <v-icon color="blue">mdi-gender-female</v-icon>
+            <div>Королевы</div>
+          </template>
+        </v-radio>
+      </v-radio-group>
       <v-btn color="info" variant="tonal">Применить фильтры</v-btn>
     </div>
   </div>
@@ -120,8 +136,13 @@ const radios = ref("one");
   border-radius: 30px;
   background-color: white;
   width: 30%;
-  height: 70vh;
+  height: 80vh;
   padding: 40px 0;
+  @media (max-width: 920px) {
+    width: 90%;
+
+    margin: 0 auto;
+  }
 }
 .title {
   font-size: 20px;
@@ -130,6 +151,14 @@ const radios = ref("one");
 .flex {
   display: flex;
   justify-content: space-between;
+}
+.sex {
+  padding: 0;
+}
+.sex-row {
+  display: flex;
+  justify-content: space-between; /* растягиваем по краям */
+  width: 100%;
 }
 .container {
   width: 90%;

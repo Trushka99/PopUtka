@@ -1,6 +1,27 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { register } from "@/api";
 const activeTab = ref("login");
+const registerForm = ref({
+  username: "",
+  email: "",
+  phone: "",
+  password: "",
+  role: "passenger",
+  firstName: "",
+  lastName: "",
+  avatar: "",
+});
+const handleRegister = async () => {
+  try {
+    const response = await register(registerForm.value);
+    console.log("Регистрация успешна", response.data);
+    // тут можно сохранять токен в localStorage/cookie и редиректить
+  } catch (err) {
+    console.error("Ошибка регистрации", err);
+  }
+};
+const roles = ["Пользователь", "Водитель"];
 </script>
 
 <template>
@@ -16,7 +37,7 @@ const activeTab = ref("login");
         <v-tab value="register">Регистрация</v-tab>
       </v-tabs>
 
-      <v-card-text>
+      <v-card-text v-if="activeTab === 'login'">
         <v-text-field
           label="Email или телефон"
           outlined
@@ -34,20 +55,82 @@ const activeTab = ref("login");
         <v-btn color="gradient-orange" class="mt-4 login-btn" block
           >Войти</v-btn
         >
-
-        <div class="forgot-password">Забыли пароль?</div>
-
-        <div class="divider-text">или</div>
-
-        <v-row justify="space-between" class="social-buttons">
-          <v-btn outlined class="flex-grow-1 mx-1 social-btn">
-            <img class="icon" src="/images/Google_logo.png" /> Google
-          </v-btn>
-          <v-btn outlined class="flex-grow-1 mx-1 social-btn">
-            <img class="icon" src="/images/Telegram_logo.png" /> Telegram
-          </v-btn>
-        </v-row>
       </v-card-text>
+      <v-card-text v-else>
+        <v-text-field
+          label="Имя"
+          outlined
+          dense
+          v-model="registerForm.firstName"
+          class="custom-field"
+        ></v-text-field>
+        <v-text-field
+          label="Фамилия"
+          outlined
+          dense
+          v-model="registerForm.lastName"
+          class="custom-field"
+        ></v-text-field>
+        <v-text-field
+          label="Логин (username)"
+          outlined
+          dense
+          v-model="registerForm.username"
+          class="custom-field"
+        ></v-text-field>
+        <v-text-field
+          label="Телефон"
+          outlined
+          dense
+          v-model="registerForm.phone"
+          class="custom-field"
+        ></v-text-field>
+        <v-text-field
+          label="Email"
+          outlined
+          dense
+          v-model="registerForm.email"
+          class="custom-field"
+        ></v-text-field>
+
+        <v-text-field
+          label="Пароль"
+          type="password"
+          outlined
+          dense
+          v-model="registerForm.password"
+          class="custom-field"
+        ></v-text-field>
+        <v-select
+          label="Роль"
+          :items="roles"
+          v-model="registerForm.role"
+          outlined
+          dense
+          class="custom-field"
+        ></v-select>
+
+        <v-btn
+          @click="handleRegister"
+          color="gradient-orange"
+          class="mt-4 login-btn"
+          block
+        >
+          Зарегистрироваться
+        </v-btn>
+      </v-card-text>
+      <div class="forgot-password">Забыли пароль?</div>
+
+      <div class="divider-text">или</div>
+
+      <v-row justify="space-between" class="social-buttons">
+        <v-btn outlined class="flex-grow-1 mx-1 social-btn">
+          <img class="icon" src="/images/Google_logo.png" /> Google
+        </v-btn>
+        <v-btn outlined class="flex-grow-1 mx-1 social-btn">
+          <img class="icon" src="/images/Telegram_logo.png" /> Telegram
+        </v-btn>
+      </v-row>
     </v-card>
   </div>
 </template>
@@ -66,8 +149,8 @@ const activeTab = ref("login");
   }
 
   .v-tab {
-    flex: 1 1 0; 
-    text-align: center; 
+    flex: 1 1 0;
+    text-align: center;
   }
 }
 .background {
@@ -83,9 +166,28 @@ const activeTab = ref("login");
 }
 
 .login-card {
-  width: 360px;
+  width: 460px;
   padding: 32px;
   border-radius: 25px;
+  height: 600px;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  overflow-y: auto;
   text-align: center;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(15px);

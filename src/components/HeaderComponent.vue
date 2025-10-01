@@ -19,7 +19,8 @@ const menuOpen = ref(false);
         ><span class="header__text">Главная</span></RouterLink
       >
       <span class="header__text">Поездки</span>
-      <RouterLink class="header__link" to="/"
+      
+      <RouterLink class="header__link" to="/drivers"
         ><span class="header__text">Водители</span></RouterLink
       >
       <span class="header__text">О нас</span>
