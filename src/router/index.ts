@@ -5,6 +5,7 @@ import TripPage from "@/pages/TripPage.vue";
 import UserPage from "@/pages/UserPage.vue";
 import DriversPage from "@/pages/DriversPage.vue";
 import AuthPage from "@/pages/AuthPage.vue";
+import CreateTrip from "@/pages/CreateTrip.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -14,6 +15,7 @@ const router = createRouter({
     { path: "/tripMock", component: TripPage, meta: { layout: "default" } },
     { path: "/usermock", component: UserPage, meta: { layout: "default" } },
     { path: "/drivers", component: DriversPage, meta: { layout: "default" } },
+    { path: "/create-trip", component: CreateTrip, meta: { layout: "default" } },
   ],
 });
 

@@ -3,17 +3,17 @@ import SearchingForm from "@/components/SearchingForm.vue";
 import CardComponent from "@/components/CardComponent.vue";
 import CityCardComponent from "@/components/CityCardComponent.vue";
 import { ref, onMounted, onUnmounted } from "vue";
-
+import { useLangStore } from "@/stores/langStore";
+const langStore = useLangStore();
 const slider = ref<HTMLElement | null>(null);
 const canScrollLeft = ref(false);
 const canScrollRight = ref(true);
-
 const updateScrollButtons = () => {
   if (!slider.value) return;
 
   const el = slider.value;
   canScrollLeft.value = el.scrollLeft > 0;
-  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1; 
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
 };
 
 const scrollLeft = () => {

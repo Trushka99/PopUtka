@@ -1,8 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { RouterLink } from "vue-router";
 import "@mdi/font/css/materialdesignicons.css";
 const menuOpen = ref(false);
+import { useLangStore } from "@/stores/langStore";
+const langStore = useLangStore();
+const langOptions = [
+  { label: "Руский", value: "ru" },
+  { label: "English", value: "en" },
+  { label: "Ozbekcha", value: "uz" },
+];
+const selectedLang = computed({
+  get: () => langOptions.find((l) => l.value === langStore.currentLang)?.label,
+  set: (label) => {
+    const lang = langOptions.find((l) => l.label === label)?.value;
+    if (lang) langStore.setLang(lang);
+  },
+});
 </script>
 
 <template>
@@ -16,30 +30,33 @@ const menuOpen = ref(false);
     <!-- Навигация для десктопа -->
     <nav class="header__nav">
       <RouterLink class="header__link" to="/"
-        ><span class="header__text">Главная</span></RouterLink
+        ><span class="header__text">{{ langStore.t("home") }}</span></RouterLink
       >
-      <span class="header__text">Поездки</span>
-      
+      <span class="header__text">{{ langStore.t("rides") }}</span>
+
       <RouterLink class="header__link" to="/drivers"
-        ><span class="header__text">Водители</span></RouterLink
+        ><span class="header__text">{{
+          langStore.t("drivers")
+        }}</span></RouterLink
       >
-      <span class="header__text">О нас</span>
-      <span class="header__text">Контакты</span>
+      <span class="header__text">{{ langStore.t("about us") }}</span>
+      <span class="header__text">{{ langStore.t("contacts") }}</span>
     </nav>
 
     <!-- Кнопки и селект для десктопа -->
     <div class="header__buttons">
       <RouterLink class="header__link" to="/login">
-        <v-btn class="header__driver">Я водитель</v-btn></RouterLink
+        <v-btn class="header__driver">{{ langStore.t("driver") }}</v-btn></RouterLink
       >
       <RouterLink class="header__link" to="/login">
         <v-btn class="header__driver" color="#5865f2"
-          >Я пассажир</v-btn
+          >{{ langStore.t("pass") }}</v-btn
         ></RouterLink
       >
       <v-select
+        v-model="selectedLang"
         class="header__select"
-        :items="['Руский', 'English', 'Ozbekcha']"
+        :items="langOptions.map((l) => l.label)"
         density="compact"
         hide-details
         variant="outlined"
@@ -53,20 +70,26 @@ const menuOpen = ref(false);
 
     <!-- Мобильное меню -->
     <div v-if="menuOpen" class="header__mobile-menu">
-      <RouterLink class="header__link" to="/">Главная</RouterLink>
-      <RouterLink class="header__link" to="/">Водители</RouterLink>
-      <span class="header__link">Поездки</span>
-      <span class="header__link">О нас</span>
-      <span class="header__link">Контакты</span>
-      <v-btn class="header__driver" block>Я водитель</v-btn>
-      <v-btn class="header__driver" color="#5865f2" block>Я пассажир</v-btn>
+      <RouterLink class="header__link" to="/">{{
+        langStore.t("home")
+      }}</RouterLink>
+      <RouterLink class="header__link" to="/">{{
+        langStore.t("drivers")
+      }}</RouterLink>
+      <span class="header__link">{{ langStore.t("rides") }}</span>
+      <span class="header__link">{{ langStore.t("about us") }}</span>
+      <span class="header__link">{{ langStore.t("contacts") }}</span>
+      <v-btn class="header__driver" block>{{ langStore.t("driver") }}</v-btn>
+      <v-btn class="header__driver" color="#5865f2" block>{{
+        langStore.t("pass")
+      }}</v-btn>
       <v-select
+        v-model="selectedLang"
         class="header__select"
-        :items="['Руский', 'English', 'Ozbekcha']"
+        :items="langOptions.map((l) => l.label)"
         density="compact"
         hide-details
         variant="outlined"
-        block
       ></v-select>
     </div>
   </header>

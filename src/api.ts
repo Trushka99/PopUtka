@@ -2,6 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "http://localhost:5000",
+  withCredentials: true,
 });
 
 const handleRequest = async (request: any) => {
@@ -38,7 +39,6 @@ export const getTrips = async (filters?: {
     })
   );
 };
-
 export const register = async (form?: {
   username: string;
   email: string;
@@ -47,7 +47,7 @@ export const register = async (form?: {
   role: string;
   firstName: string;
   lastName: string;
-  avatar?: string;
+  gender: string;
 }) => {
   if (!form) throw new Error("Form data is required");
 
@@ -60,7 +60,16 @@ export const register = async (form?: {
       role: form.role,
       firstName: form.firstName,
       lastName: form.lastName,
-      avatar: form.avatar,
+      gender: form.gender,
+    })
+  );
+};
+
+export const login = async (login: string, password: string) => {
+  return handleRequest(
+    api.post("/auth/login", {
+      login,
+      password,
     })
   );
 };

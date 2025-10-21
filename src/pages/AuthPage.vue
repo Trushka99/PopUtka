@@ -1,27 +1,52 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { register } from "@/api";
+import { register, login } from "@/api";
 const activeTab = ref("login");
 const registerForm = ref({
   username: "",
   email: "",
   phone: "",
   password: "",
-  role: "passenger",
+  role: "",
   firstName: "",
   lastName: "",
-  avatar: "",
+  gender: "",
 });
+const loginHandle = () => {
+  const { email, password } = registerForm.value;
+  return login(email, password)
+    .then(() => console.log("READy"))
+    .catch((err) => alert(err));
+};
 const handleRegister = async () => {
+  const {
+    username,
+    email,
+    phone,
+    password,
+    role,
+    firstName,
+    lastName,
+    gender,
+  } = registerForm.value;
   try {
-    const response = await register(registerForm.value);
+    const response = await register({
+      username,
+      email,
+      phone,
+      password,
+      role: role === "Пользователь" ? "passenger" : "driver",
+      firstName,
+      lastName,
+      gender: gender === "Мужской" ? "male" : "female",
+    });
     console.log("Регистрация успешна", response.data);
-    // тут можно сохранять токен в localStorage/cookie и редиректить
   } catch (err) {
     console.error("Ошибка регистрации", err);
   }
 };
 const roles = ["Пользователь", "Водитель"];
+const sex = ["Мужской", "Женский"];
 </script>
 
 <template>
@@ -41,18 +66,24 @@ const roles = ["Пользователь", "Водитель"];
         <v-text-field
           label="Email или телефон"
           outlined
+          v-model="registerForm.email"
           dense
           class="custom-field"
         ></v-text-field>
         <v-text-field
           label="Пароль"
           type="password"
+          v-model="registerForm.password"
           outlined
           dense
           class="custom-field"
         ></v-text-field>
 
-        <v-btn color="gradient-orange" class="mt-4 login-btn" block
+        <v-btn
+          @click="loginHandle"
+          color="gradient-orange"
+          class="mt-4 login-btn"
+          block
           >Войти</v-btn
         >
       </v-card-text>
@@ -105,6 +136,14 @@ const roles = ["Пользователь", "Водитель"];
           label="Роль"
           :items="roles"
           v-model="registerForm.role"
+          outlined
+          dense
+          class="custom-field"
+        ></v-select>
+        <v-select
+          label="Пол"
+          :items="sex"
+          v-model="registerForm.gender"
           outlined
           dense
           class="custom-field"

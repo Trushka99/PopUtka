@@ -1,7 +1,16 @@
 <script setup lang="tsx">
 import { ref, computed } from "vue";
 import { RouterLink } from "vue-router";
+import { useLangStore } from "@/stores/langStore";
+import cities from "../utils/dictionary.json";
+const langStore = useLangStore();
 
+const cityList = computed(() => {
+  return Object.values(
+    cities[langStore.currentLang as keyof typeof cities] || {}
+  );
+});
+console.log(cityList.value);
 const from = ref("");
 const to = ref("");
 const dateMenu = ref(false);
@@ -11,11 +20,11 @@ const passengers = ref(1);
 const passengersLabel = computed<string>({
   get: () => {
     if (passengers.value === 1) {
-      return `${passengers.value} пассажир`;
+      return `${passengers.value} ${langStore.t("passenger")}`;
     } else if (passengers.value <= 5) {
-      return `${passengers.value} пассажира`;
+      return `${passengers.value} ${langStore.t("passengers")}`;
     } else {
-      return `${passengers.value} пассажиров`;
+      return `${passengers.value} ${langStore.t("passengers")}`;
     }
   },
   set: (val: string) => {
@@ -35,14 +44,15 @@ const decrease = () => {
   <div class="search-bar">
     <!-- Откуда -->
 
-    <v-text-field
+    <v-autocomplete
       v-model="from"
-      placeholder="Откуда"
+      :label="langStore.t('from')"
       density="compact"
       variant="plain"
+      :items="cityList"
       prepend-inner-icon="mdi-map-marker"
       hide-details
-    ></v-text-field>
+    ></v-autocomplete>
 
     <!-- Иконка переключения -->
     <!-- <v-icon v-show="from" class="swap-icon" size="24"
@@ -50,14 +60,15 @@ const decrease = () => {
     > -->
 
     <!-- Куда -->
-    <v-text-field
+    <v-autocomplete
       v-model="to"
-      placeholder="Куда"
+      :label="langStore.t('to')"
       density="compact"
+      :items="cityList"
       variant="plain"
       prepend-inner-icon="mdi-map-marker-outline"
       hide-details
-    ></v-text-field>
+    ></v-autocomplete>
 
     <!-- Дата -->
     <v-menu
@@ -103,7 +114,7 @@ const decrease = () => {
         ></v-text-field>
       </template>
       <div class="passengers-modal">
-        <h4>Пассажиров</h4>
+        <h4>{{langStore.t("passengers")}}</h4>
         <div style="display: flex; gap: 15px">
           <button
             :disabled="passengers === 1"
@@ -127,7 +138,7 @@ const decrease = () => {
     <!-- Кнопка поиска -->
     <RouterLink class="header__link" to="/search">
       <v-btn class="search-btn" color="#00AEEF" rounded="lg" height="48">
-        Поиск
+        {{langStore.t("search")}}
       </v-btn></RouterLink
     >
   </div>
