@@ -1,5 +1,7 @@
 <script setup lang="tsx">
 import { ref, computed } from "vue";
+import { useLangStore } from "@/stores/langStore";
+const langStore = useLangStore();
 const timeFrom = ref<string | null>(null);
 const timeTo = ref<string | null>(null);
 
@@ -16,51 +18,51 @@ const sex = ref("");
     <div class="container">
       <v-container class="radios" fluid>
         <div class="flex">
-          <h3 class="title">Фильтры</h3>
+          <h3 class="title">{{ langStore.t("filters") }}</h3>
           <v-icon>mdi-filter-variant</v-icon>
         </div>
         <v-radio-group v-model="radios">
           <v-radio color="primary" value="early">
             <template v-slot:label>
               <div>
-                Саммые <strong class="text-success">ранние поездки</strong>
+                {{ langStore.t("early") }}
               </div>
             </template></v-radio
           >
           <v-radio color="primary" label="Саммые дешевые поездки" value="cheap">
             <template v-slot:label>
               <div>
-                Саммые <strong class="text-success">дешевые поездки</strong>
+                {{ langStore.t("cheap") }}
               </div>
             </template></v-radio
           >
           <v-radio color="primary" value="varified">
             <template v-slot:label>
-              <div>Профиль подтвержден</div>
+              <div>{{ langStore.t("verified") }}</div>
             </template></v-radio
           >
           <v-radio color="primary">
             <template v-slot:label>
-              <div>Мгновенное бронирование</div>
+              <div>{{ langStore.t("instant") }}</div>
             </template></v-radio
           >
         </v-radio-group>
       </v-container>
       <v-container class="radios" fluid>
         <div class="flex">
-          <h3 class="title">Стоимость</h3>
+          <h3 class="title">{{ langStore.t("price") }}</h3>
           <v-icon>mdi-cash</v-icon>
         </div>
         <v-row justify="space-between">
           <v-col cols="6">
             <v-text-field
-              label="Сумма от"
+              :label="langStore.t('ammountFrom')"
               model-value="10.00"
               suffix="₽"
             ></v-text-field></v-col
           ><v-col cols="6">
             <v-text-field
-              label="Сумма до"
+              :label="langStore.t('ammountTo')"
               model-value="10.00"
               suffix="₽"
             ></v-text-field></v-col
@@ -73,7 +75,11 @@ const sex = ref("");
         </div>
         <v-row justify="space-between">
           <v-col cols="6">
-            <v-text-field v-model="formattedFrom" label="Время от" readonly>
+            <v-text-field
+              v-model="formattedFrom"
+              :label="langStore.t('timeperiodfrom')"
+              readonly
+            >
               <v-menu
                 v-model="showMenuFrom"
                 :close-on-content-click="false"
@@ -92,7 +98,11 @@ const sex = ref("");
             </v-text-field>
           </v-col>
           <v-col cols="6">
-            <v-text-field v-model="formattedTo" label="Время до" readonly>
+            <v-text-field
+              v-model="formattedTo"
+              :label="langStore.t('timeperiodto')"
+              readonly
+            >
               <v-menu
                 v-model="showMenuTo"
                 :close-on-content-click="false"
@@ -116,18 +126,18 @@ const sex = ref("");
         <v-radio color="primary" value="male">
           <template #label>
             <v-icon color="pink">mdi-gender-male</v-icon>
-            <div>Хуемрази</div>
+            <div>{{ langStore.t("male") }}</div>
           </template>
         </v-radio>
 
         <v-radio color="primary" value="female">
           <template #label>
             <v-icon color="blue">mdi-gender-female</v-icon>
-            <div>Королевы</div>
+            <div>{{ langStore.t("female") }}</div>
           </template>
         </v-radio>
       </v-radio-group>
-      <v-btn color="info" variant="tonal">Применить фильтры</v-btn>
+      <v-btn color="info" variant="tonal">{{ langStore.t("filter") }}</v-btn>
     </div>
   </div>
 </template>

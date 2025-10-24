@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
-
+import { useLangStore } from "@/stores/langStore";
 interface Driver {
   avatar: string;
   name: string;
   rating: number;
   verified: boolean;
 }
-
+const langStore = useLangStore();
 interface Trip {
   departure: string;
   arrival: string;
@@ -22,6 +22,7 @@ interface Trip {
 }
 
 const { trip } = defineProps<{ trip: Trip }>();
+console.log(trip);
 const date = new Date(trip.departureTime);
 const hours = date.getHours().toString().padStart(2, "0");
 const minutes = date.getMinutes().toString().padStart(2, "0");
@@ -74,9 +75,9 @@ const minutes = date.getMinutes().toString().padStart(2, "0");
             size="20"
             class="mr-1"
           />
-          <span v-if="trip.instantBooking" class="mr-4 text-caption"
-            >Мгновенное бронирование</span
-          >
+          <span v-if="trip.instantBooking" class="mr-4 text-caption">{{
+            langStore.t("verified")
+          }}</span>
 
           <v-icon
             v-if="trip.maxTwoBackSeats"
@@ -84,9 +85,9 @@ const minutes = date.getMinutes().toString().padStart(2, "0");
             size="20"
             class="mr-1"
           />
-          <span v-if="trip.maxTwoBackSeats" class="text-caption"
-            >Максимум двое сзади</span
-          >
+          <span v-if="trip.maxTwoBackSeats" class="text-caption">{{
+            langStore.t("instant")
+          }}</span>
         </div>
       </div>
     </v-card></RouterLink

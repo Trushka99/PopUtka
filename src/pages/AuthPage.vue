@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { register, login } from "@/api";
+import { useLangStore } from "@/stores/langStore";
+import { useRouter, useRoute } from "vue-router";
+const router = useRouter();
+const route = useRoute();
+const redirectPath = route.query.redirect?.toString() || "/";
+
+const langStore = useLangStore();
 const activeTab = ref("login");
 const registerForm = ref({
   username: "",
@@ -15,7 +22,10 @@ const registerForm = ref({
 const loginHandle = () => {
   const { email, password } = registerForm.value;
   return login(email, password)
-    .then(() => console.log("READy"))
+    .then((res) => {
+      langStore.setUser(res.data.data.user);
+      router.push(redirectPath);
+    })
     .catch((err) => alert(err));
 };
 const handleRegister = async () => {

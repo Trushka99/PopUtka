@@ -32,7 +32,12 @@
     "timeperiodfrom": "Time period from",
     "timeperiodto": "Time period to",
     "filter": "Apply filters",
-    "book": "book"
+    "filters": "Filters",
+    "book": "book",
+    "createTrip": "Post trip",
+    "departureTime": "Departure time",
+    "description": "Description",
+    "maxTwoBackSeats": "Max two back seats"
   },
   "ru": {
     "home": "Главная",
@@ -67,7 +72,12 @@
     "timeperiodfrom": "Время от",
     "timeperiodto": "Время до",
     "filter": "Применить фильтры",
-    "book": "Забронировать"
+    "book": "Забронировать",
+    "createTrip": "Создать поездку",
+    "departureTime": "Время отправления",
+    "description": "Описание",
+    "maxTwoBackSeats": "Максимум двое сзади",
+    "filters": "Фильтры"
   },
   "uz": {}
 }

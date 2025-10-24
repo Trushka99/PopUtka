@@ -73,3 +73,9 @@ export const login = async (login: string, password: string) => {
     })
   );
 };
+export const getMe = async () => {
+  return handleRequest(api.get("/auth/me"));
+};
+export const logout = async () => {
+  return handleRequest(api.post("/auth/logout"));
+};
