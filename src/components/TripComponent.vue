@@ -3,15 +3,18 @@ import { RouterLink } from "vue-router";
 import { useLangStore } from "@/stores/langStore";
 interface Driver {
   avatar: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   rating: number;
   verified: boolean;
 }
 const langStore = useLangStore();
+console.log(langStore.user);
 interface Trip {
-  departure: string;
-  arrival: string;
+  from: { cityKey: string; address: string };
+  to: { cityKey: string; address: string };
   price: number;
+  departureDate: string;
   departureTime: string;
   arrivalTime: string;
   duration: string;
@@ -19,17 +22,18 @@ interface Trip {
   driver: Driver;
   instantBooking?: boolean;
   maxTwoBackSeats?: boolean;
+  id: number;
 }
 
 const { trip } = defineProps<{ trip: Trip }>();
 console.log(trip);
-const date = new Date(trip.departureTime);
+const date = new Date(trip.departureDate);
 const hours = date.getHours().toString().padStart(2, "0");
 const minutes = date.getMinutes().toString().padStart(2, "0");
 </script>
 
 <template>
-  <RouterLink class="link" to="/tripMock">
+  <RouterLink class="link" :to="{ name: 'search', params: { id: trip.id } }">
     <v-card class="trip-card pa-4 mb-4" elevation="2" rounded="lg">
       <!-- Верхняя часть: время и цена -->
 
@@ -43,9 +47,9 @@ const minutes = date.getMinutes().toString().padStart(2, "0");
             <span class="time">{{ trip.arrivalTime }}</span>
           </div>
           <div class="location mt-1">
-            <strong>{{ trip.departure }}</strong>
+            <strong>{{ langStore.с(trip.from.cityKey.toLowerCase()) }}</strong>
             <span class="mx-1">→</span>
-            <strong>{{ trip.arrival }}</strong>
+            <strong>{{ langStore.с(trip.to.cityKey) }}</strong>
           </div>
         </div>
         <div class="price text-h5 font-weight-bold">
@@ -64,7 +68,9 @@ const minutes = date.getMinutes().toString().padStart(2, "0");
         </v-avatar>
 
         <div class="driver-info flex-grow-1">
-          <span class="font-weight-medium">{{ trip.driver.name }}</span>
+          <span class="font-weight-medium"
+            >{{ trip.driver.firstName }} {{ trip.driver.lastName }}</span
+          >
           <span class="ml-1">★ {{ trip.driver.rating }}</span>
         </div>
 
@@ -76,7 +82,7 @@ const minutes = date.getMinutes().toString().padStart(2, "0");
             class="mr-1"
           />
           <span v-if="trip.instantBooking" class="mr-4 text-caption">{{
-            langStore.t("verified")
+            langStore.t("instant")
           }}</span>
 
           <v-icon
@@ -86,7 +92,7 @@ const minutes = date.getMinutes().toString().padStart(2, "0");
             class="mr-1"
           />
           <span v-if="trip.maxTwoBackSeats" class="text-caption">{{
-            langStore.t("instant")
+            langStore.t("maxTwoBackSeats")
           }}</span>
         </div>
       </div>

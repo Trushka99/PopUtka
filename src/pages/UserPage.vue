@@ -1,27 +1,40 @@
 <script setup lang="tsx">
-const driver = {
-  avatar:
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXkpZ1GYbxd0IlKteKbUSR4WxZp1hVJlkvYw&s",
-  name: "Futa DOM",
-  rating: 5,
-  varified: true,
-  age: 29,
-  about: "",
-  reviews: ["125", "12521", "125125"],
-};
+import { useLangStore } from "@/stores/langStore";
+import { onMounted, ref } from "vue";
+import { getUser } from "@/api";
+import { useRoute } from "vue-router";
+import Loading from "@/components/Loading.vue";
+const langStore = useLangStore();
+const user = ref<any>();
+const loading = ref<boolean>(false);
+const route = useRoute();
+
+onMounted(() => {
+  loading.value = true;
+  getUser(Number(route.params.id))
+    .then((res) => {
+      user.value = res.data.data;
+      console.log(res.data.data);
+    })
+    .catch((err) => {
+      console.error("API ERROR:", err);
+    })
+    .finally(() => (loading.value = false));
+});
 </script>
 <template>
-  <div class="user-profile">
+  <Loading v-if="loading" />
+  <div div v-else-if="user" class="user-profile">
     <v-avatar
       class="user-profile__avatar"
-      :image="driver.avatar"
+      :image="`http://localhost:5000${user.avatar}`"
       size="80"
     ></v-avatar>
     <div class="user-profile__avatar-container">
       <div class="user-profile__flex">
         <div>
-          <h4>{{ driver.name }}</h4>
-          <p>{{ driver.age }} лет</p>
+          <h3>{{ user.firstName }} {{ user.lastName }}</h3>
+          <p>20 лет</p>
         </div>
       </div>
       <v-icon color="blue-darken-2" icon="mdi-pencil" end></v-icon>
@@ -30,10 +43,10 @@ const driver = {
       <v-divider color="info" :thickness="10" />
       <div class="user-profile__flex">
         <v-icon color="blue-darken-2" icon="mdi-star-circle" end></v-icon>
-        <h4>{{ driver.rating }} / 5 - {{ driver.reviews.length }} отзыва</h4>
+        <h4>{{ user.rating }} / 5 - {{ user.reviews.length }} отзыва</h4>
       </div>
       <v-divider color="info" :thickness="10" />
-      <h3>{{ driver.name }}</h3>
+      <h3>Верификация</h3>
       <div class="user-profile__flex">
         <v-icon
           color="blue-darken-2"
@@ -59,21 +72,32 @@ const driver = {
         <p>Номер телефона подтвержден</p>
       </div>
       <v-divider color="info" :thickness="10" />
-      <h3>{{ driver.name }} о себе</h3>
+      <h3>{{ user.firstName }} о себе</h3>
       <div class="user-profile__comments">
         <div class="user-profile__flex">
           <v-icon color="blue-darken-2" icon="mdi-forum" end></v-icon>
           <p>
-            {{ driver.about === "" ? "Описание отсутствует" : driver.about }}
+            {{ user.about === "" ? "Описание отсутствует" : user.about }}
           </p>
         </div>
         <v-icon color="blue-darken-2" icon="mdi-pencil" end></v-icon>
       </div>
 
-      <p>{{ driver.about }}</p>
+      <p>{{ user.about }}</p>
       <v-divider color="info" :thickness="10" />
       <p>11 опубликованных и завершенных поездок</p>
-      <p>Дата регистрации: августа 2022</p>
+      <p>
+        {{ langStore.t("regDate") }}:
+        {{
+          new Date(user.createdAt).toLocaleString("ru-RU", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        }}
+      </p>
       <v-btn color="info" variant="tonal">Пожаловаться на пользователя</v-btn>
     </div>
   </div>

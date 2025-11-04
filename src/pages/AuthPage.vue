@@ -51,6 +51,7 @@ const handleRegister = async () => {
       gender: gender === "Мужской" ? "male" : "female",
     });
     console.log("Регистрация успешна", response.data);
+    loginHandle();
   } catch (err) {
     console.error("Ошибка регистрации", err);
   }

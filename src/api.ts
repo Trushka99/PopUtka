@@ -30,12 +30,16 @@ export const getTrips = async (filters?: {
   from?: string;
   to?: string;
   date?: string;
-  price?: number;
+  minPrice?: number;
+  maxPrice?: number;
   seats?: number;
+  timeFrom?: string;
+  timeTo?: string;
+  driverGender?: string;
 }) => {
   return handleRequest(
     api.get("/trips", {
-      params: filters, // если filters = undefined → просто /trips
+      params: filters,
     })
   );
 };
@@ -76,6 +80,48 @@ export const login = async (login: string, password: string) => {
 export const getMe = async () => {
   return handleRequest(api.get("/auth/me"));
 };
+export const getTrip = async (id: number) => {
+  return handleRequest(api.get(`/trips/${id}`));
+};
+export const getUser = async (id: number) => {
+  return handleRequest(api.get(`/users/${id}`));
+};
 export const logout = async () => {
   return handleRequest(api.post("/auth/logout"));
+};
+
+export const createTrip = async ({
+  from,
+  to,
+  departureTime,
+  price,
+  availableSeats,
+  description,
+  instantBooking,
+  maxTwoBackSeats,
+  departureDate,
+}: {
+  from: { cityKey: string; address: string };
+  to: { cityKey: string; address: string };
+  departureTime: string;
+  price: number;
+  availableSeats: number;
+  description: string;
+  instantBooking: boolean;
+  maxTwoBackSeats: boolean;
+  departureDate: string;
+}) => {
+  return handleRequest(
+    api.post("/trips", {
+      from,
+      to,
+      departureTime,
+      price,
+      availableSeats,
+      description,
+      instantBooking,
+      maxTwoBackSeats,
+      departureDate,
+    })
+  );
 };

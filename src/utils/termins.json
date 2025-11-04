@@ -20,7 +20,7 @@
     "forbuiz": "For business",
     "affiliate": "Affiliate",
     "cheap": "The cheapest trips",
-    "early": "The earliest trups",
+    "early": "The earliest trips",
     "verified": "The profile has been varified",
     "instant": "Instant booking",
     "price": "Price",
@@ -37,7 +37,8 @@
     "createTrip": "Post trip",
     "departureTime": "Departure time",
     "description": "Description",
-    "maxTwoBackSeats": "Max two back seats"
+    "maxTwoBackSeats": "Max two back seats",
+    "regDate": "Registration date "
   },
   "ru": {
     "home": "Главная",
@@ -77,7 +78,8 @@
     "departureTime": "Время отправления",
     "description": "Описание",
     "maxTwoBackSeats": "Максимум двое сзади",
-    "filters": "Фильтры"
+    "filters": "Фильтры",
+    "regDate": "Дата регистрации"
   },
   "uz": {}
 }

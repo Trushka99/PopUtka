@@ -22,6 +22,12 @@ export const useLangStore = defineStore("lang", {
     user: {},
   }),
   getters: {
+    cKeyByValue: (state) => (value: string) => {
+      const entries = Object.entries(state.cities[state.currentLang] || {});
+      const found = entries.find(([_, v]) => v === value);
+      return found ? found[0] : value;
+    },
+
     с: (state) => (key: string) =>
       state.cities[state.currentLang]?.[key] || key,
     t: (state) => (key: string) =>

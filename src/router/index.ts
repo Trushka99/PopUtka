@@ -12,12 +12,14 @@ const routes = [
   { path: "/login", component: AuthPage, meta: { layout: "empty" } },
   { path: "/search", component: TripListPage, meta: { layout: "default" } },
   {
-    path: "/tripMock",
+    path: "/search/:id",
+    name: "search",
     component: TripPage,
     meta: { layout: "default", requiresAuth: true },
   },
   {
-    path: "/usermock",
+    path: "/users/:id",
+    name: "users",
     component: UserPage,
     meta: { layout: "default", requiresAuth: true },
   },

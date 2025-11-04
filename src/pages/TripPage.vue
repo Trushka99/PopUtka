@@ -1,26 +1,30 @@
 <script setup lang="ts">
-import { RouterLink } from "vue-router";
-const trip = {
-  departure: "Москва",
-  arrival: "Киев",
-  price: 19000,
-  duration: "8 часов",
-  departureTime: "19:30",
-  arrivalTime: "25:30",
-  seatsAvailable: 9,
-  driver: {
-    avatar:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXkpZ1GYbxd0IlKteKbUSR4WxZp1hVJlkvYw&s",
-    name: "Futa DOM",
-    rating: 5,
-    varified: true,
-  },
-  instantBooking: true,
-  maxTwoBackSeats: true,
-};
+import { ref, onMounted } from "vue";
+import { RouterLink, useRoute } from "vue-router";
+import { getTrip } from "@/api";
+import Loading from "@/components/Loading.vue";
+import { useLangStore } from "@/stores/langStore";
+const langStore = useLangStore();
+const route = useRoute();
+const trip = ref<any>();
+const loading = ref<boolean>(false);
+
+onMounted(() => {
+  loading.value = true;
+  getTrip(Number(route.params.id))
+    .then((res) => {
+      trip.value = res.data.data;
+      console.log(res.data.data);
+    })
+    .catch((err) => {
+      console.error("API ERROR:", err);
+    })
+    .finally(() => (loading.value = false));
+});
 </script>
 <template>
-  <div class="trip-cont">
+  <Loading v-if="loading" />
+  <div v-else-if="trip" class="trip-cont">
     <h2 style="font-size: 35px; margin: 20px 0 20px 0">Четверг, 4 сентября</h2>
     <div class="trip-flex">
       <div class="lefside">
@@ -33,36 +37,44 @@ const trip = {
           <div class="line"></div>
           <div class="flex-cont">
             <div>
-              <h3>Москва</h3>
-              <p>Ст. м. Водный стадион</p>
+              <h3>{{ langStore.с(trip.from.cityKey.toLowerCase()) }}</h3>
+              <p>{{ trip.from.address }}</p>
             </div>
             <div>
-              <h3>Москва</h3>
-              <p>Ст. м. Водный стадион</p>
+              <h3>{{ langStore.с(trip.to.cityKey.toLowerCase()) }}</h3>
+              <p>{{ trip.to.address }}</p>
             </div>
           </div>
         </div>
         <v-card class="trip-card" elevation="2" rounded="lg">
-          <RouterLink class="link" to="/usermock">
+          <RouterLink
+            class="link"
+            :to="{ name: 'users', params: { id: trip.driverId } }"
+          >
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
-                <img :src="trip.driver.avatar" alt="Driver" />
+                <img
+                  :src="`http://localhost:5000${trip.driver.avatar}`"
+                  alt="Driver"
+                />
               </v-avatar>
               <div class="driver-info flex-grow-1">
-                <span class="font-weight-medium">{{ trip.driver.name }}</span>
+                <span class="font-weight-medium"
+                  >{{ trip.driver.firstName }} {{ trip.driver.lastName }}</span
+                >
                 <span class="ml-1">★ {{ trip.driver.rating }}</span>
               </div>
               <v-icon icon="mdi-chevron-right" size="24" /></div
           ></RouterLink>
           <v-divider></v-divider>
-          <div style="display: flex">
+          <div v-if="trip.driver.isVerified" style="display: flex">
             <v-icon
               color="blue"
               icon="mdi-check-decagram"
               size="24"
               class="mr-2"
             />
-            <p>Профиль подтвержден</p>
+            <p>{{ langStore.t("verified") }}</p>
           </div>
           <div style="display: flex">
             <v-icon
@@ -74,20 +86,20 @@ const trip = {
             <p>Редко отменяет поездки</p>
           </div>
 
-          <p>Едем по бесплатной дороге , с собой везем кошку.</p>
+          <p>{{ trip.description }}</p>
 
           <v-divider class="my-3"></v-divider>
-          <div style="display: flex">
+          <div v-if="trip.instantBooking" style="display: flex">
             <v-icon color="yellow" icon="mdi-flash" size="24" class="mr-2" />
-            <p>Ваше бронирование будет подтверждено мгновенно</p>
+            <p>{{ langStore.t("instant") }}</p>
           </div>
-          <div style="display: flex">
+          <div v-if="trip.maxTwoBackSeats" style="display: flex">
             <v-icon icon="mdi-account-multiple" size="24" class="mr-2" />
-            <p>Максимум двое сзади</p>
+            <p>{{ langStore.t("maxTwoBackSeats") }}</p>
           </div>
-          <div style="display: flex">
+          <div v-if="trip.driver.car" style="display: flex">
             <v-icon color="grey" icon="mdi-car" size="24" class="mr-2" />
-            <p>TOYOTA URBAN CRUISER - Белый</p>
+            <p>{{ trip.driver.car }}</p>
           </div>
         </v-card>
       </div>
@@ -95,8 +107,8 @@ const trip = {
         <v-card class="trip-card" elevation="2" rounded="lg">
           <div class="trip-flex hover">
             <div style="display: flex; gap: 25px">
-              <h4>2 пассажира</h4>
-              <h4>4800 ₽</h4>
+              <h4>1 {{ langStore.t("passenger") }}</h4>
+              <h4>{{ trip.price }} ₽</h4>
             </div>
             <v-icon icon="mdi-chevron-right" size="24" />
           </div>
@@ -107,6 +119,7 @@ const trip = {
       </div>
     </div>
   </div>
+  <div v-else>Ошибка: поездка не найдена</div>
 </template>
 <style scoped lang="scss">
 .trip-cont {

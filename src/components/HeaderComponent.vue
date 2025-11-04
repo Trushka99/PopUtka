@@ -11,7 +11,7 @@ const langOptions = [
   { label: "English", value: "en" },
   { label: "Ozbekcha", value: "uz" },
 ];
-console.log(langStore.user)
+console.log(langStore.user);
 const selectedLang = computed({
   get: () => langOptions.find((l) => l.value === langStore.currentLang)?.label,
   set: (label) => {
@@ -47,12 +47,12 @@ const selectedLang = computed({
 
     <!-- Кнопки и селект для десктопа -->
     <div class="header__buttons">
-      <RouterLink class="header__link" to="/login">
+      <RouterLink v-if="!langStore.user" class="header__link" to="/login">
         <v-btn class="header__driver">{{
           langStore.t("driver")
         }}</v-btn></RouterLink
       >
-      <RouterLink class="header__link" to="/login">
+      <RouterLink v-if="!langStore.user" class="header__link" to="/login">
         <v-btn class="header__driver" color="#5865f2">{{
           langStore.t("pass")
         }}</v-btn></RouterLink
@@ -65,14 +65,18 @@ const selectedLang = computed({
         hide-details
         variant="outlined"
       ></v-select>
-      <v-dialog max-width="500">
+      <v-dialog v-if="langStore.user.role === 'driver'" max-width="750">
         <template v-slot:activator="{ props: activatorProps }">
           <v-btn
             v-bind="activatorProps"
-            color="surface-variant"
-            text="Open Dialog"
-            variant="flat"
-          ></v-btn>
+            color="primary"
+            variant="elevated"
+            rounded="lg"
+            class="create-trip-btn"
+          >
+            <v-icon start>mdi-plus</v-icon>
+            {{ langStore.t("createTrip") }}
+          </v-btn>
         </template>
 
         <template v-slot:default="{ isActive }">
@@ -208,6 +212,17 @@ const selectedLang = computed({
   .header__mobile-menu .header__driver,
   .header__mobile-menu .header__select {
     width: 100%;
+  }
+}
+.create-trip-btn {
+  text-transform: none;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ff6d00, #ff9100);
+  color: white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  v-icon {
+    margin-right: 6px;
   }
 }
 </style>
