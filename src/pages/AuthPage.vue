@@ -204,7 +204,7 @@ const sex = ["Мужской", "Женский"];
   }
 }
 .background {
-  background-image: url("images/background.png");
+  background-image: url("/images/background.png");
   width: 100%;
   height: 100vh;
   background-size: cover;
