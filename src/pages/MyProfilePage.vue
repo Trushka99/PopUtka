@@ -4,13 +4,27 @@ import { useRoute } from "vue-router";
 import { useLangStore } from "@/stores/langStore";
 import Loading from "@/components/Loading.vue";
 import { getUser } from "@/api";
-
+import { apiUploadAvatar } from "@/api";
 const langStore = useLangStore();
 const route = useRoute();
 
 const loading = ref<boolean>(false);
 const user = ref<any>(null);
+const fileInput = ref<HTMLInputElement | null>(null);
+const uploadAvatar = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
 
+  try {
+    const res = await apiUploadAvatar(file); 
+    console.log(res.data);
+
+    user.value.avatar = res.data.data.avatar;
+  } catch (err) {
+    console.error("Ошибка загрузки аватара:", err);
+  }
+};
 onMounted(() => {
   loading.value = true;
   getUser(Number(langStore.user.id))
@@ -24,7 +38,6 @@ onMounted(() => {
     .finally(() => (loading.value = false));
 });
 
-// вычисляем возраст по user.birthDate (если есть)
 const age = computed(() => {
   if (!user.value?.birthDate) return "";
   const b = new Date(user.value.birthDate);
@@ -33,9 +46,7 @@ const age = computed(() => {
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 });
 
-// рейтинг по категориям — пример: если приходят объектом
 const categoryRatings = computed(() => {
-  // ожидаем структуру user.ratings = {comfort: 4.8, punctuality: 4.6, ...}
   if (!user.value?.ratings)
     return [{ key: "Общий", value: user.value?.rating ?? 0 }];
   return Object.entries(user.value.ratings).map(([k, v]) => ({
@@ -43,6 +54,10 @@ const categoryRatings = computed(() => {
     value: v,
   }));
 });
+
+function openFileDialog() {
+  fileInput.value?.click();
+}
 </script>
 
 <template>
@@ -59,7 +74,15 @@ const categoryRatings = computed(() => {
               ? `http://localhost:5000${user.avatar}`
               : '/images/test-avatar.jpg'
           "
+          @click="openFileDialog"
           size="120"
+        />
+        <input
+          type="file"
+          ref="fileInput"
+          style="display: none"
+          accept="image/*"
+          @change="uploadAvatar"
         />
         <div class="basic-info">
           <h2 class="name">{{ user.firstName }} {{ user.lastName }}</h2>

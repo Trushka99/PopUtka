@@ -25,7 +25,18 @@ const handleRequest = async (request: any) => {
     throw err;
   }
 };
+export const apiUploadAvatar = async (file: File) => {
+  const formData = new FormData();
+  formData.append("avatar", file); 
 
+  return handleRequest(
+    api.post("/upload/avatar", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  );
+};
 export const getTrips = async (filters?: {
   from?: string;
   to?: string;

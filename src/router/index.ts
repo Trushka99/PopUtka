@@ -10,7 +10,11 @@ import MyProfilePage from "@/pages/MyProfilePage.vue";
 const routes = [
   { path: "/", component: HomePage, meta: { layout: "default" } },
   { path: "/login", component: AuthPage, meta: { layout: "empty" } },
-  { path: "/search", component: TripListPage, meta: { layout: "default" } },
+  {
+    path: "/search",
+    component: TripListPage,
+    meta: { layout: "default", requiresAuth: true },
+  },
   {
     path: "/search/:id",
     name: "search",
@@ -19,13 +23,13 @@ const routes = [
   },
   {
     path: "/users/:id",
-    name: "users",
+    name: "user",
     component: UserPage,
     meta: { layout: "default", requiresAuth: true },
   },
   {
     path: "/users/me",
-    name: "users",
+    name: "my-profile",
     component: MyProfilePage,
     meta: { layout: "default", requiresAuth: true },
   },

@@ -54,7 +54,7 @@ onMounted(() => {
         <v-card class="trip-card" elevation="2" rounded="lg">
           <RouterLink
             class="link"
-            :to="{ name: 'users', params: { id: trip.driverId } }"
+            :to="{ name: 'user', params: { id: trip.driverId } }"
           >
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
