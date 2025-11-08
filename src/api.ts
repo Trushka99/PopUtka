@@ -89,7 +89,20 @@ export const getUser = async (id: number) => {
 export const logout = async () => {
   return handleRequest(api.post("/auth/logout"));
 };
-
+export const bookTrip = async ({
+  tripId,
+  seats,
+}: {
+  tripId: number;
+  seats: number;
+}) => {
+  return handleRequest(
+    api.post("/bookings", {
+      tripId,
+      seats,
+    })
+  );
+};
 export const createTrip = async ({
   from,
   to,

@@ -65,6 +65,12 @@ const selectedLang = computed({
         hide-details
         variant="outlined"
       ></v-select>
+      <RouterLink v-if="langStore.user" class="header__link" to="/users/me">
+        <v-btn class="profile-btn" rounded="lg" variant="elevated">
+          <v-icon start>mdi-account-circle</v-icon>
+          {{ langStore.t("profile") || "Профиль" }}
+        </v-btn>
+      </RouterLink>
       <v-dialog v-if="langStore.user.role === 'driver'" max-width="750">
         <template v-slot:activator="{ props: activatorProps }">
           <v-btn
@@ -134,6 +140,19 @@ const selectedLang = computed({
 }
 .header__title {
   color: white;
+}
+.profile-btn {
+  text-transform: none;
+  background: linear-gradient(135deg, #1e88e5, #42a5f5);
+  color: white;
+  font-weight: 600;
+  padding: 0 16px;
+  transition: 0.2s ease;
+}
+
+.profile-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(66, 165, 245, 0.5);
 }
 .header__nav {
   display: flex;

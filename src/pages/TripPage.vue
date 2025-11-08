@@ -4,11 +4,16 @@ import { RouterLink, useRoute } from "vue-router";
 import { getTrip } from "@/api";
 import Loading from "@/components/Loading.vue";
 import { useLangStore } from "@/stores/langStore";
+import { bookTrip } from "@/api";
 const langStore = useLangStore();
 const route = useRoute();
 const trip = ref<any>();
 const loading = ref<boolean>(false);
-
+const createBooking = () => {
+  bookTrip({ tripId: trip.value.id, seats: 1 })
+    .then(() => console.log("Бронь создана"))
+    .catch((err) => console.log(err));
+};
 onMounted(() => {
   loading.value = true;
   getTrip(Number(route.params.id))
@@ -112,7 +117,13 @@ onMounted(() => {
             </div>
             <v-icon icon="mdi-chevron-right" size="24" />
           </div>
-          <v-btn class="search-btn" color="#00AEEF" rounded="lg" height="48">
+          <v-btn
+            @click="createBooking"
+            class="search-btn"
+            color="#00AEEF"
+            rounded="lg"
+            height="48"
+          >
             Забронировать
           </v-btn>
         </v-card>

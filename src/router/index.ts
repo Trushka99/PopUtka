@@ -6,7 +6,7 @@ import TripPage from "@/pages/TripPage.vue";
 import UserPage from "@/pages/UserPage.vue";
 import DriversPage from "@/pages/DriversPage.vue";
 import AuthPage from "@/pages/AuthPage.vue";
-
+import MyProfilePage from "@/pages/MyProfilePage.vue";
 const routes = [
   { path: "/", component: HomePage, meta: { layout: "default" } },
   { path: "/login", component: AuthPage, meta: { layout: "empty" } },
@@ -24,6 +24,12 @@ const routes = [
     meta: { layout: "default", requiresAuth: true },
   },
   {
+    path: "/users/me",
+    name: "users",
+    component: MyProfilePage,
+    meta: { layout: "default", requiresAuth: true },
+  },
+  {
     path: "/drivers",
     component: DriversPage,
     meta: { layout: "default", requiresAuth: true },
@@ -31,7 +37,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes,
 });
 
