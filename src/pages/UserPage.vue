@@ -27,7 +27,7 @@ onMounted(() => {
   <div div v-else-if="user" class="user-profile">
     <v-avatar
       class="user-profile__avatar"
-      :image="`http://localhost:5000${user.avatar}`"
+      :image="`https://web-production-68c29.up.railway.app${user.avatar}`"
       size="80"
     ></v-avatar>
     <div class="user-profile__avatar-container">

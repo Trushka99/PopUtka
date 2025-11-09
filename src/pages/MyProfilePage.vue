@@ -17,7 +17,7 @@ const uploadAvatar = async (event: Event) => {
   if (!file) return;
 
   try {
-    const res = await apiUploadAvatar(file); 
+    const res = await apiUploadAvatar(file);
     console.log(res.data);
 
     user.value.avatar = res.data.data.avatar;
@@ -71,7 +71,7 @@ function openFileDialog() {
           class="profile-avatar"
           :image="
             user.avatar
-              ? `http://localhost:5000${user.avatar}`
+              ? `https://web-production-68c29.up.railway.app${user.avatar}`
               : '/images/test-avatar.jpg'
           "
           @click="openFileDialog"
@@ -205,7 +205,7 @@ function openFileDialog() {
             class="car-photo"
             :src="
               user.car.photo
-                ? `http://localhost:5000${user.car.photo}`
+                ? `https://web-production-68c29.up.railway.app${user.car.photo}`
                 : '/images/test-car.jpg'
             "
             alt="car"

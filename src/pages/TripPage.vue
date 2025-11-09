@@ -59,7 +59,7 @@ onMounted(() => {
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
                 <img
-                  :src="`http://localhost:5000${trip.driver.avatar}`"
+                  :src="`https://web-production-68c29.up.railway.app${trip.driver.avatar}`"
                   alt="Driver"
                 />
               </v-avatar>
