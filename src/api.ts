@@ -70,6 +70,7 @@ export const register = async (form?: {
   return handleRequest(
     api.post("/auth/register", {
       username: form.username,
+      birthDate: form.birthDate,
       email: form.email,
       phone: form.phone,
       password: form.password,
