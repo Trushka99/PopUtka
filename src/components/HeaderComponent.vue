@@ -26,7 +26,7 @@ const selectedLang = computed({
     <!-- Логотип -->
     <RouterLink class="header__link" to="/">
       <img class="header__logo" src="/images/лого.png" alt="Logo" />
-      <h2 class="header__title">Pop.utka</h2>
+      <h2 class="header__title">poputka</h2>
     </RouterLink>
 
     <!-- Навигация для десктопа -->
@@ -125,26 +125,30 @@ const selectedLang = computed({
 
 <style scoped>
 .header {
-  background-color: rgb(26, 115, 232);
+  background-color: white;
+  border-radius: 0 0 24px 24px;
   padding: 8px 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: relative;
   width: 100%;
-}
-
-.header__logo {
-  width: 60px;
-  height: 80px;
+  color: black;
+  z-index: 6;
+  height: 10vh;
+  margin-bottom: -20px;
 }
 .header__title {
-  color: white;
+  color: rgba(0, 128, 255, 1);
 }
+.header__logo {
+  width: 40px;
+  height: 40px;
+}
+
 .profile-btn {
   text-transform: none;
   background: linear-gradient(135deg, #1e88e5, #42a5f5);
-  color: white;
   font-weight: 600;
   padding: 0 16px;
   transition: 0.2s ease;
@@ -162,9 +166,9 @@ const selectedLang = computed({
   display: none;
 }
 .header__text {
-  color: white;
   font-size: 18px;
   cursor: pointer;
+  font-weight: 600;
 }
 .header__buttons {
   display: flex;
@@ -173,7 +177,6 @@ const selectedLang = computed({
 }
 .header__driver {
   text-transform: none;
-  color: white;
   background-color: rgb(255, 109, 0);
 }
 .header__select {
@@ -183,10 +186,8 @@ const selectedLang = computed({
 }
 .header__menu-btn {
   display: none;
-  color: white;
 }
 .header__link {
-  color: white;
   font-size: 18px;
   text-decoration: none;
   display: flex;

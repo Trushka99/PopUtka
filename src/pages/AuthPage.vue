@@ -18,6 +18,7 @@ const registerForm = ref({
   firstName: "",
   lastName: "",
   gender: "",
+  birthDate: "",
 });
 const loginHandle = () => {
   const { email, password } = registerForm.value;
@@ -38,11 +39,13 @@ const handleRegister = async () => {
     firstName,
     lastName,
     gender,
+    birthDate,
   } = registerForm.value;
   try {
     const response = await register({
       username,
       email,
+      birthDate,
       phone,
       password,
       role: role === "Пользователь" ? "passenger" : "driver",
@@ -113,6 +116,14 @@ const sex = ["Мужской", "Женский"];
           v-model="registerForm.lastName"
           class="custom-field"
         ></v-text-field>
+        <v-text-field
+          label="Дата рождения"
+          type="date"
+          outlined
+          dense
+          v-model="registerForm.birthDate"
+          class="custom-field"
+        />
         <v-text-field
           label="Логин (username)"
           outlined
