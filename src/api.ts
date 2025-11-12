@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: "http://localhost:5000",
   withCredentials: true,
 });
 
@@ -27,7 +27,7 @@ const handleRequest = async (request: any) => {
 };
 export const apiUploadAvatar = async (file: File) => {
   const formData = new FormData();
-  formData.append("avatar", file); 
+  formData.append("avatar", file);
 
   return handleRequest(
     api.post("/upload/avatar", formData, {
@@ -57,6 +57,7 @@ export const getTrips = async (filters?: {
 export const register = async (form?: {
   username: string;
   email: string;
+  birthDate: string;
   phone: string;
   password: string;
   role: string;

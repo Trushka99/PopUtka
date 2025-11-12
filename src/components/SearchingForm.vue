@@ -19,8 +19,8 @@ const cityList = computed(() => {
     cities[langStore.currentLang as keyof typeof cities] || {}
   );
 });
-const from = ref("");
-const to = ref("");
+const from = ref(null);
+const to = ref(null);
 const dateMenu = ref(false);
 const passengersMenu = ref(false);
 
@@ -74,21 +74,23 @@ const decrease = () => {
 };
 
 const loadTrips = async () => {
-  emit("search", {
-    from: langStore.cKeyByValue(from.value),
-    to: langStore.cKeyByValue(to.value),
-    date: date.value,
-    seats: passengers.value,
-  });
-  await router.push({
-    path: "/search",
-    query: {
+  if (from.value && to.value) {
+    emit("search", {
       from: langStore.cKeyByValue(from.value),
       to: langStore.cKeyByValue(to.value),
       date: date.value,
-      seats: passengers.value.toString(),
-    },
-  });
+      seats: passengers.value,
+    });
+    await router.push({
+      path: "/search",
+      query: {
+        from: langStore.cKeyByValue(from.value),
+        to: langStore.cKeyByValue(to.value),
+        date: date.value,
+        seats: passengers.value.toString(),
+      },
+    });
+  }
 };
 
 // Обновляем displayDate при выборе новой даты
@@ -113,11 +115,14 @@ const onDateSelected = (val: string | Date) => {
       v-model="from"
       :items="cityList"
       :label="langStore.t('from')"
-      prepend-inner-icon="mdi-map-marker"
       density="compact"
       variant="plain"
       hide-details
-    />
+    >
+      <template #prepend-inner>
+        <v-icon size="30" class="my-icon">mdi-map-marker</v-icon>
+      </template>
+    </v-autocomplete>
     <v-autocomplete
       v-model="to"
       :items="cityList"
@@ -172,28 +177,58 @@ const onDateSelected = (val: string | Date) => {
       </div>
     </v-menu>
 
-    <v-btn color="#00AEEF" @click="loadTrips">{{
+    <v-btn class="search_btn" @click="loadTrips">{{
       langStore.t("search")
     }}</v-btn>
   </div>
 </template>
 
 <style scoped>
+.search_btn {
+  width: 151px !important;
+  border-radius: 24px;
+  background: linear-gradient(285.68deg, #ff8000 0%, #ffd900 100%);
+  color: black;
+  font-weight: 600;
+  text-transform: none;
+  font-size: 18px;
+  height: 80px !important;
+}
 .search-bar {
   display: flex;
   align-items: center;
-  background-color: white;
-  padding: 8px 12px;
-  border-radius: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
+  justify-content: center;
   gap: 12px;
-  z-index: 2;
-  position: relative;
-  padding: 20px;
+  width: 80%;
+  margin: 0 auto;
 }
+
+.search-bar :deep(.v-field) {
+  border-radius: 24px !important;
+  background-color: white !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  padding-left: 25px;
+  align-items: center;
+  height: 80px;
+}
+.search-bar :deep(.v-icon) {
+  color: rgba(0, 128, 255, 1) !important;
+  opacity: 1;
+}
+.search-bar :deep(.my-icon) {
+  color: rgb(255, 0, 0) !important;
+  opacity: 1;
+}
+
+.search-bar :deep(.v-input__control) {
+  padding: 0 !important;
+}
+
+.search-bar :deep(.v-field__input) {
+  align-items: center !important;
+}
+
 .passengers-modal {
   display: flex;
   margin-top: 20px;
@@ -228,11 +263,7 @@ const onDateSelected = (val: string | Date) => {
   color: #007bff;
 }
 
-.search-btn {
-  color: white;
-  text-transform: none;
-  font-weight: bold;
-}
+
 @media (max-width: 920px) {
   .search-bar {
     flex-direction: column;
@@ -244,8 +275,8 @@ const onDateSelected = (val: string | Date) => {
     min-width: 0;
   }
 
-  .search-btn {
-    width: 100%;
+  .search_btn {
+    width: 100% !important;
   }
   .passengers-modal {
     margin-left: 0;
