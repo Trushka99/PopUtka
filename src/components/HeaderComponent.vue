@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { RouterLink } from "vue-router";
 import "@mdi/font/css/materialdesignicons.css";
 const menuOpen = ref(false);
@@ -7,17 +7,31 @@ import { useLangStore } from "@/stores/langStore";
 const langStore = useLangStore();
 import CreateTrip from "@/pages/CreateTrip.vue";
 const langOptions = [
-  { label: "Руский", value: "ru" },
-  { label: "English", value: "en" },
-  { label: "Ozbekcha", value: "uz" },
-];
-console.log(langStore.user);
-const selectedLang = computed({
-  get: () => langOptions.find((l) => l.value === langStore.currentLang)?.label,
-  set: (label) => {
-    const lang = langOptions.find((l) => l.label === label)?.value;
-    if (lang) langStore.setLang(lang);
+  {
+    label: "RU",
+    name: "Русский",
+    flag: "https://flagcdn.com/w20/ru.png",
+    value: "ru",
   },
+  {
+    label: "EN",
+    name: "English",
+    flag: "https://flagcdn.com/w20/gb.png",
+    value: "en",
+  },
+  {
+    label: "UZ",
+    name: "Ozbekcha",
+    flag: "https://flagcdn.com/w20/uz.png",
+    value: "uz",
+  },
+];
+
+const selectedLang = ref(langStore.currentLang || "ru");
+
+// обновляем store при изменении
+watch(selectedLang, (newLang) => {
+  langStore.setLang(newLang);
 });
 </script>
 
@@ -47,24 +61,60 @@ const selectedLang = computed({
 
     <!-- Кнопки и селект для десктопа -->
     <div class="header__buttons">
-      <RouterLink v-if="!langStore.user" class="header__link" to="/login">
+      <RouterLink
+        v-if="Object.keys(langStore.user).length === 0"
+        class="header__link"
+        to="/login"
+      >
         <v-btn class="header__driver">{{
           langStore.t("driver")
         }}</v-btn></RouterLink
       >
-      <RouterLink v-if="!langStore.user" class="header__link" to="/login">
+      <RouterLink
+        v-if="Object.keys(langStore.user).length === 0"
+        class="header__link"
+        to="/login"
+      >
         <v-btn class="header__driver" color="#5865f2">{{
           langStore.t("pass")
         }}</v-btn></RouterLink
       >
       <v-select
         v-model="selectedLang"
-        class="header__select"
-        :items="langOptions.map((l) => l.label)"
+        :items="langOptions"
+        item-title="name"
+        item-value="value"
+        variant="outlined"
         density="compact"
         hide-details
-        variant="outlined"
-      ></v-select>
+        class="lang-select"
+      >
+        <template #item="{ props, item }">
+          <v-list-item v-bind="props">
+            <template #prepend>
+              <img
+                :src="item.raw.flag"
+                alt=""
+                width="28"
+                height="28"
+                style="border-radius: 50%; margin-right: 8px"
+              />
+            </template>
+          </v-list-item>
+        </template>
+        <template #selection="{ item }">
+          <div style="display: flex; align-items: center">
+            <img
+              :src="item.raw.flag"
+              alt="flag"
+              width="28"
+              height="28"
+              style="border-radius: 50%; margin-right: 6px"
+            />
+            <span>{{ item.raw.label }}</span>
+          </div>
+        </template>
+      </v-select>
       <RouterLink v-if="langStore.user" class="header__link" to="/users/me">
         <v-btn class="profile-btn" rounded="lg" variant="elevated">
           <v-icon start>mdi-account-circle</v-icon>
@@ -113,12 +163,40 @@ const selectedLang = computed({
       }}</v-btn>
       <v-select
         v-model="selectedLang"
-        class="header__select"
-        :items="langOptions.map((l) => l.label)"
+        :items="langOptions"
+        item-title="name"
+        item-value="value"
+        variant="outlined"
         density="compact"
         hide-details
-        variant="outlined"
-      ></v-select>
+        class="lang-select"
+      >
+        <template #item="{ props, item }">
+          <v-list-item v-bind="props">
+            <template #prepend>
+              <img
+                :src="item.raw.flag"
+                alt=""
+                width="28"
+                height="28"
+                style="border-radius: 50%; margin-right: 8px"
+              />
+            </template>
+          </v-list-item>
+        </template>
+        <template #selection="{ item }">
+          <div style="display: flex; align-items: center">
+            <img
+              :src="item.raw.flag"
+              alt="flag"
+              width="28"
+              height="28"
+              style="border-radius: 50%; margin-right: 6px"
+            />
+            <span>{{ item.raw.label }}</span>
+          </div>
+        </template>
+      </v-select>
     </div>
   </header>
 </template>

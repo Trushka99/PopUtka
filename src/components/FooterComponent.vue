@@ -37,6 +37,9 @@ const links = [
   max-height: 160px;
   min-height: 160px;
   background-color: rgb(238, 238, 238); // если используешь переменные SCSS
+  @media (max-width: 768px) {
+    display: none;
+  }
 
   &__links {
     display: flex;
