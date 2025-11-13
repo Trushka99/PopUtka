@@ -38,7 +38,8 @@
     "departureTime": "Departure time",
     "description": "Description",
     "maxTwoBackSeats": "Max two back seats",
-    "regDate": "Registration date "
+    "regDate": "Registration date ",
+    "profile": "Profile"
   },
   "ru": {
     "home": "Главная",
@@ -79,7 +80,8 @@
     "description": "Описание",
     "maxTwoBackSeats": "Максимум двое сзади",
     "filters": "Фильтры",
-    "regDate": "Дата регистрации"
+    "regDate": "Дата регистрации",
+    "profile": "Профиль"
   },
   "uz": {}
 }
