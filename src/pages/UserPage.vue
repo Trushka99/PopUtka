@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { useLangStore } from "@/stores/langStore";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { getUser } from "@/api";
 import { useRoute } from "vue-router";
 import Loading from "@/components/Loading.vue";
@@ -8,7 +8,13 @@ const langStore = useLangStore();
 const user = ref<any>();
 const loading = ref<boolean>(false);
 const route = useRoute();
-
+const age = computed(() => {
+  if (!user.value?.birthDate) return "";
+  const b = new Date(user.value.birthDate);
+  if (isNaN(b.getTime())) return "";
+  const diff = Date.now() - b.getTime();
+  return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+});
 onMounted(() => {
   loading.value = true;
   getUser(Number(route.params.id))
@@ -34,10 +40,9 @@ onMounted(() => {
       <div class="user-profile__flex">
         <div>
           <h3>{{ user.firstName }} {{ user.lastName }}</h3>
-          <p>20 лет</p>
+          <p>{{ age }} лет</p>
         </div>
       </div>
-      <v-icon color="blue-darken-2" icon="mdi-pencil" end></v-icon>
     </div>
     <div class="user-profile__text">
       <v-divider color="info" :thickness="10" />
@@ -80,7 +85,6 @@ onMounted(() => {
             {{ user.about === "" ? "Описание отсутствует" : user.about }}
           </p>
         </div>
-        <v-icon color="blue-darken-2" icon="mdi-pencil" end></v-icon>
       </div>
 
       <p>{{ user.about }}</p>

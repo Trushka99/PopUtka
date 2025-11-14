@@ -116,8 +116,9 @@ const onDateSelected = (val: string | Date) => {
       :items="cityList"
       :label="langStore.t('from')"
       density="compact"
-      variant="plain"
       hide-details
+      variant="solo"
+      class="autocompl"
     >
       <template #prepend-inner>
         <v-icon size="30" class="my-icon">mdi-map-marker</v-icon>
@@ -129,8 +130,9 @@ const onDateSelected = (val: string | Date) => {
       :label="langStore.t('to')"
       prepend-inner-icon="mdi-map-marker-outline"
       density="compact"
-      variant="plain"
       hide-details
+      variant="solo"
+      class="autocompl"
     />
 
     <v-menu
@@ -147,35 +149,31 @@ const onDateSelected = (val: string | Date) => {
           readonly
           hide-details
           density="compact"
-          variant="plain"
+          variant="solo"
+          class="autocompl"
         />
       </template>
       <v-date-picker v-model="date" @update:model-value="onDateSelected" />
     </v-menu>
 
-    <v-menu
-      v-model="passengersMenu"
-      transition="scale-transition"
-      :close-on-content-click="false"
-      offset-y
+    <v-text-field
+      v-model="passengersLabel"
+      prepend-inner-icon="mdi-account"
+      readonly
+      density="compact"
+      hide-details
+      variant="solo"
+      class="autocompl"
     >
-      <template #activator="{ props }">
-        <v-text-field
-          v-bind="props"
-          v-model="passengersLabel"
-          prepend-inner-icon="mdi-account"
-          readonly
-          density="compact"
-          variant="plain"
-          hide-details
-        />
+      <template #append-inner>
+        <v-btn icon :disabled="passengers === 1" @click="decrease" small>
+          <v-icon>mdi-minus</v-icon>
+        </v-btn>
+        <v-btn icon :disabled="passengers === 8" @click="increase" small>
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
       </template>
-      <div class="passengers-modal">
-        <button :disabled="passengers === 1" @click="decrease">-</button>
-        <span>{{ passengers }}</span>
-        <button :disabled="passengers === 8" @click="increase">+</button>
-      </div>
-    </v-menu>
+    </v-text-field>
 
     <v-btn class="search_btn" @click="loadTrips">{{
       langStore.t("search")
@@ -193,6 +191,9 @@ const onDateSelected = (val: string | Date) => {
   text-transform: none;
   font-size: 18px;
   height: 80px !important;
+}
+.autocompl {
+  max-width: 274px;
 }
 .search-bar {
   display: flex;
@@ -262,7 +263,6 @@ const onDateSelected = (val: string | Date) => {
 .swap-icon {
   color: #007bff;
 }
-
 
 @media (max-width: 920px) {
   .search-bar {
