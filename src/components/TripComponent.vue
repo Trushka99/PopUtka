@@ -19,6 +19,20 @@ interface Trip {
   arrivalTime: string;
   duration: string;
   seatsAvailable: number;
+  tripInfo: {
+    distance: number;
+    duration: number;
+    coordinates: {
+      to: {
+        lat: number;
+        lon: number;
+      };
+      from: {
+        lat: number;
+        lon: number;
+      };
+    };
+  };
   driver: Driver;
   instantBooking?: boolean;
   maxTwoBackSeats?: boolean;
@@ -27,9 +41,26 @@ interface Trip {
 
 const { trip } = defineProps<{ trip: Trip }>();
 console.log(trip);
-const date = new Date(trip.departureDate);
-const hours = date.getHours().toString().padStart(2, "0");
-const minutes = date.getMinutes().toString().padStart(2, "0");
+function formatDuration(minutes: number) {
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (hrs === 0) return `${mins} мин`;
+  return `${hrs} ч ${mins} мин`;
+}
+function addDurationToTime(timeStr: string, durationMinutes: number) {
+  const [hours, minutes] = timeStr.split(":").map(Number);
+
+  const totalMinutes = hours * 60 + minutes + durationMinutes;
+
+  const newHours = Math.floor((totalMinutes / 60) % 24); 
+  const newMinutes = totalMinutes % 60;
+
+  return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(
+    2,
+    "0"
+  )}`;
+}
 </script>
 
 <template>
@@ -40,11 +71,15 @@ const minutes = date.getMinutes().toString().padStart(2, "0");
       <div class="time-line d-flex justify-space-between mb-2">
         <div class="time-route">
           <div class="trip_progress">
-            <span class="time">{{ `${hours}:${minutes}` }}</span>
+            <span class="time">{{ trip.departureTime }}</span>
             <div class="line left"></div>
-            <span class="duration">{{ trip.duration }}</span>
+            <span class="duration">{{
+              formatDuration(trip.tripInfo.duration)
+            }}</span>
             <div class="line right"></div>
-            <span class="time">{{ trip.arrivalTime }}</span>
+            <span class="time">{{
+              addDurationToTime(trip.departureTime, trip.tripInfo.duration)
+            }}</span>
           </div>
           <div class="location mt-1">
             <strong>{{ langStore.с(trip.from.cityKey.toLowerCase()) }}</strong>
@@ -64,7 +99,10 @@ const minutes = date.getMinutes().toString().padStart(2, "0");
         <v-icon icon="mdi-car" size="24" class="mr-2" />
 
         <v-avatar size="40" class="mr-3">
-          <img :src="trip.driver.avatar" alt="Driver" />
+          <img
+            :src="`https://web-production-68c29.up.railway.app${trip.driver.avatar}`"
+            alt="Driver"
+          />
         </v-avatar>
 
         <div class="driver-info flex-grow-1">
