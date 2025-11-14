@@ -26,18 +26,59 @@ onMounted(() => {
     })
     .finally(() => (loading.value = false));
 });
+function formatDuration(minutes: number) {
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (hrs === 0) return `${mins} мин`;
+  return `${hrs} ч ${mins} мин`;
+}
+function addDurationToTime(timeStr: string, durationMinutes: number) {
+  const [hours, minutes] = timeStr.split(":").map(Number);
+
+  const totalMinutes = hours * 60 + minutes + durationMinutes;
+
+  const newHours = Math.floor((totalMinutes / 60) % 24);
+  const newMinutes = totalMinutes % 60;
+
+  return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(
+    2,
+    "0"
+  )}`;
+}
+
+const options: Intl.DateTimeFormatOptions = {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+};
 </script>
 <template>
   <Loading v-if="loading" />
   <div v-else-if="trip" class="trip-cont">
-    <h2 style="font-size: 35px; margin: 20px 0 20px 0">Четверг, 4 сентября</h2>
+    <h2 style="font-size: 35px; margin: 20px 0 20px 0">
+      {{
+        new Intl.DateTimeFormat(
+          langStore.currentLang === "ru"
+            ? "ru-RU"
+            : langStore.currentLang === "en"
+            ? "en-EN"
+            : "uz-Cyrl-UZ",
+          options
+        ).format(new Date(trip.departureDate))
+      }}
+    </h2>
     <div class="trip-flex">
       <div class="lefside">
         <div class="trip-info">
           <div class="flex-cont">
             <h4>{{ trip.departureTime }}</h4>
-            <p>{{ trip.duration }}</p>
-            <h4>{{ trip.arrivalTime }}</h4>
+            <p>{{ formatDuration(trip.tripInfo.duration) }}</p>
+            <h4>
+              {{
+                addDurationToTime(trip.departureTime, trip.tripInfo.duration)
+              }}
+            </h4>
           </div>
           <div class="line"></div>
           <div class="flex-cont">
