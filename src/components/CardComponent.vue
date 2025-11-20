@@ -105,7 +105,7 @@ const avatarUrl = computed(() =>
     <!-- Информация о водителе -->
     <v-card-text class="driver-info">
       <v-avatar size="32">
-        <img v-if="avatarUrl" :src="avatarUrl" alt="Driver" />
+        <img class="avatar" v-if="avatarUrl" :src="avatarUrl" alt="Driver" />
         <span v-else="!props.trip.driver.avatar" class="driver-text">{{
           props.trip.driver.firstName[0]
         }}</span>
@@ -142,6 +142,11 @@ const avatarUrl = computed(() =>
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.avatar {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
 }
 .arrow {
   position: relative;

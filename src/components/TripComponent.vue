@@ -53,7 +53,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
 
   const totalMinutes = hours * 60 + minutes + durationMinutes;
 
-  const newHours = Math.floor((totalMinutes / 60) % 24); 
+  const newHours = Math.floor((totalMinutes / 60) % 24);
   const newMinutes = totalMinutes % 60;
 
   return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(
@@ -102,6 +102,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
           <img
             :src="`https://web-production-68c29.up.railway.app${trip.driver.avatar}`"
             alt="Driver"
+            class="avatar"
           />
         </v-avatar>
 
@@ -141,6 +142,11 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
 <style lang="scss" scoped>
 .link {
   text-decoration: none;
+}
+.avatar {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
 }
 .trip-card {
   border-radius: 12px;

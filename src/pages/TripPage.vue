@@ -102,6 +102,7 @@ const options: Intl.DateTimeFormatOptions = {
                 <img
                   :src="`https://web-production-68c29.up.railway.app${trip.driver.avatar}`"
                   alt="Driver"
+                  class="avatar"
                 />
               </v-avatar>
               <div class="driver-info flex-grow-1">
@@ -183,6 +184,11 @@ const options: Intl.DateTimeFormatOptions = {
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+.avatar {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
 }
 .link {
   text-decoration: none;
