@@ -100,15 +100,13 @@ const goToTrip = () => {
 
     <!-- Информация о водителе -->
     <v-card-text class="driver-info">
-      <v-avatar
-        :image="
-          props.trip.driver.avatar
-            ? `https://web-production-68c29.up.railway.app${props.trip.driver.avatar}`
-            : undefined
-        "
-        size="32"
-      >
-        <span v-if="!props.trip.driver.avatar" class="driver-text">{{
+      <v-avatar size="32">
+        <img
+          v-if="props.trip.driver.avatar"
+          :src="`https://web-production-68c29.up.railway.app${props.trip.driver.avatar}`"
+          alt="Driver"
+        />
+        <span v-else="!props.trip.driver.avatar" class="driver-text">{{
           props.trip.driver.firstName[0]
         }}</span>
       </v-avatar>
