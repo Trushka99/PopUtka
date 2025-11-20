@@ -12,7 +12,13 @@ interface Driver {
   avatar: string | null;
   rating: number;
   isVerified: boolean;
-  car: string | null;
+  car: {
+    year: number;
+    color: string;
+    model: string;
+    photos: string[];
+    licensePlate: string;
+  };
   gender: string;
 }
 
@@ -81,7 +87,7 @@ const goToTrip = () => {
             <v-icon size="24" color="blue">mdi-car</v-icon>
             <span class="trip-text">{{
               props.trip.driver.car
-                ? props.trip.driver.car
+                ? `${props.trip.driver.car.model} - ${props.trip.driver.car.color}`
                 : "Информация отсутствует"
             }}</span>
           </div>
