@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed } from "vue";
 import { useLangStore } from "@/stores/langStore";
 import { useRouter } from "vue-router";
 const router = useRouter();
-
 const langstore = useLangStore();
 interface Driver {
   id: number;
   firstName: string;
   lastName: string;
-  avatar: string | null;
+  avatar: string;
   rating: number;
   isVerified: boolean;
   car: {
@@ -47,6 +46,11 @@ const props = defineProps<{
 const goToTrip = () => {
   router.push({ name: "search", params: { id: props.trip.id } });
 };
+const avatarUrl = computed(() =>
+  props.trip.driver.avatar
+    ? `https://web-production-68c29.up.railway.app${props.trip.driver.avatar}`
+    : null
+);
 </script>
 
 <template>
@@ -100,15 +104,9 @@ const goToTrip = () => {
 
     <!-- Информация о водителе -->
     <v-card-text class="driver-info">
-      <v-avatar
-        :image="
-          props.trip.driver.avatar
-            ? `https://web-production-68c29.up.railway.app${props.trip.driver.avatar}`
-            : undefined
-        "
-        size="32"
-      >
-        <span v-if="!props.trip.driver.avatar" class="driver-text">{{
+      <v-avatar size="32">
+        <img v-if="avatarUrl" :src="avatarUrl" alt="Driver" />
+        <span v-else="!props.trip.driver.avatar" class="driver-text">{{
           props.trip.driver.firstName[0]
         }}</span>
       </v-avatar>
