@@ -22,7 +22,6 @@ const cityList = computed(() => {
 const from = ref(null);
 const to = ref(null);
 const dateMenu = ref(false);
-const passengersMenu = ref(false);
 
 const today = new Date();
 
