@@ -106,7 +106,6 @@ const goToTrip = () => {
             ? `https://web-production-68c29.up.railway.app${props.trip.driver.avatar}`
             : undefined
         "
-        color="blue"
         size="32"
       >
         <span v-if="!props.trip.driver.avatar" class="driver-text">{{
