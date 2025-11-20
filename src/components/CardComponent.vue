@@ -1,43 +1,92 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useLangStore } from "@/stores/langStore";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
-const trip = ref({
-  from: "Ташкент",
-  to: "Самарканд",
-  price: "150,000 UZS",
-  date: "2023-06-25 08:00",
-  seats: 3,
-  car: "Chevrolet Spark",
-  driver: "Азиз",
-  rating: 1,
-});
+const langstore = useLangStore();
+interface Driver {
+  id: number;
+  firstName: string;
+  lastName: string;
+  avatar: string | null;
+  rating: number;
+  isVerified: boolean;
+  car: string | null;
+  gender: string;
+}
+
+interface TripExample {
+  id: number;
+  driverId: number;
+  from: { address: string; cityKey: string };
+  to: { address: string; cityKey: string };
+  departureDate: string;
+  departureTime: string;
+  price: number;
+  availableSeats: number;
+  description: string;
+  instantBooking: boolean;
+  maxTwoBackSeats: boolean;
+  status: string;
+  tripInfo: any;
+  createdAt: string;
+  updatedAt: string;
+  driver: Driver;
+}
+
+const props = defineProps<{
+  trip: TripExample;
+}>();
+const goToTrip = () => {
+  router.push({ name: "search", params: { id: props.trip.id } });
+};
 </script>
 
 <template>
   <v-card class="trip-card" elevation="3">
     <!-- Верхняя часть с маршрутом и ценой -->
     <v-card-title class="trip-header">
-      <span>{{ trip.from }} → {{ trip.to }}</span>
-      <span class="price">{{ trip.price }}</span>
+      <span>{{ langstore.с(props.trip.from.cityKey.toLowerCase()) }}</span>
+      <div class="arrow"></div>
+      <span>{{ langstore.с(props.trip.to.cityKey.toLowerCase()) }}</span>
     </v-card-title>
-
-    <v-divider></v-divider>
 
     <!-- Информация о поездке -->
     <v-card-text class="trip-info">
-      <div class="trip-item">
-        <v-icon size="18" color="blue">mdi-calendar</v-icon>
-        <span>{{ trip.date }}</span>
-      </div>
+      <div class="trip-flex">
+        <div class="trip-column">
+          <div class="trip-item">
+            <v-icon size="24" color="blue">mdi-calendar</v-icon>
+            <span class="trip-text"
+              >{{
+                new Date(props.trip.departureDate).toLocaleDateString("ru-RU", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })
+              }}
+              {{ props.trip.departureTime }}</span
+            >
+          </div>
 
-      <div class="trip-item">
-        <v-icon size="18" color="blue">mdi-account-group</v-icon>
-        <span>{{ trip.seats }} свободных места</span>
-      </div>
+          <div class="trip-item">
+            <v-icon size="24" color="blue">mdi-account-group</v-icon>
+            <span class="trip-text"
+              >{{ props.trip.availableSeats }} свободных места</span
+            >
+          </div>
 
-      <div class="trip-item">
-        <v-icon size="18" color="blue">mdi-car</v-icon>
-        <span>{{ trip.car }}</span>
+          <div class="trip-item">
+            <v-icon size="24" color="blue">mdi-car</v-icon>
+            <span class="trip-text">{{
+              props.trip.driver.car
+                ? props.trip.driver.car
+                : "Информация отсутствует"
+            }}</span>
+          </div>
+        </div>
+        <span class="price">{{ props.trip.price }} UZS</span>
       </div>
     </v-card-text>
 
@@ -45,31 +94,38 @@ const trip = ref({
 
     <!-- Информация о водителе -->
     <v-card-text class="driver-info">
-      <v-avatar color="blue" size="32">
-        <span class="text-white">{{ trip.driver[0] }}</span>
+      <v-avatar
+        :image="
+          props.trip.driver.avatar
+            ? `https://web-production-68c29.up.railway.app${props.trip.driver.avatar}`
+            : undefined
+        "
+        color="blue"
+        size="32"
+      >
+        <span v-if="!props.trip.driver.avatar" class="driver-text">{{
+          props.trip.driver.firstName[0]
+        }}</span>
       </v-avatar>
-      <span class="driver-name">{{ trip.driver }}</span>
-      <div class="driver-rating">
-        <div>
-          <v-rating
-            v-model="trip.rating"
-            color="amber"
-            density="compact"
-            half-increments
-            readonly
-            size="18"
-          />
-        </div>
-        <span class="rating-value">{{ trip.rating }}</span>
+      <span class="driver-text">{{ props.trip.driver.firstName }}</span>
+      <div class="rating">
+        <v-icon size="large" style="color: rgba(255, 200, 0, 1)"
+          >mdi-star</v-icon
+        >
+        <span class="rating-value">{{ props.trip.driver.rating }}</span>
       </div>
+      <v-card-actions>
+        <v-btn
+          block
+          color="blue"
+          class="trip_btn"
+          rounded="lg"
+          @click="goToTrip"
+        >
+          Подробнее
+        </v-btn>
+      </v-card-actions>
     </v-card-text>
-
-    <!-- Кнопка Подробнее -->
-    <v-card-actions>
-      <v-btn block color="blue" class="text-white" rounded="lg">
-        Подробнее
-      </v-btn>
-    </v-card-actions>
   </v-card>
 </template>
 
@@ -77,43 +133,86 @@ const trip = ref({
 .trip-card {
   border-radius: 12px;
 }
+.driver-info {
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.arrow {
+  position: relative;
+  width: 56px;
+  height: 8px;
+  background: linear-gradient(
+    to right,
+    rgba(0, 122, 255, 0) 0%,
+    rgba(0, 122, 255, 0.4) 30%,
+    #007aff 100%
+  );
+  border-radius: 4px;
+}
 
+.arrow::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-top: 4px solid #007aff;
+  border-right: 4px solid #007aff;
+  transform: translateY(-50%) rotate(45deg);
+  border-radius: 2px;
+}
+
+.driver-text {
+  font-size: 16px;
+  font-weight: 600;
+}
+.trip_btn {
+  text-transform: none;
+  font-size: 16px;
+  font-weight: 600;
+}
+.rating {
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+}
 .trip-header {
   display: flex;
-  justify-content: space-between;
+  gap: 18px;
   font-weight: bold;
-  font-size: 16px;
+  align-items: center;
+  font-size: 20px;
+  padding: 40px;
 }
-
-.price {
-  color: #ff6d00;
-}
-
-.trip-info {
+.trip-column {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: 14px;
-  color: #333;
+  gap: 12px;
+}
+.trip-text {
+  font-size: 16px;
+}
+.price {
+  color: #ff6d00;
+  align-self: end;
+  font-size: 20px;
+  font-weight: bold;
+}
+.trip-flex {
+  display: flex;
+  justify-content: space-between;
+  width: 90%;
+  margin: 0 auto;
 }
 
 .trip-item {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.driver-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-  height: 64px;
-}
-
-.driver-name {
-  font-weight: bold;
-  font-size: 14px;
 }
 
 .driver-rating {
@@ -125,8 +224,6 @@ const trip = ref({
 }
 
 .rating-value {
-  font-weight: bold;
-  color: #ff6d00;
   font-size: 16px;
 }
 </style>

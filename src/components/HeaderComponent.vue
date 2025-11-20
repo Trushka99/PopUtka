@@ -6,6 +6,54 @@ const menuOpen = ref(false);
 import { useLangStore } from "@/stores/langStore";
 const langStore = useLangStore();
 import CreateTrip from "@/pages/CreateTrip.vue";
+
+const menu = ref(false);
+const unreadCount = computed(
+  () => langStore.user?.notifications?.filter((n: any) => !n.isRead).length ?? 0
+);
+
+// Иконки по типу
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case "success":
+      return "mdi-check-circle";
+    case "error":
+      return "mdi-alert-circle";
+    case "info":
+      return "mdi-information";
+    default:
+      return "mdi-bell-circle";
+  }
+};
+
+// Цвет по типу
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case "success":
+      return "green";
+    case "error":
+      return "red";
+    case "info":
+      return "blue";
+    default:
+      return "grey";
+  }
+};
+
+const markRead = (item: any) => {
+  item.isRead = true;
+};
+
+const formatDate = (dateStr: string) => {
+  const d = new Date(dateStr);
+  return d.toLocaleString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+  });
+};
+
 const langOptions = [
   {
     label: "RU",
@@ -115,6 +163,78 @@ watch(selectedLang, (newLang) => {
           </div>
         </template>
       </v-select>
+      <v-btn v-if="langStore.user">
+        <v-menu
+          v-model="menu"
+          location="bottom"
+          activator="parent"
+          :close-on-content-click="false"
+        >
+          <template #activator="{ props }">
+            <v-badge
+              color="red"
+              :content="unreadCount"
+              v-if="unreadCount > 0"
+              offset-x="3"
+              offset-y="3"
+            >
+              <v-icon v-bind="props" color="info" size="x-large">
+                mdi-bell-circle-outline
+              </v-icon>
+            </v-badge>
+
+            <v-icon
+              v-if="unreadCount === 0"
+              v-bind="props"
+              color="info"
+              size="x-large"
+            >
+              mdi-bell-circle-outline
+            </v-icon>
+          </template>
+
+          <v-card min-width="350" elevation="10" class="notifications-card">
+            <v-list class="notifications-list">
+              <v-list-item
+                v-for="n in langStore.user.notifications"
+                :key="n.id"
+                :class="[{ unread: !n.isRead }]"
+              >
+                <template #prepend>
+                  <v-icon :color="getTypeColor(n.type)">
+                    {{ getTypeIcon(n.type) }}
+                  </v-icon>
+                </template>
+
+                <v-list-item-title :class="{ bold: !n.isRead }">
+                  {{ n.title }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  {{ n.message }}
+                </v-list-item-subtitle>
+
+                <template #append>
+                  <v-btn
+                    icon="mdi-close"
+                    variant="text"
+                    density="compact"
+                    @click.stop="markRead(n)"
+                  />
+                </template>
+
+                <v-list-item-subtitle class="date">
+                  {{ formatDate(n.createdAt) }}
+                </v-list-item-subtitle>
+              </v-list-item>
+
+              <v-list-item v-if="langStore.user.notifications.length === 0">
+                <v-list-item-title>Нет уведомлений</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu></v-btn
+      >
+
       <RouterLink v-if="langStore.user" class="header__link" to="/users/me">
         <v-btn class="profile-btn" rounded="lg" variant="elevated">
           <v-icon start>mdi-account-circle</v-icon>

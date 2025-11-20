@@ -3,11 +3,25 @@ import SearchingForm from "@/components/SearchingForm.vue";
 import CardComponent from "@/components/CardComponent.vue";
 import CityCardComponent from "@/components/CityCardComponent.vue";
 import { ref, onMounted, onUnmounted } from "vue";
-import { useLangStore } from "@/stores/langStore";
-const langStore = useLangStore();
+import { getTrips } from "@/api";
+
 const slider = ref<HTMLElement | null>(null);
 const canScrollLeft = ref(false);
 const canScrollRight = ref(true);
+const trips = ref<any[]>([]);
+const fetchTrips = async () => {
+  try {
+    const response = await getTrips();
+    trips.value = response.data?.data || [];
+  } catch (err) {
+    console.error("Ошибка при получении поездок:", err);
+  }
+};
+
+onMounted(() => {
+  fetchTrips();
+});
+
 const updateScrollButtons = () => {
   if (!slider.value) return;
 
@@ -337,7 +351,7 @@ const data = [
   </div>
   <section class="second_section">
     <div class="home__grid">
-      <CardComponent /><CardComponent /><CardComponent /><CardComponent /><CardComponent /><CardComponent /><CardComponent /><CardComponent />
+      <CardComponent v-for="value in trips" :trip="value" />
     </div>
   </section>
   <section class="home__slider">
@@ -430,7 +444,7 @@ const data = [
 }
 .home {
   &__grid {
-    width: 80%;
+    width: 90%;
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(3, 1fr);

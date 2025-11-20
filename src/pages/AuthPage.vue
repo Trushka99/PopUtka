@@ -9,6 +9,7 @@ const redirectPath = route.query.redirect?.toString() || "/";
 
 const langStore = useLangStore();
 const activeTab = ref("login");
+const error = ref(null);
 const registerForm = ref({
   username: "",
   email: "",
@@ -27,7 +28,10 @@ const loginHandle = () => {
       langStore.setUser(res.data.data.user);
       router.push(redirectPath);
     })
-    .catch((err) => alert(err));
+    .catch((err) => {
+      console.log(err.response.data.message);
+      error.value = err.response.data.message;
+    });
 };
 const handleRegister = async () => {
   const {
@@ -55,8 +59,9 @@ const handleRegister = async () => {
     });
     console.log("Регистрация успешна", response.data);
     loginHandle();
-  } catch (err) {
+  } catch (err: any) {
     console.error("Ошибка регистрации", err);
+    error.value = err.response.data.message;
   }
 };
 const roles = ["Пользователь", "Водитель"];
@@ -96,10 +101,11 @@ const sex = ["Мужской", "Женский"];
         <v-btn
           @click="loginHandle"
           color="gradient-orange"
-          class="mt-4 login-btn"
+          class="mt-4 mb-2 login-btn"
           block
           >Войти</v-btn
         >
+        <span class="error">{{ error }}</span>
       </v-card-text>
       <v-card-text v-else>
         <v-text-field
@@ -174,11 +180,12 @@ const sex = ["Мужской", "Женский"];
         <v-btn
           @click="handleRegister"
           color="gradient-orange"
-          class="mt-4 login-btn"
+          class="mt-4 mb-2 login-btn"
           block
         >
           Зарегистрироваться
         </v-btn>
+        <span class="error">{{ error }}</span>
       </v-card-text>
       <div class="forgot-password">Забыли пароль?</div>
 
@@ -197,6 +204,10 @@ const sex = ["Мужской", "Женский"];
 </template>
 
 <style scoped lang="scss">
+.error {
+  color: red;
+  margin-top: 100px;
+}
 .icon {
   width: 25px;
   height: 25px;
