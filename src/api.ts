@@ -93,11 +93,49 @@ export const login = async (login: string, password: string) => {
 export const getMe = async () => {
   return handleRequest(api.get("/auth/me"));
 };
-export const getTrip = async (id: number) => {
+export const getTrip = async (id: string) => {
   return handleRequest(api.get(`/trips/${id}`));
 };
-export const getUser = async (id: number) => {
+export const getBooking = async (id: string) => {
+  return handleRequest(api.get(`/bookings/${id}`));
+};
+export const getTripHistory = async () => {
+  return handleRequest(api.get("/bookings/passenger/history"));
+};
+export const getMyBookings = async () => {
+  return handleRequest(api.get("bookings/me"));
+};
+export const confirmBooking = async (id: string) => {
+  return handleRequest(api.patch(`/driver/bookings/${id}/confirm`));
+};
+export const markUnreadAsRead = async () => {
+  return handleRequest(api.patch("/notifications/read-all"));
+};
+export const rejectBooking = async (id: string) => {
+  return handleRequest(api.patch(`/driver/bookings/${id}/reject`));
+};
+export const getUser = async (id: string) => {
   return handleRequest(api.get(`/users/${id}`));
+};
+export const updateCar = async (
+  id: string,
+  { model, color, year, licensePlate }: any
+) => {
+  return handleRequest(
+    api.patch(`/upload/${id}/car`, { model, color, year, licensePlate })
+  );
+};
+export const updateCarPhoto = async (file: File) => {
+  const formData = new FormData();
+  formData.append("photos", file);
+
+  return handleRequest(
+    api.post(`/upload/car`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  );
 };
 export const logout = async () => {
   return handleRequest(api.post("/auth/logout"));

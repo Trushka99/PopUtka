@@ -77,8 +77,8 @@ const sex = ["Мужской", "Женский"];
         background-color="transparent"
         centered
       >
-        <v-tab value="login">Вход</v-tab>
-        <v-tab value="register">Регистрация</v-tab>
+        <v-tab value="login">{{ langStore.t("login") }}</v-tab>
+        <v-tab value="register">{{ langStore.t("signup") }}</v-tab>
       </v-tabs>
 
       <v-card-text v-if="activeTab === 'login'">
@@ -90,7 +90,7 @@ const sex = ["Мужской", "Женский"];
           class="custom-field"
         ></v-text-field>
         <v-text-field
-          label="Пароль"
+          :label="langStore.t('password')"
           type="password"
           v-model="registerForm.password"
           outlined
@@ -109,21 +109,21 @@ const sex = ["Мужской", "Женский"];
       </v-card-text>
       <v-card-text v-else>
         <v-text-field
-          label="Имя"
+          :label="langStore.t('name')"
           outlined
           dense
           v-model="registerForm.firstName"
           class="custom-field"
         ></v-text-field>
         <v-text-field
-          label="Фамилия"
+          :label="langStore.t('surname')"
           outlined
           dense
           v-model="registerForm.lastName"
           class="custom-field"
         ></v-text-field>
         <v-text-field
-          label="Дата рождения"
+          :label="langStore.t('birthdate')"
           type="date"
           outlined
           dense
@@ -131,21 +131,21 @@ const sex = ["Мужской", "Женский"];
           class="custom-field"
         />
         <v-text-field
-          label="Логин (username)"
+          :label="langStore.t('username')"
           outlined
           dense
           v-model="registerForm.username"
           class="custom-field"
         ></v-text-field>
         <v-text-field
-          label="Телефон"
+          :label="langStore.t('phone')"
           outlined
           dense
           v-model="registerForm.phone"
           class="custom-field"
         ></v-text-field>
         <v-text-field
-          label="Email"
+          :label="langStore.t('email')"
           outlined
           dense
           v-model="registerForm.email"
@@ -153,7 +153,7 @@ const sex = ["Мужской", "Женский"];
         ></v-text-field>
 
         <v-text-field
-          label="Пароль"
+          :label="langStore.t('password')"
           type="password"
           outlined
           dense
@@ -161,7 +161,7 @@ const sex = ["Мужской", "Женский"];
           class="custom-field"
         ></v-text-field>
         <v-select
-          label="Роль"
+          :label="langStore.t('role')"
           :items="roles"
           v-model="registerForm.role"
           outlined
@@ -169,7 +169,7 @@ const sex = ["Мужской", "Женский"];
           class="custom-field"
         ></v-select>
         <v-select
-          label="Пол"
+          :label="langStore.t('sex')"
           :items="sex"
           v-model="registerForm.gender"
           outlined
@@ -183,13 +183,13 @@ const sex = ["Мужской", "Женский"];
           class="mt-4 mb-2 login-btn"
           block
         >
-          Зарегистрироваться
+          {{ langStore.t("regisrt") }}
         </v-btn>
         <span class="error">{{ error }}</span>
       </v-card-text>
-      <div class="forgot-password">Забыли пароль?</div>
+      <div class="forgot-password">{{ langStore.t("forgot") }}</div>
 
-      <div class="divider-text">или</div>
+      <div class="divider-text">{{ langStore.t("or") }}</div>
 
       <v-row justify="space-between" class="social-buttons">
         <v-btn outlined class="flex-grow-1 mx-1 social-btn">

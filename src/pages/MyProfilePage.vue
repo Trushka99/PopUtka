@@ -1,49 +1,118 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted, computed } from "vue";
 import { useLangStore } from "@/stores/langStore";
 import Loading from "@/components/Loading.vue";
-import { getUser } from "@/api";
-import { apiUploadAvatar } from "@/api";
-const langStore = useLangStore();
-const route = useRoute();
+import {
+  getUser,
+  apiUploadAvatar,
+  getMyBookings,
+  confirmBooking,
+  rejectBooking,
+  getTripHistory,
+  updateCar,
+  updateCarPhoto,
+} from "@/api";
+import HistoryTripCard from "@/components/HistoryTripCard.vue";
 
-const loading = ref<boolean>(false);
+const langStore = useLangStore();
+const loading = ref(true);
 const user = ref<any>(null);
+const bookings = ref<any>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
-const uploadAvatar = async (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
+const carModalOpen = ref(false);
+
+const carForm = ref({
+  model: "",
+  color: "",
+  year: "",
+  licensePlate: "",
+});
+
+function openCarModal() {
+  if (user.value?.car) {
+    carForm.value = {
+      model: user.value.car.model ?? "",
+      color: user.value.car.color ?? "",
+      year: user.value.car.year ?? "",
+      licensePlate: user.value.car.licensePlate ?? "",
+    };
+  }
+  carModalOpen.value = true;
+}
+const activeSection = ref<"main" | "trips" | "bookings" | "about">("main");
+
+function openFileDialog() {
+  fileInput.value?.click();
+}
+const carPhotoInput = ref<HTMLInputElement | null>(null);
+
+function openCarPhotoDialog() {
+  carPhotoInput.value?.click();
+}
+
+async function uploadCarPhoto(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
 
   try {
-    const res = await apiUploadAvatar(file);
-    console.log(res.data);
-
-    user.value.avatar = res.data.data.avatar;
+    const res = updateCarPhoto(file);
+    console.log(res);
   } catch (err) {
-    console.error("Ошибка загрузки аватара:", err);
+    alert("Не удалось загрузить фото автомобиля");
   }
-};
-onMounted(() => {
+}
+
+async function uploadAvatar(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  try {
+    const res = await apiUploadAvatar(file);
+    // adapt to your API shape
+    user.value.avatar = res.data?.data?.avatar || user.value.avatar;
+  } catch (err) {
+    console.error("Ошибка загрузки аватара", err);
+  }
+}
+
+onMounted(async () => {
   loading.value = true;
-  getUser(Number(langStore.user.id))
-    .then((res) => {
-      user.value = res.data.data;
-      console.log(res.data.data);
-    })
-    .catch((err) => {
-      console.error("API ERROR:", err);
-    })
-    .finally(() => (loading.value = false));
+  try {
+    const res = await getUser(String(langStore.user.id));
+    const trips = await getTripHistory();
+    const bookingsRes = await getMyBookings();
+    console.log(trips.data.data);
+    console.log(res.data.data);
+    user.value = res.data.data;
+    bookings.value = bookingsRes.data.data;
+  } catch (err) {
+    console.warn("API failed, using fallback data", err);
+  } finally {
+    loading.value = false;
+  }
 });
+async function saveCar() {
+  try {
+    const res = await updateCar("2kIO1ljvRF7Y", {
+      model: carForm.value.model,
+      color: carForm.value.color,
+      year: carForm.value.year,
+      licensePlate: carForm.value.licensePlate,
+    });
+
+    user.value.car = res.data.data.car;
+    carModalOpen.value = false;
+  } catch (e) {
+    console.error("Ошибка сохранения авто", e);
+    alert("Не удалось сохранить автомобиль");
+  }
+}
 
 const age = computed(() => {
-  if (!user.value?.birthDate) return "";
+  if (!user.value?.birthDate) return "-";
   const b = new Date(user.value.birthDate);
-  if (isNaN(b.getTime())) return "";
-  const diff = Date.now() - b.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+  return Math.floor(
+    (Date.now() - b.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
+  );
 });
 
 const categoryRatings = computed(() => {
@@ -54,506 +123,628 @@ const categoryRatings = computed(() => {
     value: v,
   }));
 });
-
-function openFileDialog() {
-  fileInput.value?.click();
-}
 </script>
 
 <template>
   <Loading v-if="loading" />
 
-  <div v-else-if="user" class="profile-page">
-    <!-- MAIN CARD -->
-    <div class="profile-card">
-      <div class="left-col">
-        <v-avatar
-          class="profile-avatar"
-          :image="
-            user.avatar
-              ? `https://web-production-68c29.up.railway.app${user.avatar}`
-              : '/images/test-avatar.jpg'
-          "
-          @click="openFileDialog"
-          size="120"
-        />
-        <input
-          type="file"
-          ref="fileInput"
-          style="display: none"
-          accept="image/*"
-          @change="uploadAvatar"
-        />
-        <div class="basic-info">
-          <h2 class="name">{{ user.firstName }} {{ user.lastName }}</h2>
-          <p class="subtitle">
-            <span v-if="age">Возраст: {{ age }} </span>
-            <span v-if="user.city">• {{ user.city }}</span>
-          </p>
+  <div v-else class="profile-fullscreen">
+    <div v-if="carModalOpen" class="modal-backdrop">
+      <div class="modal">
+        <h3>Автомобиль</h3>
+
+        <div class="form">
+          <input v-model="carForm.model" placeholder="Модель" />
+          <input v-model="carForm.color" placeholder="Цвет" />
+          <input v-model="carForm.year" type="number" placeholder="Год" />
+          <input v-model="carForm.licensePlate" placeholder="Гос. номер" />
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-primary" @click="saveCar">Сохранить</button>
+          <button class="btn btn-outline" @click="carModalOpen = false">
+            Отмена
+          </button>
+        </div>
+      </div>
+    </div>
+    <aside class="left-panel">
+      <div class="card main-card">
+        <div class="avatar-wrap" @click="openFileDialog">
+          <img
+            class="avatar"
+            :src="
+              user.avatar
+                ? `https://web-production-68c29.up.railway.app${user.avatar}`
+                : '/images/test-avatar.jpg'
+            "
+            alt="avatar"
+          />
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/*"
+            @change="uploadAvatar"
+            style="display: none"
+          />
+        </div>
+
+        <div class="user-head">
+          <div class="name">
+            {{ user.firstName }} <span class="last">{{ user.lastName }}</span>
+          </div>
+          <div class="sub">{{ age }} лет · {{ user.city }}</div>
+
+          <div class="rating">
+            <div class="big-rating">{{ (user.rating ?? 0).toFixed(1) }}</div>
+            <div class="rating-meta">
+              <div class="stars">★★★★★</div>
+              <div class="reviews">{{ user.reviews?.length ?? 0 }} отзывов</div>
+            </div>
+          </div>
+
+          <div class="verifications">
+            <span class="ver-item" :class="{ ok: user.verifiedPassport }"
+              >Паспорт</span
+            >
+            <span class="ver-item" :class="{ ok: user.verifiedEmail }"
+              >Email</span
+            >
+            <span class="ver-item" :class="{ ok: user.verifiedPhone }"
+              >Телефон</span
+            >
+          </div>
 
           <div class="contacts">
-            <p class="contact-row">
-              <v-icon small>mdi-phone</v-icon> {{ user.phone ?? "—" }}
-            </p>
-            <p class="contact-row">
-              <v-icon small>mdi-email</v-icon> {{ user.email ?? "—" }}
-            </p>
+            <div class="contact">
+              <strong>Телефон:</strong> {{ user.phone ?? "—" }}
+            </div>
+            <div class="contact">
+              <strong>Email:</strong> {{ user.email ?? "—" }}
+            </div>
           </div>
 
-          <div class="action-row">
-            <v-btn variant="tonal" color="info" class="action-btn"
-              >Пожаловаться</v-btn
-            >
-            <v-btn class="action-btn" outlined>Написать</v-btn>
+          <div class="actions">
+            <button class="btn btn-primary">Написать</button>
+            <button class="btn btn-outline">Пожаловаться</button>
+          </div>
+        </div>
+        <div v-if="user.car" class="car-block">
+          <h3 class="small-title">Автомобиль</h3>
+          <div class="car-info">
+            <div class="car-title">
+              {{ user.car.brand }} {{ user.car.model }}
+            </div>
+            <div class="car-meta">
+              Год: {{ user.car.year }} · Цвет: {{ user.car.color }}
+            </div>
+            <div class="car-plate">
+              Гос. номер: <strong>{{ user.car.licensePlate }}</strong>
+            </div>
+          </div>
+
+          <button class="btn btn-outline btn-sm" @click="openCarModal">
+            ✏️ Редактировать автомобиль
+          </button>
+
+          <div class="car-photo-section">
+            <div class="car-photo-wrap" @click="openCarPhotoDialog">
+              <img
+                class="car-photo"
+                :src="
+                  user.car?.photo
+                    ? `https://web-production-68c29.up.railway.app${user.car.photo}`
+                    : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe0NweKjJYqN3lSKJNkGM8X95kcP8BpjLJ-Q&s'
+                "
+                alt="car"
+              />
+              <div class="car-photo-overlay">
+                <span>📷</span>
+              </div>
+            </div>
+            <input
+              ref="carPhotoInput"
+              type="file"
+              accept="image/*"
+              hidden
+              @change="uploadCarPhoto"
+            />
           </div>
         </div>
       </div>
+    </aside>
 
-      <div class="right-col">
-        <div class="top-row">
-          <div class="rating-block">
-            <v-icon class="big-star">mdi-star-circle</v-icon>
-            <div class="rating-text">
-              <div class="rating-value">
-                {{ (user.rating ?? 0).toFixed(1) }} / 5
-              </div>
-              <div class="rating-reviews">
-                {{ user.reviews?.length ?? 0 }} отзыва
-              </div>
+    <main class="right-panel">
+      <nav class="section-nav">
+        <button
+          :class="{ active: activeSection === 'main' }"
+          @click="activeSection = 'main'"
+        >
+          Профиль
+        </button>
+        <button
+          :class="{ active: activeSection === 'trips' }"
+          @click="activeSection = 'trips'"
+        >
+          История поездок
+        </button>
+        <button
+          :class="{ active: activeSection === 'bookings' }"
+          @click="activeSection = 'bookings'"
+        >
+          Бронирования
+        </button>
+        <button
+          :class="{ active: activeSection === 'about' }"
+          @click="activeSection = 'about'"
+        >
+          О себе
+        </button>
+      </nav>
+
+      <section v-show="activeSection === 'main'" class="section-card">
+        <h2>Краткая информация</h2>
+        <div class="grid-2">
+          <div class="info-card">
+            <h4>Рейтинг</h4>
+            <div class="big">{{ (user.rating ?? 0).toFixed(1) }} / 5</div>
+            <div class="muted">
+              {{ user.reviews?.length ?? 0 }} отзывов • Завершено:
+              {{ user.completedTripsCount ?? 0 }}
             </div>
           </div>
-
-          <div class="verified-block">
-            <div class="verified-item" v-if="user.verifiedPassport">
-              <v-icon small class="ok">mdi-check-circle-outline</v-icon>
-              <span>Паспорт</span>
-            </div>
-            <div class="verified-item" v-if="user.verifiedEmail">
-              <v-icon small class="ok">mdi-check-circle-outline</v-icon>
-              <span>Email</span>
-            </div>
-            <div class="verified-item" v-if="user.verifiedPhone">
-              <v-icon small class="ok">mdi-check-circle-outline</v-icon>
-              <span>Телефон</span>
-            </div>
-          </div>
-        </div>
-
-        <v-divider class="divider" />
-
-        <div class="ratings-by-category">
-          <h4>Рейтинг по категориям</h4>
-          <div class="chips">
-            <v-chip
-              v-for="(r, i) in categoryRatings"
-              :key="i"
-              class="rating-chip"
-              variant="outlined"
-              density="compact"
-            >
-              <strong>{{ r.key }}</strong> · {{ Number(r.value).toFixed(1) }}
-            </v-chip>
-          </div>
-        </div>
-
-        <v-divider class="divider" />
-
-        <div class="about">
-          <h4>О себе</h4>
-          <p class="about-text">
-            {{
-              user.about && user.about !== ""
-                ? user.about
-                : "Описание отсутствует"
-            }}
-          </p>
-        </div>
-
-        <div class="meta-row">
-          <div>
-            Опубликовано и завершено:
-            <strong>{{ user.completedTripsCount ?? 0 }}</strong>
-          </div>
-          <div>
-            {{ langStore.t("regDate") }}:
-            <strong>
+          <div class="info-card">
+            <h4>Контакты</h4>
+            <div>{{ user.phone ?? "—" }}</div>
+            <div>{{ user.email ?? "—" }}</div>
+            <div class="muted">
+              Регистрация:
               {{
                 user.createdAt
-                  ? new Date(user.createdAt).toLocaleString("ru-RU", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })
+                  ? new Date(user.createdAt).toLocaleDateString("ru-RU")
                   : "—"
               }}
-            </strong>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECONDARY CARDS: CAR + TRIPS -->
-    <div class="secondary-row">
-      <div class="card car-card" v-if="user.car">
-        <div class="card-title">
-          <h4>Автомобиль</h4>
-          <v-icon class="edit-icon">mdi-pencil</v-icon>
-        </div>
-
-        <div class="car-content">
-          <img
-            class="car-photo"
-            :src="
-              user.car.photo
-                ? `https://web-production-68c29.up.railway.app${user.car.photo}`
-                : '/images/test-car.jpg'
-            "
-            alt="car"
-          />
-          <div class="car-info">
-            <p>
-              <strong>{{ user.car.brand }} {{ user.car.model }}</strong>
-            </p>
-            <p>Гос. номер: {{ user.car.plate ?? "—" }}</p>
-            <p>Год: {{ user.car.year ?? "—" }}</p>
-            <p>
-              Категория: {{ user.car.category ?? "—" }} • Мест:
-              {{ user.car.seats ?? "-" }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="card trips-card">
-        <div class="card-title">
-          <h4>История поездок</h4>
-        </div>
-
-        <div class="trips-list">
-          <div
-            v-if="user.trips?.length"
-            class="trip"
-            v-for="t in user.trips"
-            :key="t.id"
-          >
-            <div class="trip-row">
-              <div class="trip-fromto">
-                <div class="from">{{ t.from }}</div>
-                <v-icon small>mdi-arrow-right</v-icon>
-                <div class="to">{{ t.to }}</div>
-              </div>
-              <div class="trip-meta">
-                <div class="date">
-                  {{
-                    new Date(t.date).toLocaleString("ru-RU", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })
-                  }}
-                </div>
-                <div class="status">{{ t.status }}</div>
-              </div>
             </div>
           </div>
-
-          <p v-else class="empty">Поездок нет</p>
         </div>
-      </div>
-    </div>
-  </div>
+      </section>
 
-  <div v-else class="no-user">Пользователь не найден</div>
+      <section v-show="activeSection === 'trips'" class="section-card">
+        <h2>История поездок</h2>
+        <HistoryTripCard v-for="t in user.trips" :key="t.id" :trip="t" />
+      </section>
+
+      <section v-show="activeSection === 'bookings'" class="section-card">
+        <h2>Текущие бронирования</h2>
+        <div class="cards-list">
+          <article class="booking-card" v-for="b in bookings" :key="b.id">
+            <div class="row">
+              <div class="place">
+                <strong>{{
+                  langStore.с(b.trip.from.cityKey.toLowerCase())
+                }}</strong>
+                →
+                <strong>{{
+                  langStore.с(b.trip.to.cityKey.toLowerCase())
+                }}</strong>
+              </div>
+              <div class="status">
+                {{
+                  b.status === "pending"
+                    ? "Ожидает подтверждения"
+                    : "хуй поймет"
+                }}
+              </div>
+            </div>
+            <div class="meta">
+              Выезд: {{ b.trip.departureDate }} · Пассажиры: {{ b.seats }} ·
+              Цена: {{ b.trip.price }} UZS
+            </div>
+            <div class="booking-actions">
+              <v-btn
+                @click="
+                  async () => {
+                    const res = await confirmBooking(b.id);
+                    console.log(res);
+                  }
+                "
+                class="btn btn-small"
+                >Подтвердить</v-btn
+              >
+              <v-btn
+                @click="
+                  async () => {
+                    const res = await rejectBooking(b.id);
+                    console.log(res);
+                  }
+                "
+                class="btn btn-outline btn-small"
+                >Отменить</v-btn
+              >
+              <RouterLink
+                class="link"
+                :to="{ name: 'bookings', params: { id: b.id } }"
+                ><v-btn class="btn btn-outline btn-small"
+                  >Подробнее</v-btn
+                ></RouterLink
+              >
+            </div>
+          </article>
+        </div>
+        <div v-if="!(user.bookings && user.bookings.length)" class="empty">
+          Бронирований нет
+        </div>
+      </section>
+
+      <section v-show="activeSection === 'about'" class="section-card">
+        <h2>О себе</h2>
+        <p class="about-text">{{ user.about || "Описание отсутствует" }}</p>
+      </section>
+    </main>
+  </div>
 </template>
 
-<style lang="scss" scoped>
-.profile-page {
-  width: 100%;
-  max-width: 1100px;
-  margin: 30px auto;
-  padding: 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* MAIN CARD */
-.profile-card {
-  display: flex;
+<style scoped lang="scss">
+.profile-fullscreen {
+  display: grid;
+  grid-template-columns: 20% 1fr;
   gap: 24px;
-  background: #fff;
-  border-radius: 14px;
-  padding: 22px;
-  box-shadow: 0 6px 20px rgba(25, 54, 100, 0.06);
-  align-items: flex-start;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  margin-top: 15px;
 }
 
-.left-col {
-  width: 280px;
+.left-panel {
+  max-height: 80vh;
+  overflow: auto;
+}
+
+.right-panel {
+  height: 80vh;
   display: flex;
-  gap: 18px;
-  align-items: flex-start;
+  max-height: 80vh;
   flex-direction: column;
-  align-items: center;
+}
+
+.card.main-card {
+  background: #fff;
+  padding: 22px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.avatar-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.avatar {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 5px solid #1976d2;
+  box-shadow: 0 10px 30px rgba(25, 118, 210, 0.12);
+  cursor: pointer;
+}
+
+.user-head {
   text-align: center;
 }
 
-.profile-avatar {
-  border: 4px solid rgb(26, 115, 232);
-  box-shadow: 0 6px 18px rgba(26, 115, 232, 0.12);
-}
-
-.basic-info {
-  width: 100%;
-}
-
 .name {
-  margin: 8px 0 2px;
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 700;
 }
 
-.subtitle {
-  margin: 0;
+.sub {
   color: #6b7280;
-  font-size: 14px;
+  margin-top: 6px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.big-rating {
+  font-size: 34px;
+  font-weight: 800;
+  color: #f59e0b;
+}
+
+.rating-meta .reviews {
+  color: #6b7280;
+}
+
+.verifications {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.ver-item {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+}
+
+.ver-item.ok {
+  background: #ecfdf5;
+  color: #065f46;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.02);
 }
 
 .contacts {
   margin-top: 12px;
   color: #374151;
-  font-size: 14px;
 }
 
-.contact-row {
+.actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: #1976d2;
+  color: white;
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+}
+
+.car-block {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #eef2ff;
+}
+.small-title {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 8px;
+}
+.car-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.car-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+.car-photo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.car-photo-wrap {
+  position: relative;
+  width: 220px;
+  height: 140px;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.car-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.car-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
   align-items: center;
   justify-content: center;
-  margin: 6px 0;
+  color: #fff;
+  font-size: 28px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
-.action-row {
-  margin-top: 14px;
+.car-photo-wrap:hover .car-photo-overlay {
+  opacity: 1;
+}
+
+.car-meta {
+  color: #6b7280;
+}
+.car-plate {
+  margin-top: 6px;
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.form input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+/* RIGHT PANEL */
+.section-nav {
   display: flex;
   gap: 8px;
-  justify-content: center;
+  margin-bottom: 12px;
 }
 
-.action-btn {
-  text-transform: none;
+.section-nav button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-/* right column */
-.right-col {
-  flex: 1;
+.section-nav button.active {
+  background: #eef2ff;
+  border-color: #c7e0ff;
+}
+
+.section-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+.grid-2 {
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
-.top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.info-card {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f8fafc;
 }
-
-.rating-block {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+.info-card .big {
+  font-size: 24px;
+  font-weight: 800;
 }
-
-.big-star {
-  font-size: 48px;
-  color: #1976d2;
-}
-
-.rating-text .rating-value {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.rating-reviews {
+.muted {
   color: #6b7280;
-  font-size: 13px;
-}
-
-/* verified */
-.verified-block {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.verified-item {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  color: #047857;
-  font-size: 14px;
-}
-
-.ok {
-  color: #047857;
-}
-
-/* divider */
-.divider {
-  margin: 6px 0 6px;
-}
-
-/* ratings chips */
-.ratings-by-category h4 {
-  margin: 0 0 8px;
+  margin-top: 8px;
 }
 
 .chips {
   display: flex;
   gap: 8px;
+  margin-top: 8px;
   flex-wrap: wrap;
 }
-
-.rating-chip {
-  font-size: 13px;
-  background: transparent;
-}
-
-/* about text */
-.about-text {
-  color: #374151;
-  line-height: 1.45;
-  margin: 8px 0;
-}
-
-/* meta row */
-.meta-row {
-  display: flex;
-  gap: 20px;
-  color: #6b7280;
-  font-size: 13px;
-  margin-top: 6px;
-}
-
-/* secondary row */
-.secondary-row {
-  display: flex;
-  gap: 20px;
-  width: 100%;
-}
-
-.card {
+.chip {
+  padding: 8px 10px;
   background: #fff;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-  flex: 1;
-}
-
-.car-card {
-  max-width: 360px;
-}
-
-.card-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.edit-icon {
-  color: #6b7280;
-  cursor: pointer;
-}
-
-.car-content {
-  display: flex;
-  gap: 14px;
-  margin-top: 12px;
-  align-items: center;
-}
-
-.car-photo {
-  width: 130px;
-  height: 86px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 2px solid #e6eefc;
-}
-
-.car-info p {
-  margin: 4px 0;
-  font-size: 14px;
-  color: #374151;
-}
-
-/* trips */
-.trips-card {
-  flex: 1;
-}
-
-.trips-list {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.trip {
-  padding: 10px;
   border-radius: 8px;
   border: 1px solid #eef2ff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
-.trip-row {
+.table-wrap {
+  margin-top: 10px;
+}
+.trips-table {
   width: 100%;
+  border-collapse: collapse;
+}
+.trips-table th,
+.trips-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+
+.cards-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+.booking-card {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #eef2ff;
+}
+.booking-card .row {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
   align-items: center;
 }
-
-.trip-fromto {
+.booking-actions {
   display: flex;
   gap: 8px;
-  align-items: center;
-  font-weight: 600;
-  color: #111827;
+  margin-top: 10px;
+}
+.btn-small {
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
-.trip-meta {
-  text-align: right;
-  color: #6b7280;
-  font-size: 13px;
+.about-text {
+  line-height: 1.6;
+  color: #374151;
 }
 
 .empty {
   color: #6b7280;
+  margin-top: 10px;
 }
 
-/* responsive */
-@media (max-width: 900px) {
-  .profile-card {
-    flex-direction: column;
-    align-items: stretch;
+/* Responsive: collapse to single column on small screens */
+@media (max-width: 1100px) {
+  .profile-fullscreen {
+    grid-template-columns: 1fr;
+    height: auto;
   }
-  .left-col {
-    width: 100%;
-    flex-direction: row;
-    text-align: left;
-    justify-content: flex-start;
+  .left-panel {
+    order: 1;
   }
-  .basic-info {
-    text-align: left;
+  .right-panel {
+    order: 2;
   }
-  .secondary-row {
-    flex-direction: column;
-  }
-  .car-card {
-    max-width: 100%;
+}
+@media (max-width: 768px) {
+  .section-nav button {
+    font-size: 14px;
   }
 }
 </style>
