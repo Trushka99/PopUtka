@@ -5,9 +5,9 @@ import cities from "../utils/dictionary.json";
 import { createTrip } from "@/api";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 import Loading from "@/components/Loading.vue";
-const props = defineProps({
-  closeDialog: Function,
-});
+const props = defineProps<{
+  closeDialog?: () => void;
+}>();
 
 const snackbar = useSnackbarStore();
 
@@ -92,7 +92,7 @@ const submitTrip = () => {
     .catch((err) => console.error(err))
     .finally(() => {
       loading.value = false;
-      props.closeDialog();
+      props.closeDialog?.();
       snackbar.notify("Поездка успешно создана!");
     });
 };
@@ -102,7 +102,7 @@ const submitTrip = () => {
   <v-sheet class="trip-card" elevation="2" rounded="xl">
     <Loading v-if="loading" />
 
-    <div v-else >
+    <div v-else>
       <h2 class="text-h5 font-weight-medium mb-4 text-center">
         {{ langStore.t("createTrip") }}
       </h2>
