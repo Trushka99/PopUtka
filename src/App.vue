@@ -4,6 +4,8 @@ import FooterComponent from "./components/FooterComponent.vue";
 import { RouterView, useRoute } from "vue-router";
 import MobileBottomMenu from "./components/MobileBottomMenu.vue";
 const route = useRoute();
+import { useSnackbarStore } from "@/stores/snackbarStore";
+const snackbar = useSnackbarStore();
 </script>
 
 <template>
@@ -12,6 +14,10 @@ const route = useRoute();
     <v-main style="background-color: rgb(238, 238, 238)">
       <RouterView />
     </v-main>
+    <v-snackbar v-model="snackbar.show" :timeout="3000" :color="snackbar.color">
+      {{ snackbar.message }}
+    </v-snackbar>
+
     <FooterComponent v-if="route.path !== '/login'" />
   </v-app>
 

@@ -2,17 +2,33 @@
 import { ref, computed, watch } from "vue";
 import { RouterLink } from "vue-router";
 import "@mdi/font/css/materialdesignicons.css";
+import { markUnreadAsRead } from "@/api";
 const menuOpen = ref(false);
 import { useLangStore } from "@/stores/langStore";
 const langStore = useLangStore();
 import CreateTrip from "@/pages/CreateTrip.vue";
+const tripDialog = ref<boolean>(false);
 
-const menu = ref(false);
+const menu = ref<boolean>(false);
+const toggleNotifications = async () => {
+  menu.value = !menu.value;
+
+  if (menu.value) {
+    const newValue = {
+      ...langStore.user,
+      notifications: langStore.user.notifications.map((el: any) => ({
+        ...el,
+        isRead: true,
+      })),
+    };
+    langStore.setUser(newValue);
+    await markUnreadAsRead();
+  }
+};
 const unreadCount = computed(
   () => langStore.user?.notifications?.filter((n: any) => !n.isRead).length ?? 0
 );
 
-// Иконки по типу
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "success":
@@ -77,7 +93,6 @@ const langOptions = [
 
 const selectedLang = ref(langStore.currentLang || "ru");
 
-// обновляем store при изменении
 watch(selectedLang, (newLang) => {
   langStore.setLang(newLang);
 });
@@ -163,11 +178,10 @@ watch(selectedLang, (newLang) => {
           </div>
         </template>
       </v-select>
-      <v-btn v-if="langStore.user">
+      <v-btn @click="toggleNotifications" v-if="langStore.user">
         <v-menu
           v-model="menu"
           location="bottom"
-          activator="parent"
           :close-on-content-click="false"
         >
           <template #activator="{ props }">
@@ -241,7 +255,11 @@ watch(selectedLang, (newLang) => {
           {{ langStore.t("profile") || "Профиль" }}
         </v-btn>
       </RouterLink>
-      <v-dialog v-if="langStore.user.role === 'driver'" max-width="750">
+      <v-dialog
+        v-model="tripDialog"
+        v-if="langStore.user.role === 'driver'"
+        max-width="750"
+      >
         <template v-slot:activator="{ props: activatorProps }">
           <v-btn
             v-bind="activatorProps"
@@ -256,7 +274,7 @@ watch(selectedLang, (newLang) => {
         </template>
 
         <template v-slot:default="{ isActive }">
-          <CreateTrip />
+          <CreateTrip :closeDialog="() => (tripDialog = false)" />
         </template>
       </v-dialog>
     </div>

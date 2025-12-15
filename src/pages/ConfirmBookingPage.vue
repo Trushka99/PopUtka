@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { RouterLink, useRoute } from "vue-router";
-import { getTrip } from "@/api";
+import { getBooking } from "@/api";
 import Loading from "@/components/Loading.vue";
 import { useLangStore } from "@/stores/langStore";
 import { bookTrip } from "@/api";
+
 const langStore = useLangStore();
 const route = useRoute();
-const trip = ref<any>();
+const trip = ref<any | null>(null);
 const loading = ref<boolean>(false);
 const createBooking = () => {
   bookTrip({ tripId: trip.value.id, seats: 1 })
@@ -16,7 +17,7 @@ const createBooking = () => {
 };
 onMounted(() => {
   loading.value = true;
-  getTrip(String(route.params.id))
+  getBooking(String(route.params.id))
     .then((res) => {
       trip.value = res.data.data;
       console.log(res.data.data);
@@ -65,56 +66,60 @@ const options: Intl.DateTimeFormatOptions = {
             ? "en-EN"
             : "uz-Cyrl-UZ",
           options
-        ).format(new Date(trip.departureDate))
+        ).format(new Date(trip.trip.departureDate))
       }}
     </h2>
     <div class="trip-flex">
       <div class="lefside">
         <div class="trip-info">
           <div class="flex-cont">
-            <h4>{{ trip.departureTime }}</h4>
-            <p>{{ formatDuration(trip.tripInfo.duration) }}</p>
+            <h4>{{ trip.trip.departureTime }}</h4>
+            <p>{{ formatDuration(trip.trip.tripInfo.duration) }}</p>
             <h4>
               {{
-                addDurationToTime(trip.departureTime, trip.tripInfo.duration)
+                addDurationToTime(
+                  trip.trip.departureTime,
+                  trip.trip.tripInfo.duration
+                )
               }}
             </h4>
           </div>
           <div class="line"></div>
           <div class="flex-cont">
             <div>
-              <h3>{{ langStore.с(trip.from.cityKey.toLowerCase()) }}</h3>
-              <p>{{ trip.from.address }}</p>
+              <h3>{{ langStore.с(trip.trip.from.cityKey.toLowerCase()) }}</h3>
+              <p>{{ trip.trip.from.address }}</p>
             </div>
             <div>
-              <h3>{{ langStore.с(trip.to.cityKey.toLowerCase()) }}</h3>
-              <p>{{ trip.to.address }}</p>
+              <h3>{{ langStore.с(trip.trip.to.cityKey.toLowerCase()) }}</h3>
+              <p>{{ trip.trip.to.address }}</p>
             </div>
           </div>
         </div>
         <v-card class="trip-card" elevation="2" rounded="lg">
           <RouterLink
             class="link"
-            :to="{ name: 'user', params: { id: trip.driverId } }"
+            :to="{ name: 'user', params: { id: trip.trip.driverId } }"
           >
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
                 <img
-                  :src="`https://web-production-68c29.up.railway.app${trip.driver.avatar}`"
+                  :src="`https://web-production-68c29.up.railway.app${trip.trip.driver.avatar}`"
                   alt="Driver"
                   class="avatar"
                 />
               </v-avatar>
               <div class="driver-info flex-grow-1">
                 <span class="font-weight-medium"
-                  >{{ trip.driver.firstName }} {{ trip.driver.lastName }}</span
+                  >{{ trip.trip.driver.firstName }}
+                  {{ trip.trip.driver.lastName }}</span
                 >
-                <span class="ml-1">★ {{ trip.driver.rating }}</span>
+                <span class="ml-1">★ {{ trip.trip.driver.rating }}</span>
               </div>
               <v-icon icon="mdi-chevron-right" size="24" /></div
           ></RouterLink>
           <v-divider></v-divider>
-          <div v-if="trip.driver.isVerified" style="display: flex">
+          <div v-if="trip.trip.driver.isVerified" style="display: flex">
             <v-icon
               color="blue"
               icon="mdi-check-decagram"
@@ -133,18 +138,18 @@ const options: Intl.DateTimeFormatOptions = {
             <p>Редко отменяет поездки</p>
           </div>
 
-          <p>{{ trip.description }}</p>
+          <p>{{ trip.trip.description }}</p>
 
           <v-divider class="my-3"></v-divider>
-          <div v-if="trip.instantBooking" style="display: flex">
+          <div v-if="trip.trip.instantBooking" style="display: flex">
             <v-icon color="yellow" icon="mdi-flash" size="24" class="mr-2" />
             <p>{{ langStore.t("instant") }}</p>
           </div>
-          <div v-if="trip.maxTwoBackSeats" style="display: flex">
+          <div v-if="trip.trip.maxTwoBackSeats" style="display: flex">
             <v-icon icon="mdi-account-multiple" size="24" class="mr-2" />
             <p>{{ langStore.t("maxTwoBackSeats") }}</p>
           </div>
-          <div v-if="trip.driver.car" style="display: flex">
+          <div v-if="trip.trip.driver.car" style="display: flex">
             <v-icon color="grey" icon="mdi-car" size="24" class="mr-2" />
             <p>{{ trip.driver.car }}</p>
           </div>
@@ -155,7 +160,7 @@ const options: Intl.DateTimeFormatOptions = {
           <div class="trip-flex hover">
             <div style="display: flex; gap: 25px">
               <h4>1 {{ langStore.t("passenger") }}</h4>
-              <h4>{{ trip.price }} ₽</h4>
+              <h4>{{ trip.trip.price }} UZS</h4>
             </div>
             <v-icon icon="mdi-chevron-right" size="24" />
           </div>
@@ -166,7 +171,16 @@ const options: Intl.DateTimeFormatOptions = {
             rounded="lg"
             height="48"
           >
-            Забронировать
+            Одобрить
+          </v-btn>
+          <v-btn
+            @click="createBooking"
+            class="search-btn"
+            color="#00AEEF"
+            rounded="lg"
+            height="48"
+          >
+            Отклонить
           </v-btn>
         </v-card>
       </div>

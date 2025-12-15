@@ -17,7 +17,7 @@ const age = computed(() => {
 });
 onMounted(() => {
   loading.value = true;
-  getUser(Number(route.params.id))
+  getUser(String(route.params.id))
     .then((res) => {
       user.value = res.data.data;
       console.log(res.data.data);

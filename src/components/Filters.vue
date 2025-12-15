@@ -56,13 +56,13 @@ const sex = ref("");
         <v-row justify="space-between">
           <v-col cols="6">
             <v-text-field
-              :label="langStore.t('ammountFrom')"
+              :label="langStore.t('amountFrom')"
               model-value="10.00"
               suffix="₽"
             ></v-text-field></v-col
           ><v-col cols="6">
             <v-text-field
-              :label="langStore.t('ammountTo')"
+              :label="langStore.t('amountTo')"
               model-value="10.00"
               suffix="₽"
             ></v-text-field></v-col
