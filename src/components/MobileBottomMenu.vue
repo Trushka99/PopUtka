@@ -8,15 +8,15 @@ import CreateTrip from "@/pages/CreateTrip.vue";
     <div class="menu_list">
       <RouterLink class="link" to="/search">
         <div class="menu_item">
-          <v-icon color="rgba(0, 128, 255, 1)">mdi-magnify</v-icon>
-          <p>Поиск</p>
+          <v-icon size="large" color="rgba(0, 128, 255, 1)">mdi-magnify</v-icon>
         </div></RouterLink
       >
       <v-dialog max-width="750">
         <template v-slot:activator="{ props: activatorProps }">
           <div v-bind="activatorProps" class="menu_item">
-            <v-icon color="rgba(0, 128, 255, 1)">mdi-road-variant</v-icon>
-            <p>Создать</p>
+            <v-icon size="large" color="rgba(0, 128, 255, 1)"
+              >mdi-road-variant</v-icon
+            >
           </div>
         </template>
 
@@ -25,15 +25,20 @@ import CreateTrip from "@/pages/CreateTrip.vue";
         </template>
       </v-dialog>
       <div class="menu_item">
-        <v-icon color="rgba(0, 128, 255, 1)">mdi-list-box</v-icon>
-        <p>поездки</p>
+        <v-icon size="large" color="rgba(0, 128, 255, 1)">mdi-list-box</v-icon>
       </div>
+      <RouterLink class="link" to="/notifications">
+        <div class="menu_item">
+          <v-icon size="large" color="rgba(0, 128, 255, 1)">
+            mdi-bell-circle-outline
+          </v-icon>
+        </div></RouterLink
+      >
       <RouterLink class="link" to="/users/me">
         <div class="menu_item">
-          <v-icon color="rgba(0, 128, 255, 1)">mdi-account</v-icon>
-          {{ langStore.t("profile") || "Профиль" }}
-        </div>
-      </RouterLink>
+          <v-icon size="large" color="rgba(0, 128, 255, 1)">mdi-account</v-icon>
+        </div></RouterLink
+      >
     </div>
   </div>
 </template>
@@ -59,11 +64,8 @@ import CreateTrip from "@/pages/CreateTrip.vue";
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 80%;
+  width: 75%;
   margin: 0 auto;
-  @media (max-width: 425px) {
-    width: 80%;
-  }
 }
 .menu_item {
   display: flex;

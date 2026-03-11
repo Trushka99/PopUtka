@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import HeaderComponent from "./components/HeaderComponent.vue";
 import FooterComponent from "./components/FooterComponent.vue";
+import Chat from "./components/Chat.vue";
 import { RouterView, useRoute } from "vue-router";
+import { ref } from "vue";
 import MobileBottomMenu from "./components/MobileBottomMenu.vue";
 const route = useRoute();
 import { useSnackbarStore } from "@/stores/snackbarStore";
@@ -26,9 +28,7 @@ const snackbar = useSnackbarStore();
 
 <style scoped>
 .mobile-bottom-bar {
-  display: none; /* По умолчанию скрыт */
-
-  /* Только на мобильных */
+  display: none;
   @media (max-width: 768px) {
     display: flex;
     justify-content: center;

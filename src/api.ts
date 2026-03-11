@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: "http://localhost:5000",
   withCredentials: true,
 });
 
@@ -25,6 +25,19 @@ const handleRequest = async (request: any) => {
     throw err;
   }
 };
+export const createChat = (id: string) => {
+  return handleRequest(
+    api.post("/chats", {
+      user2Id: id,
+    }),
+  );
+};
+export const getChats = () => {
+  return handleRequest(api.get("/chats"));
+};
+export const getChatByID = (id: string) => {
+  return handleRequest(api.get(`/chats/${id}`));
+};
 export const apiUploadAvatar = async (file: File) => {
   const formData = new FormData();
   formData.append("avatar", file);
@@ -34,7 +47,7 @@ export const apiUploadAvatar = async (file: File) => {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    })
+    }),
   );
 };
 export const getTrips = async (filters?: {
@@ -51,7 +64,7 @@ export const getTrips = async (filters?: {
   return handleRequest(
     api.get("/trips", {
       params: filters,
-    })
+    }),
   );
 };
 export const register = async (form?: {
@@ -78,7 +91,7 @@ export const register = async (form?: {
       firstName: form.firstName,
       lastName: form.lastName,
       gender: form.gender,
-    })
+    }),
   );
 };
 
@@ -87,7 +100,7 @@ export const login = async (login: string, password: string) => {
     api.post("/auth/login", {
       login,
       password,
-    })
+    }),
   );
 };
 export const getMe = async () => {
@@ -111,6 +124,9 @@ export const confirmBooking = async (id: string) => {
 export const markUnreadAsRead = async () => {
   return handleRequest(api.patch("/notifications/read-all"));
 };
+export const markAsRead = async (id: string) => {
+  return handleRequest(api.patch(`/notifications/${id}/read`));
+};
 export const rejectBooking = async (id: string) => {
   return handleRequest(api.patch(`/driver/bookings/${id}/reject`));
 };
@@ -119,11 +135,14 @@ export const getUser = async (id: string) => {
 };
 export const updateCar = async (
   id: string,
-  { model, color, year, licensePlate }: any
+  { model, color, year, licensePlate }: any,
 ) => {
   return handleRequest(
-    api.patch(`/upload/${id}/car`, { model, color, year, licensePlate })
+    api.patch(`/users/me/car`, { model, color, year, licensePlate }),
   );
+};
+export const updateProfile = async (body: any) => {
+  return handleRequest(api.patch(`/users/me`, body));
 };
 export const updateCarPhoto = async (file: File) => {
   const formData = new FormData();
@@ -134,7 +153,7 @@ export const updateCarPhoto = async (file: File) => {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    })
+    }),
   );
 };
 export const logout = async () => {
@@ -151,41 +170,39 @@ export const bookTrip = async ({
     api.post("/bookings", {
       tripId,
       seats,
-    })
+    }),
   );
 };
 export const createTrip = async ({
   from,
   to,
-  departureTime,
+
   price,
   availableSeats,
   description,
   instantBooking,
   maxTwoBackSeats,
-  departureDate,
+  departureAt,
 }: {
   from: { cityKey: string; address: string };
   to: { cityKey: string; address: string };
-  departureTime: string;
+  departureAt: string;
   price: number;
   availableSeats: number;
   description: string;
   instantBooking: boolean;
   maxTwoBackSeats: boolean;
-  departureDate: string;
 }) => {
   return handleRequest(
     api.post("/trips", {
       from,
       to,
-      departureTime,
+      departureAt,
       price,
       availableSeats,
       description,
       instantBooking,
       maxTwoBackSeats,
-      departureDate,
-    })
+    }),
   );
 };

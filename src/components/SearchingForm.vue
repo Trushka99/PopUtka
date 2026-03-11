@@ -192,7 +192,7 @@ const onDateSelected = (val: string | Date) => {
   height: 80px !important;
 }
 .autocompl {
-  max-width: 274px;
+  max-height: 80px;
 }
 .search-bar {
   display: flex;
@@ -266,7 +266,7 @@ const onDateSelected = (val: string | Date) => {
 @media (max-width: 920px) {
   .search-bar {
     flex-direction: column;
-    width: 100%;
+    width: 90%;
   }
 
   .search-bar .v-text-field {

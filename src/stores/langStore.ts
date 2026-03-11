@@ -15,11 +15,15 @@ export const useLangStore = defineStore("lang", {
     cities: LangDictionary;
     termins: LangDictionary;
     user: any;
+    activeTrips: any;
+    notifications: any;
   } => ({
     currentLang: localStorage.getItem("lang") || "ru",
     cities: dictionary,
     termins: termins,
     user: {},
+    activeTrips: [],
+    notifications: [],
   }),
   getters: {
     cKeyByValue: (state) => (value: string) => {
@@ -41,6 +45,12 @@ export const useLangStore = defineStore("lang", {
     setUser(data: any) {
       this.user = data;
     },
+    setTrips(data: any) {
+      this.activeTrips = data;
+    },
+    setNotifications(data: any) {
+      this.notifications = data;
+    },
     async logOut() {
       const res = await logout();
       return res;
@@ -48,6 +58,9 @@ export const useLangStore = defineStore("lang", {
     async initUser() {
       try {
         const res = await getMe();
+        console.log(res.data.data);
+        console.log(res.data.data);
+        this.setNotifications(res.data.data.notifications);
         this.setUser(res.data.data.user);
       } catch (err) {
         console.error(err);

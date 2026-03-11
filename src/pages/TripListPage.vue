@@ -11,10 +11,19 @@ const route = useRoute();
 const router = useRouter();
 
 const trips = ref<any[]>([]);
+const timeFrom = ref<string | null>(null);
+const timeTo = ref<string | null>(null);
+const driverGender = ref<string | null>(null);
+const minPrice = ref<number | null>(null);
+const maxPrice = ref<number | null>(null);
 const loading = ref<boolean>(false);
-
+const instantBookingOnly = ref<boolean | null>(null);
+const verifiedOnly = ref<boolean | null>(null);
+const sortBy = ref<"cheapest" | "earliest">("earliest");
+const loadingAfterFilters = ref<boolean>(false);
 const fetchTrips = async (filters?: any) => {
   loading.value = true;
+  loadingAfterFilters.value = true;
   try {
     const response = await getTrips(filters);
     trips.value = response.data?.data || [];
@@ -22,7 +31,35 @@ const fetchTrips = async (filters?: any) => {
     console.error("Ошибка при получении поездок:", err);
   } finally {
     loading.value = false;
+    loadingAfterFilters.value = false;
   }
+};
+const loadWithFilters = async (filters?: any) => {
+  loadingAfterFilters.value = true;
+  try {
+    const response = await getTrips(filters);
+    trips.value = response.data?.data || [];
+  } catch (err) {
+    console.error("Ошибка при получении поездок:", err);
+  } finally {
+    loadingAfterFilters.value = false;
+  }
+};
+const applyFilters = () => {
+  loadWithFilters({
+    from: route.query.from as string,
+    to: route.query.to as string,
+    date: route.query.date as string,
+    seats: route.query.seats ? Number(route.query.seats) : undefined,
+    timeFrom: timeFrom.value,
+    timeTo: timeTo.value,
+    driverGender: driverGender.value,
+    minPrice: minPrice.value,
+    maxPrice: maxPrice.value,
+    instantBookingOnly: instantBookingOnly.value,
+    verifiedOnly: verifiedOnly.value,
+    sortBy: sortBy.value,
+  });
 };
 
 onMounted(() => {
@@ -50,7 +87,17 @@ const handleSearch = (filters: any) => {
     </div>
 
     <div class="trip-list">
-      <Filters />
+      <Filters
+        :load-filters="applyFilters"
+        v-model:timeFrom="timeFrom"
+        v-model:timeTo="timeTo"
+        v-model:driverGender="driverGender"
+        v-model:minPrice="minPrice"
+        v-model:maxPrice="maxPrice"
+        v-model:instant-booking-only="instantBookingOnly"
+        v-model:verified-only="verifiedOnly"
+        v-model:sortBy="sortBy"
+      />
       <div class="trip-list__trips">
         <TripComponent
           v-for="(item, index) in trips"
@@ -73,6 +120,7 @@ const handleSearch = (filters: any) => {
 
 .trip-list__trips {
   width: 50%;
+  padding-bottom: 25px;
 }
 
 .searching {

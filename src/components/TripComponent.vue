@@ -14,8 +14,7 @@ interface Trip {
   from: { cityKey: string; address: string };
   to: { cityKey: string; address: string };
   price: number;
-  departureDate: string;
-  departureTime: string;
+  departureAt: string;
   arrivalTime: string;
   duration: string;
   seatsAvailable: number;
@@ -58,7 +57,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
 
   return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(
     2,
-    "0"
+    "0",
   )}`;
 }
 </script>
@@ -71,14 +70,25 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
       <div class="time-line d-flex justify-space-between mb-2">
         <div class="time-route">
           <div class="trip_progress">
-            <span class="time">{{ trip.departureTime }}</span>
+            <span class="time">{{
+              new Date(trip.departureAt).toLocaleTimeString("ru-RU", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            }}</span>
             <div class="line left"></div>
             <span class="duration">{{
               formatDuration(trip.tripInfo.duration)
             }}</span>
             <div class="line right"></div>
             <span class="time">{{
-              addDurationToTime(trip.departureTime, trip.tripInfo.duration)
+              addDurationToTime(
+                new Date(trip.departureAt).toLocaleTimeString("ru-RU", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                trip.tripInfo.duration,
+              )
             }}</span>
           </div>
           <div class="location mt-1">
@@ -88,7 +98,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
           </div>
         </div>
         <div class="price text-h5 font-weight-bold">
-          {{ trip.price.toLocaleString() }} ₽
+          {{ trip.price.toLocaleString() }} UZS
         </div>
       </div>
 
