@@ -1,20 +1,31 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import Chat from "@/components/Chat.vue";
 import { RouterLink, useRoute } from "vue-router";
 import { getBooking } from "@/api";
 import Loading from "@/components/Loading.vue";
 import { useLangStore } from "@/stores/langStore";
-import { bookTrip } from "@/api";
+import { confirmBooking, rejectBooking } from "@/api";
+const menu = ref<boolean>(false);
+const togleChat = () => {
+  menu.value = !menu.value;
+};
 
 const langStore = useLangStore();
 const route = useRoute();
 const trip = ref<any | null>(null);
 const loading = ref<boolean>(false);
-const createBooking = () => {
-  bookTrip({ tripId: trip.value.id, seats: 1 })
-    .then(() => console.log("Бронь создана"))
+const confirm = () => {
+  confirmBooking(trip.value.id)
+    .then(() => console.log("Бронь одобрена"))
     .catch((err) => console.log(err));
 };
+const reject = () => {
+  rejectBooking(trip.value.id)
+    .then(() => console.log("Бронь одобрена"))
+    .catch((err) => console.log(err));
+};
+
 onMounted(() => {
   loading.value = true;
   getBooking(String(route.params.id))
@@ -44,7 +55,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
 
   return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(
     2,
-    "0"
+    "0",
   )}`;
 }
 
@@ -63,23 +74,36 @@ const options: Intl.DateTimeFormatOptions = {
           langStore.currentLang === "ru"
             ? "ru-RU"
             : langStore.currentLang === "en"
-            ? "en-EN"
-            : "uz-Cyrl-UZ",
-          options
-        ).format(new Date(trip.trip.departureDate))
+              ? "en-EN"
+              : "uz-Cyrl-UZ",
+          options,
+        ).format(new Date(trip.trip.departureAt))
       }}
     </h2>
     <div class="trip-flex">
       <div class="lefside">
         <div class="trip-info">
           <div class="flex-cont">
-            <h4>{{ trip.trip.departureTime }}</h4>
+            <h4>
+              {{
+                new Date(trip.trip.departureAt).toLocaleTimeString("ru-RU", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              }}
+            </h4>
             <p>{{ formatDuration(trip.trip.tripInfo.duration) }}</p>
             <h4>
               {{
                 addDurationToTime(
-                  trip.trip.departureTime,
-                  trip.trip.tripInfo.duration
+                  new Date(trip.trip.departureAt).toLocaleTimeString(
+                    "ru-RU",
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    },
+                  ),
+                  trip.trip.tripInfo.duration,
                 )
               }}
             </h4>
@@ -99,27 +123,43 @@ const options: Intl.DateTimeFormatOptions = {
         <v-card class="trip-card" elevation="2" rounded="lg">
           <RouterLink
             class="link"
-            :to="{ name: 'user', params: { id: trip.trip.driverId } }"
+            :to="{
+              name: 'user',
+              params: {
+                id:
+                  langStore.user.id !== trip.passengerId
+                    ? trip.passengerId
+                    : trip.trip.driver.id,
+              },
+            }"
           >
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
                 <img
-                  :src="`https://web-production-68c29.up.railway.app${trip.trip.driver.avatar}`"
+                  :src="`http://localhost:5000${trip.trip.driver.avatar}`"
                   alt="Driver"
                   class="avatar"
                 />
               </v-avatar>
               <div class="driver-info flex-grow-1">
                 <span class="font-weight-medium"
-                  >{{ trip.trip.driver.firstName }}
-                  {{ trip.trip.driver.lastName }}</span
+                  >{{
+                    langStore.user.id !== trip.passengerId
+                      ? trip.passenger.firstName
+                      : trip.trip.driver.firstName
+                  }}
+                  {{
+                    langStore.user.id !== trip.passengerId
+                      ? trip.passenger.lastName
+                      : trip.trip.driver.lastName
+                  }}</span
                 >
                 <span class="ml-1">★ {{ trip.trip.driver.rating }}</span>
               </div>
               <v-icon icon="mdi-chevron-right" size="24" /></div
           ></RouterLink>
           <v-divider></v-divider>
-          <div v-if="trip.trip.driver.isVerified" style="display: flex">
+          <!-- <div v-if="trip.driver.isVerified" style="display: flex">
             <v-icon
               color="blue"
               icon="mdi-check-decagram"
@@ -127,7 +167,7 @@ const options: Intl.DateTimeFormatOptions = {
               class="mr-2"
             />
             <p>{{ langStore.t("verified") }}</p>
-          </div>
+          </div> -->
           <div style="display: flex">
             <v-icon
               color="green"
@@ -138,34 +178,40 @@ const options: Intl.DateTimeFormatOptions = {
             <p>Редко отменяет поездки</p>
           </div>
 
-          <p>{{ trip.trip.description }}</p>
+          <p>{{ trip.description }}</p>
 
           <v-divider class="my-3"></v-divider>
-          <div v-if="trip.trip.instantBooking" style="display: flex">
+          <div v-if="trip.instantBooking" style="display: flex">
             <v-icon color="yellow" icon="mdi-flash" size="24" class="mr-2" />
             <p>{{ langStore.t("instant") }}</p>
           </div>
-          <div v-if="trip.trip.maxTwoBackSeats" style="display: flex">
+          <div v-if="trip.maxTwoBackSeats" style="display: flex">
             <v-icon icon="mdi-account-multiple" size="24" class="mr-2" />
             <p>{{ langStore.t("maxTwoBackSeats") }}</p>
           </div>
           <div v-if="trip.trip.driver.car" style="display: flex">
             <v-icon color="grey" icon="mdi-car" size="24" class="mr-2" />
-            <p>{{ trip.driver.car }}</p>
+            <p>{{ trip.trip.driver.car.model }}</p>
           </div>
         </v-card>
       </div>
       <div class="lefside">
-        <v-card class="trip-card" elevation="2" rounded="lg">
-          <div class="trip-flex hover">
+        <v-card
+          v-if="
+            langStore.user.id !== trip.passengerId && trip.status === 'pending'
+          "
+          class="trip-card"
+          elevation="2"
+          rounded="lg"
+        >
+          <div class="trip-flex">
             <div style="display: flex; gap: 25px">
               <h4>1 {{ langStore.t("passenger") }}</h4>
               <h4>{{ trip.trip.price }} UZS</h4>
             </div>
-            <v-icon icon="mdi-chevron-right" size="24" />
           </div>
           <v-btn
-            @click="createBooking"
+            @click="confirm"
             class="search-btn"
             color="#00AEEF"
             rounded="lg"
@@ -174,7 +220,7 @@ const options: Intl.DateTimeFormatOptions = {
             Одобрить
           </v-btn>
           <v-btn
-            @click="createBooking"
+            @click="reject"
             class="search-btn"
             color="#00AEEF"
             rounded="lg"
@@ -183,6 +229,68 @@ const options: Intl.DateTimeFormatOptions = {
             Отклонить
           </v-btn>
         </v-card>
+        <v-card v-else class="trip-card" elevation="2" rounded="lg">
+          <div class="trip-flex">
+            <div style="display: flex; gap: 25px">
+              <h4>1 {{ langStore.t("passenger") }}</h4>
+              <h4>{{ trip.trip.price }} UZS</h4>
+            </div>
+          </div>
+          <v-chip
+            v-if="trip.status === 'confirmed'"
+            color="success"
+            variant="tonal"
+            prepend-icon="mdi-check-circle"
+            class="status-chip confirmed"
+            style="
+              font-size: 17px;
+              width: 30%;
+              display: flex;
+              justify-content: center;
+            "
+          >
+            {{ trip.status }}
+          </v-chip>
+          <v-chip
+            v-else
+            color="error"
+            variant="tonal"
+            prepend-icon="mdi-close-box"
+            class="status-chip confirmed"
+            style="
+              font-size: 17px;
+              width: 30%;
+              display: flex;
+              justify-content: center;
+            "
+          >
+            {{ trip.status }}
+          </v-chip>
+        </v-card>
+        <v-btn
+          @click="togleChat"
+          class="chat-btn"
+          color="#00AEEF"
+          rounded="lg"
+          v-if="!menu"
+          height="48"
+        >
+          <v-icon start>mdi-chat</v-icon>
+          Написать водителю
+        </v-btn>
+
+        <Transition name="chat-expand">
+          <div v-if="menu" class="chat-container">
+            <Chat
+              :passengerId="
+                langStore.user.id === trip.passengerId
+                  ? trip.trip.driver.id
+                  : trip.passengerId
+              "
+              @close="togleChat"
+            />
+          </div>
+        </Transition>
       </div>
     </div>
   </div>
@@ -193,11 +301,20 @@ const options: Intl.DateTimeFormatOptions = {
   width: 80%;
   margin: 0 auto;
 }
+.chat-btn {
+  width: 100%;
+}
 .trip-card {
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+.chat-container {
+  margin-top: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
 }
 .avatar {
   width: 50px;
@@ -215,10 +332,12 @@ const options: Intl.DateTimeFormatOptions = {
   padding: 20px;
   border-radius: 20px;
   border: 2px solid rgba(0, 174, 255, 0.452);
-  margin-bottom: 25px;
 }
 .lefside {
   width: 48%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
 }
 .flex-cont {
   display: flex;
@@ -252,6 +371,7 @@ const options: Intl.DateTimeFormatOptions = {
 @media (max-width: 920px) {
   .trip-cont {
     width: 95%;
+    padding-bottom: 70px;
   }
   .trip-flex {
     flex-direction: column;

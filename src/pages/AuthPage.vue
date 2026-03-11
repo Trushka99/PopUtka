@@ -25,7 +25,6 @@ const loginHandle = () => {
   const { email, password } = registerForm.value;
   return login(email, password)
     .then((res) => {
-      langStore.setUser(res.data.data.user);
       router.push(redirectPath);
     })
     .catch((err) => {

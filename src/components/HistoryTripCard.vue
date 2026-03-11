@@ -8,10 +8,11 @@ interface Trip {
   departureDate: string;
   departureTime: string;
   tripInfo: { duration: number };
+  bookings?: any;
 }
 
 const { trip } = defineProps<{ trip: Trip }>();
-
+console.log(trip);
 function formatDuration(minutes: number) {
   const hrs = Math.floor(minutes / 60);
   const mins = minutes % 60;
@@ -25,7 +26,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
   const newMinutes = total % 60;
   return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(
     2,
-    "0"
+    "0",
   )}`;
 }
 </script>
@@ -34,10 +35,23 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
   <v-card class="ticket-card mb-4" elevation="0">
     <div class="ticket-inner">
       <div class="top">
-        <span class="time">{{ trip.departureTime }}</span>
+        <span class="time">{{
+          new Date(trip.departureAt).toLocaleTimeString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        }}</span>
         <span class="dash"></span>
         <span class="time">
-          {{ addDurationToTime(trip.departureTime, trip.tripInfo.duration) }}
+          {{
+            addDurationToTime(
+              new Date(trip.departureAt).toLocaleTimeString("ru-RU", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              trip.tripInfo.duration,
+            )
+          }}
         </span>
       </div>
 
@@ -49,7 +63,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
 
       <div class="info">
         <span class="date">
-          {{ new Date(trip.departureDate).toLocaleDateString("ru-RU") }}
+          {{ new Date(trip.departureAt).toLocaleDateString("ru-RU") }}
         </span>
         <span class="duration">{{
           formatDuration(trip.tripInfo.duration)

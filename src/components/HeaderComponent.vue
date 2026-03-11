@@ -3,20 +3,39 @@ import { ref, computed, watch } from "vue";
 import { RouterLink } from "vue-router";
 import "@mdi/font/css/materialdesignicons.css";
 import { markUnreadAsRead } from "@/api";
+import { useRouter } from "vue-router";
 const menuOpen = ref(false);
 import { useLangStore } from "@/stores/langStore";
 const langStore = useLangStore();
 import CreateTrip from "@/pages/CreateTrip.vue";
 const tripDialog = ref<boolean>(false);
-
+const router = useRouter();
+type TNotif = {
+  createdAt: string;
+  id: string;
+  isRead: boolean;
+  message: string;
+  relatedBookingId: string;
+  title: string;
+  type: string;
+};
+const additionalAction = (n: TNotif) => {
+  if (
+    n.type === "booking_request" ||
+    n.type === "booking_confirmed" ||
+    n.type === "booking_rejected"
+  ) {
+    router.push({ name: "bookings", params: { id: n.relatedBookingId } });
+  }
+  toggleNotifications();
+};
 const menu = ref<boolean>(false);
 const toggleNotifications = async () => {
   menu.value = !menu.value;
 
   if (menu.value) {
     const newValue = {
-      ...langStore.user,
-      notifications: langStore.user.notifications.map((el: any) => ({
+      ...langStore.user.notifications.map((el: any) => ({
         ...el,
         isRead: true,
       })),
@@ -26,7 +45,8 @@ const toggleNotifications = async () => {
   }
 };
 const unreadCount = computed(
-  () => langStore.user?.notifications?.filter((n: any) => !n.isRead).length ?? 0
+  () =>
+    langStore.user?.notifications?.filter((n: any) => !n.isRead).length ?? 0,
 );
 
 const getTypeIcon = (type: string) => {
@@ -111,8 +131,9 @@ watch(selectedLang, (newLang) => {
       <RouterLink class="header__link" to="/"
         ><span class="header__text">{{ langStore.t("home") }}</span></RouterLink
       >
-      <span class="header__text">{{ langStore.t("rides") }}</span>
-
+      <RouterLink class="header__link" to="/search">
+        <span class="header__text">{{ langStore.t("rides") }}</span>
+      </RouterLink>
       <RouterLink class="header__link" to="/drivers"
         ><span class="header__text">{{
           langStore.t("drivers")
@@ -151,6 +172,7 @@ watch(selectedLang, (newLang) => {
         density="compact"
         hide-details
         class="lang-select"
+        :menu-props="{ scrollStrategy: 'close' }"
       >
         <template #item="{ props, item }">
           <v-list-item v-bind="props">
@@ -182,7 +204,9 @@ watch(selectedLang, (newLang) => {
         <v-menu
           v-model="menu"
           location="bottom"
+          :menu-props="{ scrollStrategy: 'close' }"
           :close-on-content-click="false"
+          scroll-strategy="close"
         >
           <template #activator="{ props }">
             <v-badge
@@ -207,10 +231,10 @@ watch(selectedLang, (newLang) => {
             </v-icon>
           </template>
 
-          <v-card min-width="350" elevation="10" class="notifications-card">
+          <v-card min-width="350" elevation="10">
             <v-list class="notifications-list">
               <v-list-item
-                v-for="n in langStore.user.notifications"
+                v-for="n in langStore.notifications"
                 :key="n.id"
                 :class="[{ unread: !n.isRead }]"
               >
@@ -234,6 +258,12 @@ watch(selectedLang, (newLang) => {
                     density="compact"
                     @click.stop="markRead(n)"
                   />
+                  <v-btn
+                    icon="mdi-eye"
+                    variant="text"
+                    density="compact"
+                    @click="additionalAction(n)"
+                  />
                 </template>
 
                 <v-list-item-subtitle class="date">
@@ -241,7 +271,7 @@ watch(selectedLang, (newLang) => {
                 </v-list-item-subtitle>
               </v-list-item>
 
-              <v-list-item v-if="langStore.user.notifications.length === 0">
+              <v-list-item v-if="langStore.notifications.length === 0">
                 <v-list-item-title>Нет уведомлений</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -283,60 +313,59 @@ watch(selectedLang, (newLang) => {
     <v-btn class="header__hamburger" icon @click="menuOpen = !menuOpen">
       <v-icon>mdi-menu</v-icon>
     </v-btn>
-
-    <!-- Мобильное меню -->
-    <div v-if="menuOpen" class="header__mobile-menu">
-      <RouterLink class="header__link" to="/">{{
-        langStore.t("home")
-      }}</RouterLink>
-      <RouterLink class="header__link" to="/">{{
-        langStore.t("drivers")
-      }}</RouterLink>
-      <span class="header__link">{{ langStore.t("rides") }}</span>
-      <span class="header__link">{{ langStore.t("about us") }}</span>
-      <span class="header__link">{{ langStore.t("contacts") }}</span>
-      <v-btn class="header__driver" block>{{ langStore.t("driver") }}</v-btn>
-      <v-btn class="header__driver" color="#5865f2" block>{{
-        langStore.t("pass")
-      }}</v-btn>
-      <v-select
-        v-model="selectedLang"
-        :items="langOptions"
-        item-title="name"
-        item-value="value"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="lang-select"
-      >
-        <template #item="{ props, item }">
-          <v-list-item v-bind="props">
-            <template #prepend>
-              <img
-                :src="item.raw.flag"
-                alt=""
-                width="28"
-                height="28"
-                style="border-radius: 50%; margin-right: 8px"
-              />
-            </template>
-          </v-list-item>
-        </template>
-        <template #selection="{ item }">
-          <div style="display: flex; align-items: center">
+  </header>
+  <!-- Мобильное меню -->
+  <div v-if="menuOpen" class="header__mobile-menu">
+    <RouterLink class="header__link" to="/">{{
+      langStore.t("home")
+    }}</RouterLink>
+    <RouterLink class="header__link" to="/">{{
+      langStore.t("drivers")
+    }}</RouterLink>
+    <span class="header__link">{{ langStore.t("rides") }}</span>
+    <span class="header__link">{{ langStore.t("about us") }}</span>
+    <span class="header__link">{{ langStore.t("contacts") }}</span>
+    <v-btn class="header__driver" block>{{ langStore.t("driver") }}</v-btn>
+    <v-btn class="header__driver" color="#5865f2" block>{{
+      langStore.t("pass")
+    }}</v-btn>
+    <v-select
+      v-model="selectedLang"
+      :items="langOptions"
+      item-title="name"
+      item-value="value"
+      variant="outlined"
+      density="compact"
+      hide-details
+      class="lang-select"
+    >
+      <template #item="{ props, item }">
+        <v-list-item v-bind="props">
+          <template #prepend>
             <img
               :src="item.raw.flag"
-              alt="flag"
+              alt=""
               width="28"
               height="28"
-              style="border-radius: 50%; margin-right: 6px"
+              style="border-radius: 50%; margin-right: 8px"
             />
-            <span>{{ item.raw.label }}</span>
-          </div>
-        </template>
-      </v-select>
-    </div>
-  </header>
+          </template>
+        </v-list-item>
+      </template>
+      <template #selection="{ item }">
+        <div style="display: flex; align-items: center">
+          <img
+            :src="item.raw.flag"
+            alt="flag"
+            width="28"
+            height="28"
+            style="border-radius: 50%; margin-right: 6px"
+          />
+          <span style="color: white">{{ item.raw.label }}</span>
+        </div>
+      </template>
+    </v-select>
+  </div>
 </template>
 
 <style scoped>
@@ -423,22 +452,23 @@ watch(selectedLang, (newLang) => {
   }
   .header__nav,
   .header__buttons {
-    display: none; /* скрываем десктопное меню и кнопки */
+    display: none;
   }
   .header__menu-btn {
     display: flex;
   }
   .header__mobile-menu {
     position: absolute;
-    top: 100%;
+    top: 110px;
     right: 0;
     background-color: rgb(26, 115, 232);
     width: 100%;
     flex-direction: column;
+    margin-top: -50px;
     display: flex;
-    padding: 10px 20px;
+    padding: 35px 20px;
     gap: 10px;
-    z-index: 10;
+    z-index: 1;
   }
   .header__mobile-menu .header__link {
     color: white;
@@ -455,7 +485,9 @@ watch(selectedLang, (newLang) => {
   font-weight: 600;
   background: linear-gradient(135deg, #ff6d00, #ff9100);
   color: white;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   v-icon {
     margin-right: 6px;

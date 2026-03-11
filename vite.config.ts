@@ -4,7 +4,7 @@ import vueDevTools from "vite-plugin-vue-devtools";
 import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
-  plugins: [vue(), vueDevTools()],
+  plugins: [vue()],
   base: "/",
 
   resolve: {

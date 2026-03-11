@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="200" viewBox="0 0 1200 200" preserveAspectRatio="none">
+
+    <style>
+        @keyframes dashmove {
+        to { stroke-dashoffset: 54; }
+        }
+
+        .dashed {
+        stroke-dasharray: 34 20;
+        animation: dashmove 0.7s linear infinite;
+        }
+    </style>
+
+    <!-- Полукруг -->
+    <path d="M0,180
+             C0,90 1200,90 1200,180
+             Z"
+          fill="#0e4ba0" opacity="0.5"/>
+
+    <!-- Линия по низкой дуге -->
+    <path class="dashed"
+          d="M0,180
+             C0,120 1200,120 1200,180"
+          stroke="#FFFFFF"
+          stroke-width="4"
+          fill="none"/>
+</svg>

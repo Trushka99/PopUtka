@@ -1,10 +1,22 @@
 <script setup lang="ts">
-defineProps({
-  destination: String,
-  price: Number,
-  currency: String,
-  img: String,
-});
+import { useRouter } from "vue-router";
+import { useLangStore } from "@/stores/langStore";
+interface Filters {
+  from: string;
+  to: string;
+}
+const langStore = useLangStore();
+const props = defineProps<{
+  destination: string;
+  price: number;
+  currency: string;
+  img: string;
+  filters: Filters;
+}>();
+const router = useRouter();
+const route = () => {
+  router.push({ path: "/search", query: { ...props.filters } });
+};
 </script>
 <template>
   <article class="city__card">
@@ -12,10 +24,10 @@ defineProps({
     <div class="city__text">
       <h3 class="city__destination">{{ destination }}</h3>
       <div>
-        <p>От</p>
+        <p>{{ langStore.t("amountFrom") }}</p>
         <div class="city__price-container">
           <p class="city__price">{{ price }} {{ currency }}</p>
-          <v-btn color="blue" :icon="'mdi-car-back '"></v-btn>
+          <v-btn color="blue" @click="route" :icon="'mdi-car-back '"></v-btn>
         </div>
       </div>
     </div>

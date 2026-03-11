@@ -7,6 +7,7 @@ import UserPage from "@/pages/UserPage.vue";
 import DriversPage from "@/pages/DriversPage.vue";
 import AuthPage from "@/pages/AuthPage.vue";
 import MyProfilePage from "@/pages/MyProfilePage.vue";
+import NotificationsPage from "@/pages/NotificationsPage.vue";
 import ConfirmBookingPage from "@/pages/ConfirmBookingPage.vue";
 const routes = [
   { path: "/", component: HomePage, meta: { layout: "default" } },
@@ -43,6 +44,11 @@ const routes = [
     path: "/bookings/:id",
     name: "bookings",
     component: ConfirmBookingPage,
+    meta: { layout: "default", requiresAuth: true },
+  },
+  {
+    path: "/notifications",
+    component: NotificationsPage,
     meta: { layout: "default", requiresAuth: true },
   },
 ];

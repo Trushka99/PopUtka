@@ -26,8 +26,7 @@ interface TripExample {
   driverId: number;
   from: { address: string; cityKey: string };
   to: { address: string; cityKey: string };
-  departureDate: string;
-  departureTime: string;
+  departureAt: string;
   price: number;
   availableSeats: number;
   description: string;
@@ -48,9 +47,10 @@ const goToTrip = () => {
 };
 const avatarUrl = computed(() =>
   props.trip.driver.avatar
-    ? `https://web-production-68c29.up.railway.app${props.trip.driver.avatar}`
-    : null
+    ? `http://localhost:5000${props.trip.driver.avatar}`
+    : null,
 );
+console.log(props.trip);
 </script>
 
 <template>
@@ -70,20 +70,26 @@ const avatarUrl = computed(() =>
             <v-icon size="24" color="blue">mdi-calendar</v-icon>
             <span class="trip-text"
               >{{
-                new Date(props.trip.departureDate).toLocaleDateString("ru-RU", {
+                new Date(props.trip.departureAt).toLocaleDateString("ru-RU", {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
                 })
               }}
-              {{ props.trip.departureTime }}</span
+              {{
+                new Date(props.trip.departureAt).toLocaleTimeString("ru-RU", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              }}</span
             >
           </div>
 
           <div class="trip-item">
             <v-icon size="24" color="blue">mdi-account-group</v-icon>
             <span class="trip-text"
-              >{{ props.trip.availableSeats }} свободных места</span
+              >{{ props.trip.availableSeats }}
+              {{ langstore.t("available") }}</span
             >
           </div>
 
@@ -125,7 +131,7 @@ const avatarUrl = computed(() =>
           rounded="lg"
           @click="goToTrip"
         >
-          Подробнее
+          {{ langstore.t("more") }}
         </v-btn>
       </v-card-actions>
     </v-card-text>

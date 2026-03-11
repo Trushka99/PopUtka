@@ -4,6 +4,9 @@ import { useLangStore } from "@/stores/langStore";
 import cities from "../utils/dictionary.json";
 import { createTrip } from "@/api";
 import { useSnackbarStore } from "@/stores/snackbarStore";
+import { useTripStore } from "@/stores/tripStore";
+const tripStore = useTripStore();
+
 import Loading from "@/components/Loading.vue";
 const props = defineProps<{
   closeDialog?: () => void;
@@ -36,7 +39,7 @@ const displayDate = ref(date.value.split("-").reverse().join(".")); // DD.MM.YYY
 
 const cityList = computed(() => {
   return Object.values(
-    cities[langStore.currentLang as keyof typeof cities] || {}
+    cities[langStore.currentLang as keyof typeof cities] || {},
   );
 });
 
@@ -70,16 +73,16 @@ const tripData = computed(() => ({
     address: fromAddress.value,
   },
   to: { cityKey: langStore.cKeyByValue(to.value), address: toAddress.value },
-  departureTime: departureTime.value,
+  departureAt: new Date(`${date.value}T${departureTime.value}:00`).toISOString(),
   price: price.value,
   availableSeats: availableSeats.value,
   description: description.value,
   instantBooking: instantBooking.value,
   maxTwoBackSeats: maxTwoBackSeats.value,
-  departureDate: date.value, // отправляем YYYY-MM-DD
 }));
 
 const submitTrip = () => {
+
   if (!from.value || !to.value || !price.value || !departureTime.value) {
     alert(langStore.t("fillAllFields"));
     return;
@@ -88,7 +91,10 @@ const submitTrip = () => {
   console.log("Отправляем данные:", tripData.value);
   loading.value = true;
   createTrip(tripData.value)
-    .then((res) => console.log(res))
+    .then((res) => {
+      console.log(res);
+      tripStore.addTrip(res.data.data);
+    })
     .catch((err) => console.error(err))
     .finally(() => {
       loading.value = false;

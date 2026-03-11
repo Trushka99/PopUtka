@@ -1,17 +1,53 @@
 <script setup lang="tsx">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useLangStore } from "@/stores/langStore";
 const langStore = useLangStore();
-const timeFrom = ref<string | null>(null);
-const timeTo = ref<string | null>(null);
-
+const props = defineProps<{
+  timeFrom: string | null;
+  timeTo: string | null;
+  driverGender: string | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  instantBookingOnly: boolean | null;
+  verifiedOnly: boolean | null;
+  sortBy: "cheapest" | "earliest";
+  loadFilters: () => void;
+}>();
+const emit = defineEmits<{
+  (e: "update:timeFrom", value: string | null): void;
+  (e: "update:instantBookingOnly", value: boolean | null): void;
+  (e: "update:verifiedOnly", value: boolean | null): void;
+  (e: "update:sortBy", value: "cheapest" | "earliest"): void;
+  (e: "update:timeTo", value: string | null): void;
+  (e: "update:driverGender", value: string | null): void;
+  (e: "update:minPrice", value: number | null): void;
+  (e: "update:maxPrice", value: number | null): void;
+}>();
 const showMenuFrom = ref(false);
 const showMenuTo = ref(false);
-const formattedFrom = computed(() => timeFrom.value || "");
-const formattedTo = computed(() => timeTo.value || "");
+const localTimeFrom = ref(props.timeFrom);
+watch(localTimeFrom, (val) => emit("update:timeFrom", val));
 
-const radios = ref("");
-const sex = ref("");
+const localTimeTo = ref(props.timeTo);
+watch(localTimeTo, (val) => emit("update:timeTo", val));
+
+const localDriverGender = ref(props.driverGender);
+watch(localDriverGender, (val) => emit("update:driverGender", val));
+
+const localMinPrice = ref(props.minPrice);
+watch(localMinPrice, (val) => emit("update:minPrice", val));
+
+const localInstant = ref(props.instantBookingOnly);
+watch(localInstant, (val) => emit("update:instantBookingOnly", val));
+
+const localVerified = ref(props.verifiedOnly);
+watch(localVerified, (val) => emit("update:verifiedOnly", val));
+
+const localSortBy = ref(props.sortBy);
+watch(localSortBy, (val) => emit("update:sortBy", val));
+
+const localMaxPrice = ref(props.maxPrice);
+watch(localMaxPrice, (val) => emit("update:maxPrice", val));
 </script>
 <template>
   <div class="filters">
@@ -21,32 +57,40 @@ const sex = ref("");
           <h3 class="title">{{ langStore.t("filters") }}</h3>
           <v-icon>mdi-filter-variant</v-icon>
         </div>
-        <v-radio-group v-model="radios">
-          <v-radio color="primary" value="early">
-            <template v-slot:label>
-              <div>
-                {{ langStore.t("early") }}
-              </div>
-            </template></v-radio
-          >
-          <v-radio color="primary" label="Саммые дешевые поездки" value="cheap">
-            <template v-slot:label>
-              <div>
-                {{ langStore.t("cheap") }}
-              </div>
-            </template></v-radio
-          >
-          <v-radio color="primary" value="varified">
-            <template v-slot:label>
-              <div>{{ langStore.t("verified") }}</div>
-            </template></v-radio
-          >
-          <v-radio color="primary">
-            <template v-slot:label>
-              <div>{{ langStore.t("instant") }}</div>
-            </template></v-radio
-          >
+        <v-radio-group hide-details v-model="localSortBy">
+          <v-radio value="earliest" color="primary">
+            <template #label>
+              <div>{{ langStore.t("early") }}</div>
+            </template>
+          </v-radio>
+
+          <v-radio value="cheapest" color="primary">
+            <template #label>
+              <div>{{ langStore.t("cheap") }}</div>
+            </template>
+          </v-radio>
         </v-radio-group>
+        <v-checkbox
+          density="compact"
+          hide-details
+          v-model="localVerified"
+          color="primary"
+        >
+          <template #label>
+            <div>{{ langStore.t("verified") }}</div>
+          </template>
+        </v-checkbox>
+
+        <v-checkbox
+          density="compact"
+          hide-details
+          v-model="localInstant"
+          color="primary"
+        >
+          <template #label>
+            <div>{{ langStore.t("instant") }}</div>
+          </template>
+        </v-checkbox>
       </v-container>
       <v-container class="radios" fluid>
         <div class="flex">
@@ -57,13 +101,13 @@ const sex = ref("");
           <v-col cols="6">
             <v-text-field
               :label="langStore.t('amountFrom')"
-              model-value="10.00"
+              v-model="localMinPrice"
               suffix="₽"
             ></v-text-field></v-col
           ><v-col cols="6">
             <v-text-field
               :label="langStore.t('amountTo')"
-              model-value="10.00"
+              v-model="localMaxPrice"
               suffix="₽"
             ></v-text-field></v-col
         ></v-row>
@@ -76,7 +120,7 @@ const sex = ref("");
         <v-row justify="space-between">
           <v-col cols="6">
             <v-text-field
-              v-model="formattedFrom"
+              v-model="localTimeFrom"
               :label="langStore.t('timeperiodfrom')"
               readonly
             >
@@ -88,18 +132,16 @@ const sex = ref("");
               >
                 <v-time-picker
                   color="primary"
-                  variant="flat"
-                  density="comfortable"
                   format="24hr"
-                  v-model="timeFrom"
+                  v-model="localTimeFrom"
                   @click:minute="showMenuFrom = false"
-                ></v-time-picker>
+                />
               </v-menu>
             </v-text-field>
           </v-col>
           <v-col cols="6">
             <v-text-field
-              v-model="formattedTo"
+              v-model="localTimeTo"
               :label="langStore.t('timeperiodto')"
               readonly
             >
@@ -111,18 +153,16 @@ const sex = ref("");
               >
                 <v-time-picker
                   color="primary"
-                  variant="flat"
-                  density="comfortable"
                   format="24hr"
-                  v-model="timeTo"
-                  @click:minute="showMenuFrom = false"
-                ></v-time-picker>
+                  v-model="localTimeTo"
+                  @click:minute="showMenuTo = false"
+                />
               </v-menu>
             </v-text-field>
           </v-col>
         </v-row>
       </v-container>
-      <v-radio-group v-model="sex" class="sex-row">
+      <v-radio-group v-model="localDriverGender" class="sex-row">
         <v-radio color="primary" value="male">
           <template #label>
             <v-icon color="pink">mdi-gender-male</v-icon>
@@ -137,7 +177,9 @@ const sex = ref("");
           </template>
         </v-radio>
       </v-radio-group>
-      <v-btn color="info" variant="tonal">{{ langStore.t("filter") }}</v-btn>
+      <v-btn @click="props.loadFilters" color="info" variant="tonal">{{
+        langStore.t("filter")
+      }}</v-btn>
     </div>
   </div>
 </template>

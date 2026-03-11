@@ -1,0 +1,108 @@
+@use "sass:math";
+
+$default-container-padding: 2rem;
+
+@mixin container($max-width:null, $padding: $default-container-padding) {
+  @if $max-width != null {
+    max-width: $max-width;
+  }
+  padding: $padding;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@mixin flex($dir: row, $justify: flex-start, $align: stretch, $gap:null) {
+  display: flex;
+  flex-direction: $dir;
+  justify-content: $justify;
+  align-items: $align;
+  @if $gap != null {
+    gap: $gap;
+  }
+}
+
+@mixin size($w, $h) {
+  width: $w;
+  height: $h;
+}
+
+@mixin heading600($fz, $lh: 100%, $ls: 0) {
+  font-weight: 600;
+  font-size: $fz;
+  line-height: $lh;
+  letter-spacing: $ls;
+}
+
+@mixin heading700($fz, $lh: 100%, $ls: 0) {
+  font-weight: 700;
+  //font-size: $fz;
+  line-height: $lh;
+  letter-spacing: $ls;
+}
+
+@mixin heading500($fz, $lh: 100%, $ls: 0) {
+  font-weight: 500;
+  font-size: $fz;
+  line-height: $lh;
+  letter-spacing: $ls;
+}
+
+@mixin paragraph300($fz, $lh: 100%, $ls: 0) {
+  font-weight: 300;
+  font-size: $fz;
+  line-height: $lh;
+  letter-spacing: $ls;
+}
+
+@mixin paragraph400($fz, $lh: 100%, $ls: 0) {
+  font-weight: 400;
+  font-size: $fz;
+  line-height: $lh;
+  letter-spacing: $ls;
+}
+
+@mixin paragraph500($fz, $lh: 100%, $ls: 0) {
+  font-weight: 500;
+  font-size: $fz;
+  line-height: $lh;
+  letter-spacing: $ls;
+}
+
+@mixin paragraph600($fz, $lh: 100%, $ls: 0) {
+  font-weight: 600;
+  font-size: $fz;
+  line-height: $lh;
+  letter-spacing: $ls;
+}
+
+@mixin paragraph700($fz, $lh: 100%, $ls: 0) {
+  font-weight: 700;
+  font-size: $fz;
+  line-height: $lh;
+  letter-spacing: $ls;
+}
+
+// бля буду я гений
+
+@mixin clampProp($prop, $min, $max, $min-vw: 360px, $max-vw: 1920px) {
+  @if math.unit($min) != math.unit($max) {
+    @warn "clamp-prop: units of $min and $max differ.";
+  }
+
+  $range: $max - $min;
+  $vw-range: $max-vw - $min-vw;
+
+  @if $vw-range == 0 {
+    #{$prop}: $min;
+  } @else {
+    $slope-vw: math.div($range, $vw-range) * 100;
+
+    $intercept: $min - math.div(($range * $min-vw), $vw-range);
+
+    #{$prop}: clamp(
+            $min,
+            calc(#{$slope-vw} * 1dvw + #{$intercept}),
+            $max
+    );
+  }
+}

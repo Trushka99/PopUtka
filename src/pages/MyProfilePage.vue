@@ -1,33 +1,63 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
+import type { Ref } from "vue";
 import { useLangStore } from "@/stores/langStore";
 import Loading from "@/components/Loading.vue";
+import BookingCard from "@/components/BookingCard.vue";
+import { useRouter } from "vue-router";
 import {
-  getUser,
   apiUploadAvatar,
-  getMyBookings,
-  confirmBooking,
-  rejectBooking,
-  getTripHistory,
+  logout,
   updateCar,
   updateCarPhoto,
+  updateProfile,
 } from "@/api";
 import HistoryTripCard from "@/components/HistoryTripCard.vue";
-
+const router = useRouter();
+const editingPhone = ref<boolean>(false);
+const editingEmail = ref<boolean>(false);
+const editingDesc = ref<boolean>(false);
+function toggleEditingField(
+  editing: Ref<boolean>,
+  model: Ref<string>,
+  original: string,
+) {
+  if (editing.value) {
+    editing.value = false;
+    model.value = original;
+  } else {
+    editing.value = true;
+  }
+}
 const langStore = useLangStore();
+console.log(langStore.user);
 const loading = ref(true);
 const user = ref<any>(null);
-const bookings = ref<any>(null);
+const number = ref<string>(langStore.user.phone);
+const email = ref<string>(langStore.user.email);
+const desc = ref<string>(langStore.user.about);
 const fileInput = ref<HTMLInputElement | null>(null);
 const carModalOpen = ref(false);
-
+const logOUT = () => {
+  logout()
+    .then(() => {
+      router.push({
+        path: "/",
+      });
+    })
+    .catch((err) => console.error(err));
+};
 const carForm = ref({
   model: "",
   color: "",
   year: "",
   licensePlate: "",
 });
-
+const changeData = (body: any) => {
+  updateProfile(body)
+    .then((res) => console.log(res))
+    .catch((err) => console.log(err));
+};
 function openCarModal() {
   if (user.value?.car) {
     carForm.value = {
@@ -67,7 +97,6 @@ async function uploadAvatar(e: Event) {
   if (!file) return;
   try {
     const res = await apiUploadAvatar(file);
-    // adapt to your API shape
     user.value.avatar = res.data?.data?.avatar || user.value.avatar;
   } catch (err) {
     console.error("Ошибка загрузки аватара", err);
@@ -77,13 +106,7 @@ async function uploadAvatar(e: Event) {
 onMounted(async () => {
   loading.value = true;
   try {
-    const res = await getUser(String(langStore.user.id));
-    const trips = await getTripHistory();
-    const bookingsRes = await getMyBookings();
-    console.log(trips.data.data);
-    console.log(res.data.data);
-    user.value = res.data.data;
-    bookings.value = bookingsRes.data.data;
+    user.value = langStore.user;
   } catch (err) {
     console.warn("API failed, using fallback data", err);
   } finally {
@@ -92,7 +115,7 @@ onMounted(async () => {
 });
 async function saveCar() {
   try {
-    const res = await updateCar("2kIO1ljvRF7Y", {
+    const res = await updateCar(langStore.user.id, {
       model: carForm.value.model,
       color: carForm.value.color,
       year: carForm.value.year,
@@ -106,22 +129,21 @@ async function saveCar() {
     alert("Не удалось сохранить автомобиль");
   }
 }
-
+function togglePhoneEditing() {
+  toggleEditingField(editingPhone, number, langStore.user.phone);
+}
+function toggleEmailEditing() {
+  toggleEditingField(editingEmail, email, langStore.user.email);
+}
+function toggleDescEditing() {
+  toggleEditingField(editingDesc, desc, langStore.user.description);
+}
 const age = computed(() => {
   if (!user.value?.birthDate) return "-";
   const b = new Date(user.value.birthDate);
   return Math.floor(
-    (Date.now() - b.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
+    (Date.now() - b.getTime()) / (1000 * 60 * 60 * 24 * 365.25),
   );
-});
-
-const categoryRatings = computed(() => {
-  if (!user.value?.ratings)
-    return [{ key: "Общий", value: user.value?.rating ?? 0 }];
-  return Object.entries(user.value.ratings).map(([k, v]) => ({
-    key: k,
-    value: v,
-  }));
 });
 </script>
 
@@ -150,12 +172,13 @@ const categoryRatings = computed(() => {
     </div>
     <aside class="left-panel">
       <div class="card main-card">
-        <div class="avatar-wrap" @click="openFileDialog">
+        <div class="avatar-wrap">
           <img
             class="avatar"
+            @click="openFileDialog"
             :src="
               user.avatar
-                ? `https://web-production-68c29.up.railway.app${user.avatar}`
+                ? `http://localhost:5000${user.avatar}`
                 : '/images/test-avatar.jpg'
             "
             alt="avatar"
@@ -172,42 +195,150 @@ const categoryRatings = computed(() => {
         <div class="user-head">
           <div class="name">
             {{ user.firstName }} <span class="last">{{ user.lastName }}</span>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              class="logout-btn"
+              @click="logOUT"
+            >
+              <v-icon size="20">mdi-logout</v-icon>
+            </v-btn>
           </div>
-          <div class="sub">{{ age }} лет · {{ user.city }}</div>
+          <v-textarea
+            variant="solo"
+            auto-grow
+            :label="langStore.user.about ? undefined : langStore.t('about me')"
+            v-model="desc"
+            class="no-append-padding"
+            :readonly="!editingDesc"
+            @click:append="toggleDescEditing"
+            :clearable="editingDesc"
+            ><template #append>
+              <v-container style="padding: 0; width: 30px">
+                <v-col style="padding: 0" cols="1">
+                  <v-icon
+                    @click="toggleDescEditing"
+                    v-if="editingDesc"
+                    size="large"
+                    style="color: rgba(0, 0, 0, 0.6)"
+                    >mdi-pencil-off-outline</v-icon
+                  >
+                  <v-icon
+                    @click="toggleDescEditing"
+                    v-else
+                    size="large"
+                    style="color: rgba(0, 0, 0, 0.6)"
+                    >mdi-pencil-outline</v-icon
+                  >
+                  <v-icon
+                    @click="changeData({ about: desc })"
+                    v-if="editingDesc"
+                    size="large"
+                    style="color: rgb(80, 200, 120)"
+                    >mdi-check-circle</v-icon
+                  >
+                </v-col>
+              </v-container>
+            </template></v-textarea
+          >
+          <div class="sub">
+            {{ age }} {{ langStore.t("age") }} · {{ user.city }}
+          </div>
 
           <div class="rating">
             <div class="big-rating">{{ (user.rating ?? 0).toFixed(1) }}</div>
             <div class="rating-meta">
               <div class="stars">★★★★★</div>
-              <div class="reviews">{{ user.reviews?.length ?? 0 }} отзывов</div>
+              <div class="reviews">
+                {{ user.reviews?.length ?? 0 }} {{ langStore.t("reviews") }}
+              </div>
             </div>
           </div>
 
           <div class="verifications">
-            <span class="ver-item" :class="{ ok: user.verifiedPassport }"
-              >Паспорт</span
-            >
-            <span class="ver-item" :class="{ ok: user.verifiedEmail }"
-              >Email</span
-            >
-            <span class="ver-item" :class="{ ok: user.verifiedPhone }"
-              >Телефон</span
-            >
+            <span class="ver-item" :class="{ ok: user.verifiedPassport }">{{
+              langStore.t("passport")
+            }}</span>
+            <span class="ver-item" :class="{ ok: user.verifiedEmail }">{{
+              langStore.t("email")
+            }}</span>
+            <span class="ver-item" :class="{ ok: user.verifiedPhone }">{{
+              langStore.t("phone")
+            }}</span>
           </div>
 
           <div class="contacts">
-            <div class="contact">
-              <strong>Телефон:</strong> {{ user.phone ?? "—" }}
-            </div>
-            <div class="contact">
-              <strong>Email:</strong> {{ user.email ?? "—" }}
-            </div>
+            <v-container class="contact">
+              <strong>{{ langStore.t("phone") }}:</strong>
+              <v-text-field
+                v-model="number"
+                :readonly="!editingPhone"
+                variant="solo"
+                :clearable="editingPhone"
+                style="max-width: 70%"
+                hide-details="auto"
+                class="small-input"
+                density="compact"
+              >
+                <template #append-inner>
+                  <v-icon size="small" class="mr-2" @click="togglePhoneEditing">
+                    {{
+                      editingPhone
+                        ? "mdi-pencil-off-outline"
+                        : "mdi-pencil-outline"
+                    }}
+                  </v-icon>
+
+                  <v-icon
+                    v-if="editingPhone"
+                    size="small"
+                    color="success"
+                    @click="changeData({ phone: number })"
+                  >
+                    mdi-check-circle
+                  </v-icon>
+                </template>
+              </v-text-field>
+            </v-container>
+            <v-container class="contact">
+              <strong>{{ langStore.t("email") }}:</strong>
+              <v-text-field
+                v-model="email"
+                :readonly="!editingEmail"
+                variant="solo"
+                :clearable="editingEmail"
+                style="max-width: 70%"
+                class="small-input"
+                hide-details="auto"
+                density="compact"
+              >
+                <template #append-inner>
+                  <v-icon size="small" class="mr-2" @click="toggleEmailEditing">
+                    {{
+                      editingEmail
+                        ? "mdi-pencil-off-outline"
+                        : "mdi-pencil-outline"
+                    }}
+                  </v-icon>
+
+                  <v-icon
+                    v-if="editingEmail"
+                    size="small"
+                    color="success"
+                    @click="changeData({ email: email })"
+                  >
+                    mdi-check-circle
+                  </v-icon>
+                </template>
+              </v-text-field>
+            </v-container>
           </div>
 
-          <div class="actions">
-            <button class="btn btn-primary">Написать</button>
-            <button class="btn btn-outline">Пожаловаться</button>
-          </div>
+          <!-- <div class="actions">
+            <button class="btn btn-primary">{{ langStore.t("write") }}</button>
+            <button class="btn btn-outline">{{ langStore.t("report") }}</button>
+          </div> -->
         </div>
         <div v-if="user.car" class="car-block">
           <h3 class="small-title">Автомобиль</h3>
@@ -216,25 +347,23 @@ const categoryRatings = computed(() => {
               {{ user.car.brand }} {{ user.car.model }}
             </div>
             <div class="car-meta">
-              Год: {{ user.car.year }} · Цвет: {{ user.car.color }}
+              {{ langStore.t("year") }}: {{ user.car.year }} ·
+              {{ langStore.t("color") }}:
+              {{ user.car.color }}
             </div>
             <div class="car-plate">
-              Гос. номер: <strong>{{ user.car.licensePlate }}</strong>
+              {{ langStore.t("car number") }}:
+              <strong>{{ user.car.licensePlate }}</strong>
             </div>
           </div>
-
-          <button class="btn btn-outline btn-sm" @click="openCarModal">
-            ✏️ Редактировать автомобиль
-          </button>
-
           <div class="car-photo-section">
             <div class="car-photo-wrap" @click="openCarPhotoDialog">
               <img
                 class="car-photo"
                 :src="
-                  user.car?.photo
-                    ? `https://web-production-68c29.up.railway.app${user.car.photo}`
-                    : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe0NweKjJYqN3lSKJNkGM8X95kcP8BpjLJ-Q&s'
+                  user.car?.photos[0]
+                    ? `http://localhost:5000${user.car?.photos[0]}`
+                    : ''
                 "
                 alt="car"
               />
@@ -251,6 +380,9 @@ const categoryRatings = computed(() => {
             />
           </div>
         </div>
+        <button class="btn btn-outline btn-sm" @click="openCarModal">
+          ✏️ {{ langStore.t("edit car") }}
+        </button>
       </div>
     </aside>
 
@@ -260,33 +392,33 @@ const categoryRatings = computed(() => {
           :class="{ active: activeSection === 'main' }"
           @click="activeSection = 'main'"
         >
-          Профиль
+          {{ langStore.t("profile") }}
         </button>
         <button
           :class="{ active: activeSection === 'trips' }"
           @click="activeSection = 'trips'"
         >
-          История поездок
+          {{ langStore.t("myTrips") }}
         </button>
         <button
           :class="{ active: activeSection === 'bookings' }"
           @click="activeSection = 'bookings'"
         >
-          Бронирования
+          {{ langStore.t("bookings") }}
         </button>
         <button
           :class="{ active: activeSection === 'about' }"
           @click="activeSection = 'about'"
         >
-          О себе
+          {{ langStore.t("subs") }}
         </button>
       </nav>
 
       <section v-show="activeSection === 'main'" class="section-card">
-        <h2>Краткая информация</h2>
+        <h2>{{ langStore.t("summary") }}</h2>
         <div class="grid-2">
           <div class="info-card">
-            <h4>Рейтинг</h4>
+            <h4>{{ langStore.t("rating") }}</h4>
             <div class="big">{{ (user.rating ?? 0).toFixed(1) }} / 5</div>
             <div class="muted">
               {{ user.reviews?.length ?? 0 }} отзывов • Завершено:
@@ -294,11 +426,11 @@ const categoryRatings = computed(() => {
             </div>
           </div>
           <div class="info-card">
-            <h4>Контакты</h4>
+            <h4>{{ langStore.t("contacts") }}</h4>
             <div>{{ user.phone ?? "—" }}</div>
             <div>{{ user.email ?? "—" }}</div>
             <div class="muted">
-              Регистрация:
+              {{ langStore.t("signup") }}:
               {{
                 user.createdAt
                   ? new Date(user.createdAt).toLocaleDateString("ru-RU")
@@ -308,76 +440,35 @@ const categoryRatings = computed(() => {
           </div>
         </div>
       </section>
-
       <section v-show="activeSection === 'trips'" class="section-card">
         <h2>История поездок</h2>
-        <HistoryTripCard v-for="t in user.trips" :key="t.id" :trip="t" />
+        <HistoryTripCard v-for="t in user.activeTrips" :key="t.id" :trip="t" />
       </section>
 
       <section v-show="activeSection === 'bookings'" class="section-card">
         <h2>Текущие бронирования</h2>
         <div class="cards-list">
-          <article class="booking-card" v-for="b in bookings" :key="b.id">
-            <div class="row">
-              <div class="place">
-                <strong>{{
-                  langStore.с(b.trip.from.cityKey.toLowerCase())
-                }}</strong>
-                →
-                <strong>{{
-                  langStore.с(b.trip.to.cityKey.toLowerCase())
-                }}</strong>
-              </div>
-              <div class="status">
-                {{
-                  b.status === "pending"
-                    ? "Ожидает подтверждения"
-                    : "хуй поймет"
-                }}
-              </div>
-            </div>
-            <div class="meta">
-              Выезд: {{ b.trip.departureDate }} · Пассажиры: {{ b.seats }} ·
-              Цена: {{ b.trip.price }} UZS
-            </div>
-            <div class="booking-actions">
-              <v-btn
-                @click="
-                  async () => {
-                    const res = await confirmBooking(b.id);
-                    console.log(res);
-                  }
-                "
-                class="btn btn-small"
-                >Подтвердить</v-btn
-              >
-              <v-btn
-                @click="
-                  async () => {
-                    const res = await rejectBooking(b.id);
-                    console.log(res);
-                  }
-                "
-                class="btn btn-outline btn-small"
-                >Отменить</v-btn
-              >
-              <RouterLink
-                class="link"
-                :to="{ name: 'bookings', params: { id: b.id } }"
-                ><v-btn class="btn btn-outline btn-small"
-                  >Подробнее</v-btn
-                ></RouterLink
-              >
-            </div>
-          </article>
+          <BookingCard
+            v-for="b in user.myBookings"
+            :key="b.id"
+            :trip="{ type: 'booking', data: b }"
+          />
+          <BookingCard
+            v-if="user.role === 'driver'"
+            v-for="t in user.activeTrips"
+            :key="t.id"
+            :trip="{ type: 'trip', data: t }"
+          />
         </div>
-        <div v-if="!(user.bookings && user.bookings.length)" class="empty">
+        <div
+          v-if="user.myBookings.length === 0 && user.activeTrips.length === 0"
+          class="empty"
+        >
           Бронирований нет
         </div>
       </section>
 
       <section v-show="activeSection === 'about'" class="section-card">
-        <h2>О себе</h2>
         <p class="about-text">{{ user.about || "Описание отсутствует" }}</p>
       </section>
     </main>
@@ -393,11 +484,40 @@ const categoryRatings = computed(() => {
   padding: 20px;
   box-sizing: border-box;
   margin-top: 15px;
+
+  @media (max-width: 768px) {
+    padding-bottom: 70px;
+  }
 }
 
 .left-panel {
-  max-height: 80vh;
-  overflow: auto;
+  height: 80dvh;
+}
+.card.main-card {
+  height: 100%;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #1976d2;
+    border-radius: 8px;
+    border: 2px solid #f3f4f6;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #115293;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: #1976d2 #f3f4f6;
 }
 
 .right-panel {
@@ -414,6 +534,7 @@ const categoryRatings = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  border-radius: 15px;
 }
 
 .avatar-wrap {
@@ -469,6 +590,9 @@ const categoryRatings = computed(() => {
   justify-content: center;
   margin-top: 10px;
 }
+:deep(.small-input input) {
+  font-size: 14px;
+}
 
 .ver-item {
   padding: 6px 10px;
@@ -487,6 +611,9 @@ const categoryRatings = computed(() => {
 .contacts {
   margin-top: 12px;
   color: #374151;
+  flex-direction: column;
+  gap: 10px;
+  display: flex;
 }
 
 .actions {
@@ -511,6 +638,12 @@ const categoryRatings = computed(() => {
 .btn-outline {
   background: transparent;
   border: 1px solid #e5e7eb;
+}
+.contact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
 }
 
 .car-block {
@@ -587,7 +720,13 @@ const categoryRatings = computed(() => {
   justify-content: center;
   z-index: 1000;
 }
-
+.no-append-padding {
+  margin-top: 5px;
+}
+.no-append-padding :deep(.v-input__append) {
+  padding: 0 !important;
+  margin-left: 10px !important;
+}
 .modal {
   background: #fff;
   border-radius: 14px;
@@ -643,7 +782,30 @@ const categoryRatings = computed(() => {
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
-  overflow: auto;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #1976d2;
+    border-radius: 8px;
+    border: 2px solid #f3f4f6;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #115293;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: #1976d2 #f3f4f6;
+
   flex: 1 1 auto;
 }
 
@@ -696,7 +858,6 @@ const categoryRatings = computed(() => {
 
 .cards-list {
   display: grid;
-  gap: 12px;
   margin-top: 10px;
 }
 .booking-card {
@@ -737,14 +898,25 @@ const categoryRatings = computed(() => {
   }
   .left-panel {
     order: 1;
+    height: 100%;
+    max-height: 100%;
   }
   .right-panel {
     order: 2;
   }
 }
 @media (max-width: 768px) {
+  .section-nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
   .section-nav button {
+    width: 100%;
+    padding: 10px 8px;
     font-size: 14px;
+    text-align: center;
   }
 }
 </style>

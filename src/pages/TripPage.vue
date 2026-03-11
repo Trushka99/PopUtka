@@ -4,14 +4,19 @@ import { RouterLink, useRoute } from "vue-router";
 import { getTrip } from "@/api";
 import Loading from "@/components/Loading.vue";
 import { useLangStore } from "@/stores/langStore";
+import { useSnackbarStore } from "@/stores/snackbarStore";
 import { bookTrip } from "@/api";
 const langStore = useLangStore();
 const route = useRoute();
 const trip = ref<any>();
 const loading = ref<boolean>(false);
+const snackbar = useSnackbarStore();
 const createBooking = () => {
   bookTrip({ tripId: trip.value.id, seats: 1 })
-    .then(() => console.log("Бронь создана"))
+    .then(() => {
+      console.log("Бронь создана");
+      snackbar.notify("Бронь создана, дождитесь подтвеждения!");
+    })
     .catch((err) => console.log(err));
 };
 onMounted(() => {
@@ -43,7 +48,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
 
   return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(
     2,
-    "0"
+    "0",
   )}`;
 }
 
@@ -62,21 +67,34 @@ const options: Intl.DateTimeFormatOptions = {
           langStore.currentLang === "ru"
             ? "ru-RU"
             : langStore.currentLang === "en"
-            ? "en-EN"
-            : "uz-Cyrl-UZ",
-          options
-        ).format(new Date(trip.departureDate))
+              ? "en-EN"
+              : "uz-Cyrl-UZ",
+          options,
+        ).format(new Date(trip.departureAt))
       }}
     </h2>
     <div class="trip-flex">
       <div class="lefside">
         <div class="trip-info">
           <div class="flex-cont">
-            <h4>{{ trip.departureTime }}</h4>
+            <h4>
+              {{
+                new Date(trip.departureAt).toLocaleTimeString("ru-RU", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              }}
+            </h4>
             <p>{{ formatDuration(trip.tripInfo.duration) }}</p>
             <h4>
               {{
-                addDurationToTime(trip.departureTime, trip.tripInfo.duration)
+                addDurationToTime(
+                  new Date(trip.departureAt).toLocaleTimeString("ru-RU", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  trip.tripInfo.duration,
+                )
               }}
             </h4>
           </div>
@@ -100,7 +118,7 @@ const options: Intl.DateTimeFormatOptions = {
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
                 <img
-                  :src="`https://web-production-68c29.up.railway.app${trip.driver.avatar}`"
+                  :src="`http://localhost:5000${trip.driver.avatar}`"
                   alt="Driver"
                   class="avatar"
                 />
@@ -146,7 +164,11 @@ const options: Intl.DateTimeFormatOptions = {
           </div>
           <div v-if="trip.driver.car" style="display: flex">
             <v-icon color="grey" icon="mdi-car" size="24" class="mr-2" />
-            <p>{{ trip.driver.car }}</p>
+            <p>
+              {{ trip.driver.car.model }} - {{ trip.driver.car.year }} ({{
+                trip.driver.car.color
+              }})
+            </p>
           </div>
         </v-card>
       </div>
@@ -166,7 +188,7 @@ const options: Intl.DateTimeFormatOptions = {
             rounded="lg"
             height="48"
           >
-            Забронировать
+            {{ langStore.t("book") }}
           </v-btn>
         </v-card>
       </div>
