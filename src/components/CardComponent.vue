@@ -47,7 +47,7 @@ const goToTrip = () => {
 };
 const avatarUrl = computed(() =>
   props.trip.driver.avatar
-    ? `http://localhost:5000${props.trip.driver.avatar}`
+    ? `https://api.pop-utka.uz${props.trip.driver.avatar}`
     : null,
 );
 console.log(props.trip);

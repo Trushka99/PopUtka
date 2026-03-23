@@ -186,10 +186,10 @@ const sex = ["Мужской", "Женский"];
         </v-btn>
         <span class="error">{{ error }}</span>
       </v-card-text>
-      <div class="forgot-password">{{ langStore.t("forgot") }}</div>
+      <!-- <div class="forgot-password">{{ langStore.t("forgot") }}</div>
 
-      <div class="divider-text">{{ langStore.t("or") }}</div>
-
+      <div class="divider-text">{{ langStore.t("or") }}</div> -->
+      <!-- 
       <v-row justify="space-between" class="social-buttons">
         <v-btn outlined class="flex-grow-1 mx-1 social-btn">
           <img class="icon" src="/images/Google_logo.png" /> Google
@@ -197,7 +197,7 @@ const sex = ["Мужской", "Женский"];
         <v-btn outlined class="flex-grow-1 mx-1 social-btn">
           <img class="icon" src="/images/Telegram_logo.png" /> Telegram
         </v-btn>
-      </v-row>
+      </v-row> -->
     </v-card>
   </div>
 </template>
@@ -240,7 +240,7 @@ const sex = ["Мужской", "Женский"];
   width: 460px;
   padding: 32px;
   border-radius: 25px;
-  height: 600px;
+  max-height: 600px;
   &::-webkit-scrollbar {
     width: 6px;
   }

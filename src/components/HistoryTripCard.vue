@@ -1,34 +1,41 @@
 <script setup lang="ts">
 import { useLangStore } from "@/stores/langStore";
+import { ref } from "vue";
+import TripReview from "./TripReview.vue";
 const langStore = useLangStore();
 interface Trip {
-  id: number;
-  from: { cityKey: string; address: string };
-  to: { cityKey: string; address: string };
-  departureDate: string;
-  departureTime: string;
-  tripInfo: { duration: number };
-  bookings?: any;
+  to: {
+    address: string;
+    cityKey: string;
+  };
+  from: {
+    address: string;
+    cityKey: string;
+  };
+  role: string;
+  price: number;
+  status: string;
+  tripId: string;
+  passengers: {
+    id: string;
+    seats: number;
+    avatar: string | null;
+    lastName: string;
+    firstName: string;
+  }[];
+  completedAt: string;
+  departureAt: string;
 }
 
 const { trip } = defineProps<{ trip: Trip }>();
 console.log(trip);
-function formatDuration(minutes: number) {
-  const hrs = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return hrs === 0 ? `${mins} мин` : `${hrs} ч ${mins} мин`;
-}
+const showReview = ref(false);
 
-function addDurationToTime(timeStr: string, durationMinutes: number) {
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  const total = hours * 60 + minutes + durationMinutes;
-  const newHours = Math.floor((total / 60) % 24);
-  const newMinutes = total % 60;
-  return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(
-    2,
-    "0",
-  )}`;
-}
+const handleReview = (data: any) => {
+  console.log("Отзыв:", data);
+
+  // сюда отправка на бэк
+};
 </script>
 
 <template>
@@ -42,17 +49,12 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
           })
         }}</span>
         <span class="dash"></span>
-        <span class="time">
-          {{
-            addDurationToTime(
-              new Date(trip.departureAt).toLocaleTimeString("ru-RU", {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              trip.tripInfo.duration,
-            )
-          }}
-        </span>
+        <span class="time">{{
+          new Date(trip.completedAt).toLocaleTimeString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        }}</span>
       </div>
 
       <div class="cities">
@@ -65,31 +67,34 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
         <span class="date">
           {{ new Date(trip.departureAt).toLocaleDateString("ru-RU") }}
         </span>
-        <span class="duration">{{
-          formatDuration(trip.tripInfo.duration)
-        }}</span>
+        <v-btn class="review-btn" @click="showReview = true">
+          Оставить отзыв
+        </v-btn>
       </div>
     </div>
 
     <div class="perforation"></div>
+    <TripReview :trip="trip" v-model="showReview" @submit="handleReview" />
   </v-card>
 </template>
 
 <style scoped lang="scss">
 .ticket-card {
-  background: linear-gradient(135deg, #e9f7ff, #f4fbff);
-  border-radius: 18px;
+  background: linear-gradient(145deg, #e6f6ff, #f9fdff);
+  border-radius: 20px;
   border: 1px solid #b7e8ff;
+  box-shadow: 0 8px 24px rgba(0, 90, 130, 0.12);
   position: relative;
   overflow: hidden;
 
   .ticket-inner {
-    padding: 18px 20px;
+    padding: 20px 24px;
   }
 
   .top {
     display: flex;
     align-items: center;
+    margin-bottom: 10px;
 
     .time {
       font-size: 16px;
@@ -112,7 +117,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
   }
 
   .cities {
-    margin: 14px 0;
+    margin: 12px 0;
     font-size: 20px;
     display: flex;
     align-items: center;
@@ -131,6 +136,29 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
     color: #336a7a;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+
+    .review-btn {
+      background: linear-gradient(135deg, #90d6f7, #5eb8e5);
+      color: #004d60;
+      font-weight: 600;
+      text-transform: uppercase;
+      border-radius: 12px;
+      padding: 8px 18px;
+      box-shadow: 0 4px 12px rgba(30, 100, 140, 0.15);
+      transition: all 0.25s ease;
+
+      &:hover {
+        background: linear-gradient(135deg, #a0e0fc, #6fc2eb);
+        box-shadow: 0 6px 16px rgba(30, 110, 150, 0.2);
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 8px rgba(30, 90, 130, 0.2);
+      }
+    }
   }
 
   .perforation {
