@@ -48,7 +48,7 @@ onMounted(() => window.addEventListener("keydown", onKeydown));
 onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
 const langStore = useLangStore();
-const socket = io("http://localhost:5000", { withCredentials: true });
+const socket = io("https://api.pop-utka.uz", { withCredentials: true });
 
 interface Message {
   text: string;

@@ -156,7 +156,7 @@ const data = computed(() => [
 @use "../styles/variables" as var;
 .home__slider {
   position: relative;
-  width: 80%;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   align-items: center;

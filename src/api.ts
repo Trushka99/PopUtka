@@ -35,6 +35,21 @@ export const createChat = (id: string) => {
 export const getChats = () => {
   return handleRequest(api.get("/chats"));
 };
+export const createReview = async (
+  tripId: string,
+  targetUserId: string,
+  rating: number,
+  text: string,
+) => {
+  return handleRequest(
+    api.post("/reviews", {
+      tripId,
+      targetUserId,
+      rating,
+      text,
+    }),
+  );
+};
 export const getChatByID = (id: string) => {
   return handleRequest(api.get(`/chats/${id}`));
 };
@@ -120,6 +135,9 @@ export const getMyBookings = async () => {
 };
 export const confirmBooking = async (id: string) => {
   return handleRequest(api.patch(`/driver/bookings/${id}/confirm`));
+};
+export const completeTrip = async (id: string) => {
+  return handleRequest(api.patch(`/trips/${id}/complete`));
 };
 export const markUnreadAsRead = async () => {
   return handleRequest(api.patch("/notifications/read-all"));

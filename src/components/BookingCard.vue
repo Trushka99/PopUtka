@@ -1,73 +1,111 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useLangStore } from "@/stores/langStore";
-import { confirmBooking, rejectBooking } from "@/api";
+import { confirmBooking, rejectBooking, completeTrip } from "@/api";
 import { RouterLink } from "vue-router";
 import type { TTripCard, TripCoordinates, Location } from "@/utils/types";
+
 const langStore = useLangStore();
 const { trip } = defineProps<{ trip: TTripCard }>();
 
-const baseTrip = computed(() => {
-  return trip.type === "booking" ? trip.data.trip : trip.data;
-});
-function isLocation(loc: Location | TripCoordinates): loc is Location {
-  return "cityKey" in loc;
-}
-const bookings = computed(() => {
-  return trip.type === "trip" ? trip.data.bookings : null;
-});
-const confTrip = (id: string) => {
-  confirmBooking(id)
-    .then((res) => console.log(res))
-    .catch((err) => console.log(err));
-};
-const rejTrip = (id: string) => {
-  rejectBooking(id)
-    .then((res) => console.log(res))
-    .catch((err) => console.log(err));
+// Базовая поездка
+const baseTrip = computed(() =>
+  trip.type === "booking" ? trip.data.trip : trip.data,
+);
+
+// Проверка типа локации
+const isLocation = (loc: Location | TripCoordinates): loc is Location =>
+  "cityKey" in loc;
+
+// Список бронирований (если trip)
+const bookings = computed(() =>
+  trip.type === "trip" ? trip.data.bookings : [],
+);
+
+// Можно ли завершить поездку
+const canFinishTrip = computed(
+  () =>
+    trip.type === "trip" &&
+    trip.data.role === "driver" &&
+    trip.data.status !== "completed",
+);
+
+// Методы
+const finishTrip = async (id: string) => {
+  try {
+    const response = await completeTrip(id);
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Ошибка завершения поездки:", data.message);
+      return;
+    }
+
+    console.log("Поездка завершена:", data);
+  } catch (err) {
+    console.error("Сетевая ошибка при завершении поездки:", err);
+  }
 };
 
-function formatDuration(minutes: number) {
+const confTrip = async (id: string) => {
+  try {
+    const res = await confirmBooking(id);
+    console.log("Бронь подтверждена:", res);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const rejTrip = async (id: string) => {
+  try {
+    const res = await rejectBooking(id);
+    console.log("Бронь отклонена:", res);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// Утилиты
+const formatDuration = (minutes: number) => {
   const hrs = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return hrs === 0 ? `${mins} мин` : `${hrs} ч ${mins} мин`;
-}
+};
 
-function addDurationToTime(timeStr: string, durationMinutes: number) {
+const addDurationToTime = (timeStr: string, durationMinutes: number) => {
   const [hours, minutes] = timeStr.split(":").map(Number);
   const total = hours * 60 + minutes + durationMinutes;
   const newHours = Math.floor((total / 60) % 24);
   const newMinutes = total % 60;
-  return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(
-    2,
-    "0",
-  )}`;
-}
+  return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(2, "0")}`;
+};
+
+// Вычисляемые даты/время для шаблона
+const departureTime = computed(() =>
+  new Date(baseTrip.value.departureAt).toLocaleTimeString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }),
+);
+
+const arrivalTime = computed(() =>
+  addDurationToTime(departureTime.value, baseTrip.value.tripInfo.duration),
+);
+
+const departureDate = computed(() =>
+  new Date(baseTrip.value.departureAt).toLocaleDateString("ru-RU"),
+);
 </script>
 
 <template>
   <v-card class="ticket-card mb-4" elevation="0">
     <div class="ticket-inner">
       <div class="top">
-        <span class="time">{{
-          new Date(baseTrip.departureAt).toLocaleTimeString("ru-RU", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        }}</span>
+        <span class="time">{{ departureTime }}</span>
         <span class="dash"></span>
-        <span class="time">
-          {{
-            addDurationToTime(
-              new Date(baseTrip.departureAt).toLocaleTimeString("ru-RU", {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              baseTrip.tripInfo.duration,
-            )
-          }}
-        </span>
+        <span class="time">{{ arrivalTime }}</span>
       </div>
+
       <v-row align="center" style="gap: 16px; width: 99.8%; margin: 0 auto">
         <div class="cities">
           <strong v-if="isLocation(baseTrip.from)">{{
@@ -78,47 +116,56 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
             langStore.с(baseTrip.to.cityKey)
           }}</strong>
         </div>
+
         <RouterLink
-          v-if="trip.type === 'trip'"
+          v-if="trip.type === 'trip' && trip.data.role != 'driver'"
           class="link"
           :to="{ name: 'bookings', params: { id: trip.data.id } }"
         >
-          <v-chip class="my-booking-chip centered" prepend-icon="mdi-ticket">
-            Перейти к брони
-          </v-chip>
-        </RouterLink></v-row
-      >
+          <v-chip class="my-booking-chip centered" prepend-icon="mdi-ticket"
+            >Перейти к брони</v-chip
+          >
+        </RouterLink>
+      </v-row>
+
       <div class="info">
-        <span class="date">
-          {{ new Date(baseTrip.departureAt).toLocaleDateString("ru-RU") }}
-        </span>
+        <span class="date">{{ departureDate }}</span>
         <span class="duration">{{
           formatDuration(baseTrip.tripInfo.duration)
         }}</span>
+
+        <div class="actions" v-if="canFinishTrip">
+          <v-btn block class="finish-btn" @click="finishTrip(baseTrip.id)">
+            Завершить поездку
+          </v-btn>
+        </div>
       </div>
     </div>
 
     <div class="perforation"></div>
-    <div class="bookings" v-if="bookings">
-      <div v-for="b in bookings">
+
+    <div class="bookings" v-if="bookings.length">
+      <div v-for="b in bookings" :key="b.id">
         <RouterLink
           class="link"
           :to="{ name: 'bookings', params: { id: b.id } }"
         >
           <div class="booking">
             <v-avatar size="56" class="mr-3">
-              <v-img :src="`http://localhost:5000${b.passenger.avatar}`" />
+              <v-img :src="`https://api.pop-utka.uz${b.passenger.avatar}`" />
             </v-avatar>
             <div>
               <h3>{{ b.passenger.firstName }}</h3>
               <h5>{{ b.status }}</h5>
             </div>
-          </div></RouterLink
-        >
+          </div>
+        </RouterLink>
+
         <div v-if="b.status === 'pending'">
           <v-btn @click="confTrip(b.id)" class="confirm">Подтвердить</v-btn>
           <v-btn @click="rejTrip(b.id)" class="reject">Отклонить</v-btn>
         </div>
+
         <v-chip
           v-else
           color="success"
@@ -134,6 +181,41 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
 </template>
 
 <style scoped lang="scss">
+.actions {
+  padding: 12px 0 0;
+}
+.finish-btn {
+  width: 100%;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: uppercase;
+  color: #004d60; // тёмно-голубой текст
+  background: linear-gradient(
+    135deg,
+    rgba(135, 207, 240, 0.8),
+    // светло-голубой
+    rgba(128, 203, 235, 0.9) // чуть насыщеннее
+  );
+  box-shadow: 0 4px 12px rgba(30, 90, 130, 0.15);
+  border: 1px solid rgba(100, 180, 210, 0.5);
+  transition: all 0.25s ease;
+
+  &:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(150, 220, 245, 0.85),
+      rgba(135, 210, 240, 0.9)
+    );
+    box-shadow: 0 6px 18px rgba(30, 100, 140, 0.2);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(30, 90, 130, 0.2);
+  }
+}
 .status-chip.confirmed {
   background: linear-gradient(
     135deg,

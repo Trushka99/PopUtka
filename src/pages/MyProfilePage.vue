@@ -178,7 +178,7 @@ const age = computed(() => {
             @click="openFileDialog"
             :src="
               user.avatar
-                ? `http://localhost:5000${user.avatar}`
+                ? `https://api.pop-utka.uz${user.avatar}`
                 : '/images/test-avatar.jpg'
             "
             alt="avatar"
@@ -362,7 +362,7 @@ const age = computed(() => {
                 class="car-photo"
                 :src="
                   user.car?.photos[0]
-                    ? `http://localhost:5000${user.car?.photos[0]}`
+                    ? `https://api.pop-utka.uz${user.car?.photos[0]}`
                     : ''
                 "
                 alt="car"
@@ -442,7 +442,7 @@ const age = computed(() => {
       </section>
       <section v-show="activeSection === 'trips'" class="section-card">
         <h2>История поездок</h2>
-        <HistoryTripCard v-for="t in user.activeTrips" :key="t.id" :trip="t" />
+        <HistoryTripCard v-for="t in user.tripHistory" :key="t.id" :trip="t" />
       </section>
 
       <section v-show="activeSection === 'bookings'" class="section-card">

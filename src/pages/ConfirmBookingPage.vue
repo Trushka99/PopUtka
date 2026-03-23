@@ -136,7 +136,7 @@ const options: Intl.DateTimeFormatOptions = {
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
                 <img
-                  :src="`http://localhost:5000${trip.trip.driver.avatar}`"
+                  :src="`https://api.pop-utka.uz${trip.trip.driver.avatar}`"
                   alt="Driver"
                   class="avatar"
                 />
