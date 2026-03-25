@@ -134,11 +134,7 @@ watch(selectedLang, (newLang) => {
       <RouterLink class="header__link" to="/search">
         <span class="header__text">{{ langStore.t("rides") }}</span>
       </RouterLink>
-      <RouterLink class="header__link" to="/drivers"
-        ><span class="header__text">{{
-          langStore.t("drivers")
-        }}</span></RouterLink
-      >
+
       <span class="header__text">{{ langStore.t("about us") }}</span>
       <span class="header__text">{{ langStore.t("contacts") }}</span>
     </nav>

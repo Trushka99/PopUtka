@@ -53,6 +53,9 @@ export const createReview = async (
 export const getChatByID = (id: string) => {
   return handleRequest(api.get(`/chats/${id}`));
 };
+export const getReviews = (id: string) => {
+  return handleRequest(api.get(`/reviews/user/${id}`));
+};
 export const apiUploadAvatar = async (file: File) => {
   const formData = new FormData();
   formData.append("avatar", file);

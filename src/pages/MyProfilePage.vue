@@ -4,6 +4,7 @@ import type { Ref } from "vue";
 import { useLangStore } from "@/stores/langStore";
 import Loading from "@/components/Loading.vue";
 import BookingCard from "@/components/BookingCard.vue";
+import ReviewCard from "@/components/ReviewCard.vue";
 import { useRouter } from "vue-router";
 import {
   apiUploadAvatar,
@@ -11,12 +12,18 @@ import {
   updateCar,
   updateCarPhoto,
   updateProfile,
+  getReviews,
+  getUser,
 } from "@/api";
+import { useRoute } from "vue-router";
+
 import HistoryTripCard from "@/components/HistoryTripCard.vue";
 const router = useRouter();
 const editingPhone = ref<boolean>(false);
 const editingEmail = ref<boolean>(false);
 const editingDesc = ref<boolean>(false);
+const route = useRoute();
+const isMeRoute = computed(() => route.path === "/users/me");
 function toggleEditingField(
   editing: Ref<boolean>,
   model: Ref<string>,
@@ -33,6 +40,7 @@ const langStore = useLangStore();
 console.log(langStore.user);
 const loading = ref(true);
 const user = ref<any>(null);
+const reviews = ref<any>(null);
 const number = ref<string>(langStore.user.phone);
 const email = ref<string>(langStore.user.email);
 const desc = ref<string>(langStore.user.about);
@@ -69,8 +77,9 @@ function openCarModal() {
   }
   carModalOpen.value = true;
 }
-const activeSection = ref<"main" | "trips" | "bookings" | "about">("main");
-
+const activeSection = ref<"main" | "trips" | "bookings" | "reviews">(
+  isMeRoute.value ? "main" : "reviews",
+);
 function openFileDialog() {
   fileInput.value?.click();
 }
@@ -105,11 +114,28 @@ async function uploadAvatar(e: Event) {
 
 onMounted(async () => {
   loading.value = true;
+
   try {
-    user.value = langStore.user;
+    let userId: string;
+    if (route.path === "/users/me") {
+      userId = langStore.user.id;
+      user.value = langStore.user;
+    } else if (route.params.id) {
+      userId = route.params.id as string;
+      const data = await getUser(userId);
+      user.value = data.data.data.user;
+    } else {
+      console.warn("User ID not found in route, using current user");
+      userId = langStore.user.id;
+    }
+
+    const apiRev = await getReviews(userId);
+    const rev = apiRev.data || apiRev;
+    reviews.value = rev.data?.reviews || rev.reviews || [];
   } catch (err) {
     console.warn("API failed, using fallback data", err);
   } finally {
+    console.log(user.value);
     loading.value = false;
   }
 });
@@ -170,7 +196,7 @@ const age = computed(() => {
         </div>
       </div>
     </div>
-    <aside class="left-panel">
+    <aside :class="isMeRoute ? 'left-panel' : ''">
       <div class="card main-card">
         <div class="avatar-wrap">
           <img
@@ -197,6 +223,7 @@ const age = computed(() => {
             {{ user.firstName }} <span class="last">{{ user.lastName }}</span>
             <v-btn
               icon
+              v-if="isMeRoute"
               variant="text"
               size="small"
               class="logout-btn"
@@ -215,7 +242,7 @@ const age = computed(() => {
             @click:append="toggleDescEditing"
             :clearable="editingDesc"
             ><template #append>
-              <v-container style="padding: 0; width: 30px">
+              <v-container v-if="isMeRoute" style="padding: 0; width: 30px">
                 <v-col style="padding: 0" cols="1">
                   <v-icon
                     @click="toggleDescEditing"
@@ -251,7 +278,7 @@ const age = computed(() => {
             <div class="rating-meta">
               <div class="stars">★★★★★</div>
               <div class="reviews">
-                {{ user.reviews?.length ?? 0 }} {{ langStore.t("reviews") }}
+                {{ reviews?.length ?? 0 }} {{ langStore.t("reviews") }}
               </div>
             </div>
           </div>
@@ -268,7 +295,7 @@ const age = computed(() => {
             }}</span>
           </div>
 
-          <div class="contacts">
+          <div v-if="isMeRoute" class="contacts">
             <v-container class="contact">
               <strong>{{ langStore.t("phone") }}:</strong>
               <v-text-field
@@ -340,7 +367,7 @@ const age = computed(() => {
             <button class="btn btn-outline">{{ langStore.t("report") }}</button>
           </div> -->
         </div>
-        <div v-if="user.car" class="car-block">
+        <div v-if="user.car && isMeRoute" class="car-block">
           <h3 class="small-title">Автомобиль</h3>
           <div class="car-info">
             <div class="car-title">
@@ -380,7 +407,11 @@ const age = computed(() => {
             />
           </div>
         </div>
-        <button class="btn btn-outline btn-sm" @click="openCarModal">
+        <button
+          v-if="isMeRoute"
+          class="btn btn-outline btn-sm"
+          @click="openCarModal"
+        >
           ✏️ {{ langStore.t("edit car") }}
         </button>
       </div>
@@ -389,40 +420,47 @@ const age = computed(() => {
     <main class="right-panel">
       <nav class="section-nav">
         <button
+          v-if="isMeRoute"
           :class="{ active: activeSection === 'main' }"
           @click="activeSection = 'main'"
         >
           {{ langStore.t("profile") }}
         </button>
         <button
+          v-if="isMeRoute"
           :class="{ active: activeSection === 'trips' }"
           @click="activeSection = 'trips'"
         >
           {{ langStore.t("myTrips") }}
         </button>
         <button
+          v-if="isMeRoute"
           :class="{ active: activeSection === 'bookings' }"
           @click="activeSection = 'bookings'"
         >
           {{ langStore.t("bookings") }}
         </button>
         <button
-          :class="{ active: activeSection === 'about' }"
-          @click="activeSection = 'about'"
+          :class="{ active: activeSection === 'reviews' }"
+          @click="activeSection = 'reviews'"
         >
-          {{ langStore.t("subs") }}
+          {{ langStore.t("reviews") }}
         </button>
       </nav>
 
-      <section v-show="activeSection === 'main'" class="section-card">
+      <section
+        v-if="isMeRoute"
+        v-show="activeSection === 'main'"
+        class="section-card"
+      >
         <h2>{{ langStore.t("summary") }}</h2>
         <div class="grid-2">
           <div class="info-card">
             <h4>{{ langStore.t("rating") }}</h4>
             <div class="big">{{ (user.rating ?? 0).toFixed(1) }} / 5</div>
             <div class="muted">
-              {{ user.reviews?.length ?? 0 }} отзывов • Завершено:
-              {{ user.completedTripsCount ?? 0 }}
+              {{ reviews?.length ?? 0 }} отзывов • Завершено:
+              {{ user.tripHistory.length ?? 0 }}
             </div>
           </div>
           <div class="info-card">
@@ -468,8 +506,13 @@ const age = computed(() => {
         </div>
       </section>
 
-      <section v-show="activeSection === 'about'" class="section-card">
-        <p class="about-text">{{ user.about || "Описание отсутствует" }}</p>
+      <section v-show="activeSection === 'reviews'" class="section-card">
+        <ReviewCard
+          v-if="reviews.length > 0"
+          v-for="review in reviews"
+          :review="review"
+        />
+        <div v-else class="empty">Отзывов нет</div>
       </section>
     </main>
   </div>
@@ -493,6 +536,7 @@ const age = computed(() => {
 .left-panel {
   height: 80dvh;
 }
+
 .card.main-card {
   height: 100%;
   overflow-y: auto;
