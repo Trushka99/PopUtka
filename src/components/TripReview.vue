@@ -1,3 +1,78 @@
+<script setup lang="ts">
+import { ref, watch, computed } from "vue";
+import { createReview } from "@/api";
+const props = defineProps<{
+  modelValue: boolean;
+  trip: {
+    tripId: string;
+    role: string;
+    passengers?: { id: string; firstName: string; avatar: string | null }[];
+    withUser?: { id: string; firstName: string; avatar: string | null };
+  };
+}>();
+
+const emit = defineEmits(["update:modelValue", "submit"]);
+const array = computed(() => {
+  if (props.trip.role === "passenger") {
+    return props.trip.withUser ? [props.trip.withUser] : [];
+  }
+  return props.trip.passengers ?? [];
+});
+const defaultAvatar =
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3VOMpLxYT-XE2QvIUw5HK-qF6TqBPczQdMQ&s";
+
+// bottom sheet
+const model = ref(props.modelValue);
+watch(
+  () => props.modelValue,
+  (v) => (model.value = v),
+);
+watch(model, (v) => emit("update:modelValue", v));
+
+const close = () => (model.value = false);
+
+// select logic
+const selectedPassenger = ref<{
+  id: string;
+  firstName: string;
+  avatar: string | null;
+} | null>(null);
+
+const menu = ref(false);
+
+const select = (p: any) => {
+  selectedPassenger.value = p;
+  menu.value = false;
+};
+
+const clear = () => {
+  selectedPassenger.value = null;
+};
+
+// остальное
+const rating = ref(0);
+const comment = ref("");
+
+const submit = async () => {
+  if (!selectedPassenger.value) return;
+  try {
+    const res = await createReview(
+      props.trip.tripId,
+      selectedPassenger.value.id,
+      rating.value,
+      comment.value,
+    );
+    console.log(res);
+  } catch {
+    console.log("ERROR PIDORASINA");
+  }
+
+  rating.value = 0;
+  comment.value = "";
+  selectedPassenger.value = null;
+  close();
+};
+</script>
 <template>
   <v-bottom-sheet v-model="model" inset>
     <v-card class="pa-5 rounded-xl review-card">
@@ -111,81 +186,6 @@
   </v-bottom-sheet>
 </template>
 
-<script setup lang="ts">
-import { ref, watch, computed } from "vue";
-import { createReview } from "@/api";
-const props = defineProps<{
-  modelValue: boolean;
-  trip: {
-    tripId: string;
-    role: string;
-    passengers?: { id: string; firstName: string; avatar: string | null }[];
-    withUser?: { id: string; firstName: string; avatar: string | null };
-  };
-}>();
-
-const emit = defineEmits(["update:modelValue", "submit"]);
-const array = computed(() => {
-  if (props.trip.role === "passenger") {
-    return props.trip.withUser ? [props.trip.withUser] : [];
-  }
-  return props.trip.passengers ?? [];
-});
-const defaultAvatar =
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3VOMpLxYT-XE2QvIUw5HK-qF6TqBPczQdMQ&s";
-
-// bottom sheet
-const model = ref(props.modelValue);
-watch(
-  () => props.modelValue,
-  (v) => (model.value = v),
-);
-watch(model, (v) => emit("update:modelValue", v));
-
-const close = () => (model.value = false);
-
-// select logic
-const selectedPassenger = ref<{
-  id: string;
-  firstName: string;
-  avatar: string | null;
-} | null>(null);
-
-const menu = ref(false);
-
-const select = (p: any) => {
-  selectedPassenger.value = p;
-  menu.value = false;
-};
-
-const clear = () => {
-  selectedPassenger.value = null;
-};
-
-// остальное
-const rating = ref(0);
-const comment = ref("");
-
-const submit = async () => {
-  if (!selectedPassenger.value) return;
-  try {
-    const res = await createReview(
-      props.trip.tripId,
-      selectedPassenger.value.id,
-      rating.value,
-      comment.value,
-    );
-    console.log(res);
-  } catch {
-    console.log("ERROR PIDORASINA");
-  }
-
-  rating.value = 0;
-  comment.value = "";
-  selectedPassenger.value = null;
-  close();
-};
-</script>
 <style lang="css">
 .review-card {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://api.pop-utka.uz",
+  baseURL: "http://localhost:5000",
   withCredentials: true,
 });
 
@@ -52,6 +52,9 @@ export const createReview = async (
 };
 export const getChatByID = (id: string) => {
   return handleRequest(api.get(`/chats/${id}`));
+};
+export const getReviews = (id: string) => {
+  return handleRequest(api.get(`/reviews/user/${id}`));
 };
 export const apiUploadAvatar = async (file: File) => {
   const formData = new FormData();

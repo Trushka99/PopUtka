@@ -113,7 +113,11 @@ const options: Intl.DateTimeFormatOptions = {
         <v-card class="trip-card" elevation="2" rounded="lg">
           <RouterLink
             class="link"
-            :to="{ name: 'user', params: { id: trip.driverId } }"
+            :to="
+              trip.driverId === langStore.user.id
+                ? '/users/me'
+                : { name: 'user', params: { id: trip.driverId } }
+            "
           >
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">

@@ -3,8 +3,6 @@ import { useLangStore } from "@/stores/langStore";
 import HomePage from "@/pages/HomePage.vue";
 import TripListPage from "@/pages/TripListPage.vue";
 import TripPage from "@/pages/TripPage.vue";
-import UserPage from "@/pages/UserPage.vue";
-import DriversPage from "@/pages/DriversPage.vue";
 import AuthPage from "@/pages/AuthPage.vue";
 import MyProfilePage from "@/pages/MyProfilePage.vue";
 import NotificationsPage from "@/pages/NotificationsPage.vue";
@@ -26,7 +24,7 @@ const routes = [
   {
     path: "/users/:id",
     name: "user",
-    component: UserPage,
+    component: MyProfilePage,
     meta: { layout: "default", requiresAuth: true },
   },
   {
@@ -35,11 +33,7 @@ const routes = [
     component: MyProfilePage,
     meta: { layout: "default", requiresAuth: true },
   },
-  {
-    path: "/drivers",
-    component: DriversPage,
-    meta: { layout: "default", requiresAuth: true },
-  },
+
   {
     path: "/bookings/:id",
     name: "bookings",

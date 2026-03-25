@@ -9,7 +9,7 @@ const redirectPath = route.query.redirect?.toString() || "/";
 
 const langStore = useLangStore();
 const activeTab = ref("login");
-const error = ref(null);
+const error = ref<string | null>(null);
 const registerForm = ref({
   username: "",
   email: "",
@@ -28,8 +28,8 @@ const loginHandle = () => {
       router.push(redirectPath);
     })
     .catch((err) => {
-      console.log(err.response.data.message);
-      error.value = err.response.data.message;
+      const errText = err.response.data.code;
+      error.value = langStore.t(errText.toLowerCase());
     });
 };
 const handleRegister = async () => {
@@ -60,7 +60,8 @@ const handleRegister = async () => {
     loginHandle();
   } catch (err: any) {
     console.error("Ошибка регистрации", err);
-    error.value = err.response.data.message;
+    const errText = err.response.data.code;
+    error.value = langStore.t(errText.toLowerCase());
   }
 };
 const roles = ["Пользователь", "Водитель"];
