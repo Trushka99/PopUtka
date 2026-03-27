@@ -4,7 +4,9 @@ const api = axios.create({
   baseURL: "https://api.pop-utka.uz",
   withCredentials: true,
 });
-
+export const billingApi = axios.create({
+  baseURL: "https://billing.pop-utka.uz",
+});
 const handleRequest = async (request: any) => {
   const MOCK_MODE = false;
 
@@ -24,6 +26,13 @@ const handleRequest = async (request: any) => {
     console.error("Ошибка при выполнении запроса:", err);
     throw err;
   }
+};
+export const createPayment = (data: any, token: string) => {
+  return billingApi.post("/api/payment/orders", data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 export const createChat = (id: string) => {
   return handleRequest(

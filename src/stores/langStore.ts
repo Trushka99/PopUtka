@@ -15,14 +15,14 @@ export const useLangStore = defineStore("lang", {
     cities: LangDictionary;
     termins: LangDictionary;
     user: any;
-    activeTrips: any;
+    token: string;
     notifications: any;
   } => ({
     currentLang: localStorage.getItem("lang") || "ru",
     cities: dictionary,
     termins: termins,
     user: {},
-    activeTrips: [],
+    token: "",
     notifications: [],
   }),
   getters: {
@@ -42,11 +42,11 @@ export const useLangStore = defineStore("lang", {
       this.currentLang = lang;
       localStorage.setItem("lang", lang);
     },
+    setToken(token: string) {
+      this.token = token;
+    },
     setUser(data: any) {
       this.user = data;
-    },
-    setTrips(data: any) {
-      this.activeTrips = data;
     },
     setNotifications(data: any) {
       this.notifications = data;
