@@ -19,7 +19,7 @@ const array = computed(() => {
   return props.trip.passengers ?? [];
 });
 const defaultAvatar =
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3VOMpLxYT-XE2QvIUw5HK-qF6TqBPczQdMQ&s";
+  "https://png.pngtree.com/element_our/20200610/ourmid/pngtree-character-default-avatar-image_2237203.jpg";
 
 // bottom sheet
 const model = ref(props.modelValue);

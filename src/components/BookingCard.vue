@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useLangStore } from "@/stores/langStore";
-import { confirmBooking, rejectBooking, completeTrip } from "@/api";
+import {
+  confirmBooking,
+  rejectBooking,
+  completeTrip,
+  createPayment,
+} from "@/api";
 import { RouterLink } from "vue-router";
+import PayButton from "./PayButton.vue";
+import PayClickButton from "./PayClickButton.vue";
 import type { TTripCard, TripCoordinates, Location } from "@/utils/types";
 
 const langStore = useLangStore();
 const { trip } = defineProps<{ trip: TTripCard }>();
-
+console.log(trip.data);
 // Базовая поездка
 const baseTrip = computed(() =>
   trip.type === "booking" ? trip.data.trip : trip.data,
@@ -133,7 +140,8 @@ const departureDate = computed(() =>
         <span class="duration">{{
           formatDuration(baseTrip.tripInfo.duration)
         }}</span>
-
+        <PayButton :user="langStore.user" :id="trip.data.id" />
+        <PayClickButton />
         <div class="actions" v-if="canFinishTrip">
           <v-btn block class="finish-btn" @click="finishTrip(baseTrip.id)">
             Завершить поездку
@@ -143,7 +151,6 @@ const departureDate = computed(() =>
     </div>
 
     <div class="perforation"></div>
-
     <div class="bookings" v-if="bookings.length">
       <div v-for="b in bookings" :key="b.id">
         <RouterLink
