@@ -23,7 +23,7 @@ const pay = async () => {
       {
         service_id: 96928,
         merchant_id: 57280,
-        amount: 1000,
+        amount: "1000.00",
         transaction_param: transId,
         merchant_user_id: user.id,
         card_type: "uzcard",
