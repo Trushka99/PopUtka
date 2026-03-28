@@ -8,7 +8,7 @@
   >
     <input type="hidden" name="amount" value="1000" />
     <input type="hidden" name="merchant_id" value="57280" />
-    <input type="hidden" name="merchant_user_id" value="aaaaa" />
+    <input type="hidden" name="merchant_user_id" value="PAY44mU9SWQuTfi" />
     <input type="hidden" name="service_id" value="96928" />
     <input type="hidden" name="transaction_param" value="avasvasv" />
     <input type="hidden" name="return_url" value="сайт поставщика" />
