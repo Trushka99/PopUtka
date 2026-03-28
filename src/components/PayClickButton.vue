@@ -2,26 +2,31 @@
 import { ref } from "vue";
 import { createPayment } from "@/api";
 import { useLangStore } from "@/stores/langStore";
-
+import { nextTick } from "vue";
 const langStore = useLangStore();
 
 const formRef = ref<HTMLFormElement | null>(null);
+const { id } = defineProps<{
+  id: string;
+}>();
 
 const transactionParam = ref("");
 
 const handleSubmit = async (e: Event) => {
-  e.preventDefault(); 
+  e.preventDefault();
 
   try {
     const res = await createPayment(
       {
-        tripId: "ID_ТРИПА",
+        tripId: id,
         amount: 1000,
       },
       langStore.token,
     );
 
     transactionParam.value = res.data.data.paymentId;
+
+    await nextTick();
 
     formRef.value?.submit();
   } catch (err) {
