@@ -1,18 +1,54 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref } from "vue";
+import { createPayment } from "@/api";
+import { useLangStore } from "@/stores/langStore";
+
+const langStore = useLangStore();
+
+const formRef = ref<HTMLFormElement | null>(null);
+
+const transactionParam = ref("");
+
+const handleSubmit = async (e: Event) => {
+  e.preventDefault(); 
+
+  try {
+    const res = await createPayment(
+      {
+        tripId: "ID_ТРИПА",
+        amount: 1000,
+      },
+      langStore.token,
+    );
+
+    transactionParam.value = res.data.data.paymentId;
+
+    formRef.value?.submit();
+  } catch (err) {
+    console.error(err);
+  }
+};
+</script>
+
 <template>
   <form
-    id="click_form"
+    ref="formRef"
+    @submit="handleSubmit"
     action="https://my.click.uz/services/pay"
     method="get"
     target="_blank"
   >
-    <input type="hidden" name="amount" value="1000" />
+    <input type="hidden" name="amount" value="1000.00" />
     <input type="hidden" name="merchant_id" value="57280" />
-    <input type="hidden" name="merchant_user_id" value="aaaaa" />
+    <input type="hidden" name="merchant_user_id" :value="langStore.user.id" />
     <input type="hidden" name="service_id" value="96928" />
-    <input type="hidden" name="transaction_param" value="PAY44mU9SWQuTfi" />
-    <input type="hidden" name="return_url" value="сайт поставщика" />
+
+    <!-- 👇 теперь динамика -->
+    <input type="hidden" name="transaction_param" :value="transactionParam" />
+
+    <input type="hidden" name="return_url" value="https://your-site.com" />
     <input type="hidden" name="card_type" value="uzcard" />
+
     <button type="submit" class="click_logo">
       <i></i>Оплатить через CLICK
     </button>
