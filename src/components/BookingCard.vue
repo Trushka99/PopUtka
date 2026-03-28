@@ -141,7 +141,7 @@ const departureDate = computed(() =>
           formatDuration(baseTrip.tripInfo.duration)
         }}</span>
         <PayButton :user="langStore.user" :id="trip.data.id" />
-        <PayClickButton />
+        <PayClickButton :id="trip.data.id" />
         <div class="actions" v-if="canFinishTrip">
           <v-btn block class="finish-btn" @click="finishTrip(baseTrip.id)">
             Завершить поездку
