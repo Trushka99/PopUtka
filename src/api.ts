@@ -6,6 +6,7 @@ const api = axios.create({
 });
 export const billingApi = axios.create({
   baseURL: "https://billing.pop-utka.uz",
+  withCredentials: true,
 });
 const handleRequest = async (request: any) => {
   const MOCK_MODE = false;
