@@ -24,7 +24,7 @@ const pay = async () => {
         merchant_id: 57280,
         amount: "1000.00",
         transaction_param: transId,
-        merchant_user_id: user.id,
+        merchant_user_id: 78746,
         card_type: "uzcard",
       },
       (data: any) => {
