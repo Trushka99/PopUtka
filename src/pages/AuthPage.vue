@@ -25,14 +25,12 @@ const loginHandle = () => {
   const { email, password } = registerForm.value;
   return login(email, password)
     .then((res) => {
-      langStore.setToken(res.data.data.token);
       router.push(redirectPath);
     })
     .catch((err) => {
       const errText = err.response.data.code;
       error.value = langStore.t(errText.toLowerCase());
-    })
-    .finally(() => console.log(langStore.token));
+    });
 };
 const handleRegister = async () => {
   const {
