@@ -21,7 +21,6 @@ const handleSubmit = async (e: Event) => {
         tripId: id,
         amount: 1000,
       },
-      langStore.token,
     );
 
     transactionParam.value = res.data.data.paymentId;
