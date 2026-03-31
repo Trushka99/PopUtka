@@ -13,7 +13,6 @@ const pay = async () => {
         tripId: id,
         amount: 1000,
       },
-      langStore.token,
     );
 
     const transId = res.data.data.paymentId;

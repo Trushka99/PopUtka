@@ -28,12 +28,8 @@ const handleRequest = async (request: any) => {
     throw err;
   }
 };
-export const createPayment = (data: any, token: string) => {
-  return billingApi.post("/api/payment/orders", data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const createPayment = (data: any) => {
+  return billingApi.post("/api/payment/orders", data);
 };
 export const createChat = (id: string) => {
   return handleRequest(
