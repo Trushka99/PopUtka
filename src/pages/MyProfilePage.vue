@@ -57,7 +57,7 @@ const carModalOpen = ref(false);
 const logOUT = () => {
   logout()
     .then(() => {
-      langStore.setUser(null);
+      langStore.setUser({});
       router.push({
         path: "/",
       });
