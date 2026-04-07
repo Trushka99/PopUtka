@@ -110,7 +110,7 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
 
         <v-avatar size="40" class="mr-3">
           <img
-            :src="`https://web-production-68c29.up.railway.app${trip.driver.avatar}`"
+            :src="`https://api.pop-utka.uz${trip.driver.avatar}`"
             alt="Driver"
             class="avatar"
           />
