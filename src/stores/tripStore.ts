@@ -6,7 +6,9 @@ export const useTripStore = defineStore("trip", () => {
   const trips = ref<any[]>([]);
 
   const fetchTrips = async () => {
-    const response = await getTrips();
+    const response = await getTrips({
+      departureAt: new Date().toISOString().split("T")[0],
+    });
     trips.value = response.data?.data || [];
   };
 
