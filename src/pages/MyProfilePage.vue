@@ -57,6 +57,7 @@ const carModalOpen = ref(false);
 const logOUT = () => {
   logout()
     .then(() => {
+      langStore.setUser(null);
       router.push({
         path: "/",
       });
@@ -140,7 +141,7 @@ async function uploadAvatar(e: Event) {
 }
 
 watch(
-  () => route.fullPath, // можно route.path или route.params.id
+  () => route.fullPath,
   async (newPath, oldPath) => {
     loading.value = true;
 

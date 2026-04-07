@@ -108,7 +108,9 @@ const data = computed(() => [
       <SearchingForm />
     </section>
     <section class="container">
-      <div class="hitchhikers">
+      <div
+        :class="tripStore.trips.length > 0 ? 'hitchhikers' : 'hitchhikers non'"
+      >
         <CardComponent v-for="value in tripStore.trips" :trip="value" />
       </div>
     </section>
@@ -218,6 +220,10 @@ const data = computed(() => [
       width: 98%;
       grid-template-columns: 1fr;
     }
+  }
+  .non {
+    padding-top: 0;
+    padding-bottom: 0;
   }
 }
 .homePage {
