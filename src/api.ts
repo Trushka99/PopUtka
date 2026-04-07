@@ -77,7 +77,7 @@ export const apiUploadAvatar = async (file: File) => {
 export const getTrips = async (filters?: {
   from?: string;
   to?: string;
-  date?: string;
+  departureAt?: string;
   minPrice?: number;
   maxPrice?: number;
   seats?: number;

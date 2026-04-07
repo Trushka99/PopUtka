@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onUnmounted } from "vue";
 import { RouterLink } from "vue-router";
 import "@mdi/font/css/materialdesignicons.css";
 import { markUnreadAsRead } from "@/api";
 import { useRouter } from "vue-router";
+import { io } from "socket.io-client";
+const socket = io("https://api.pop-utka.uz", { withCredentials: true });
+
 const menuOpen = ref(false);
 import { useLangStore } from "@/stores/langStore";
 const langStore = useLangStore();
@@ -29,6 +32,17 @@ const additionalAction = (n: TNotif) => {
   }
   toggleNotifications();
 };
+socket.on("connect", () => {
+  console.log("Socket connected!");
+});
+onUnmounted(() => {
+  socket.disconnect();
+});
+socket.on("new-notification", (notif) => {
+  console.log("🔥 New notification received:", notif);
+
+  langStore.setNotifications([notif, ...(langStore.notifications || [])]);
+});
 const menu = ref<boolean>(false);
 const toggleNotifications = async () => {
   menu.value = !menu.value;
@@ -131,7 +145,10 @@ watch(selectedLang, (newLang) => {
       <RouterLink class="header__link" to="/"
         ><span class="header__text">{{ langStore.t("home") }}</span></RouterLink
       >
-      <RouterLink class="header__link" to="/search">
+      <RouterLink
+        class="header__link"
+        :to="`/search?departureAt=${new Date().toISOString().split('T')[0]}`"
+      >
         <span class="header__text">{{ langStore.t("rides") }}</span>
       </RouterLink>
 

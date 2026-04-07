@@ -49,7 +49,7 @@ const applyFilters = () => {
   loadWithFilters({
     from: route.query.from as string,
     to: route.query.to as string,
-    date: route.query.date as string,
+    departureAt: route.query.departureAt as string,
     seats: route.query.seats ? Number(route.query.seats) : undefined,
     timeFrom: timeFrom.value,
     timeTo: timeTo.value,
@@ -66,7 +66,7 @@ onMounted(() => {
   const filters = {
     from: route.query.from as string,
     to: route.query.to as string,
-    date: route.query.date as string,
+    departureAt: route.query.departureAt as string,
     seats: route.query.seats ? Number(route.query.seats) : undefined,
   };
   fetchTrips(filters);

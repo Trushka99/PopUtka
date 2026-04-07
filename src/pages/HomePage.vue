@@ -11,15 +11,6 @@ const langStore = useLangStore();
 const slider = ref<HTMLElement | null>(null);
 const canScrollLeft = ref(false);
 const canScrollRight = ref(true);
-const trips = ref<any[]>([]);
-const fetchTrips = async () => {
-  try {
-    const response = await getTrips();
-    trips.value = response.data?.data || [];
-  } catch (err) {
-    console.error("Ошибка при получении поездок:", err);
-  }
-};
 
 onMounted(() => {
   tripStore.fetchTrips();

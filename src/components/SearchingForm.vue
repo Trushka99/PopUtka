@@ -10,13 +10,18 @@ const langStore = useLangStore();
 const emit = defineEmits<{
   (
     e: "search",
-    filters: { from?: string; to?: string; date?: string; seats?: number }
+    filters: {
+      from?: string;
+      to?: string;
+      departureAt?: string;
+      seats?: number;
+    },
   ): void;
 }>();
 
 const cityList = computed(() => {
   return Object.values(
-    cities[langStore.currentLang as keyof typeof cities] || {}
+    cities[langStore.currentLang as keyof typeof cities] || {},
   );
 });
 const from = ref(null);
@@ -26,19 +31,19 @@ const dateMenu = ref(false);
 const today = new Date();
 
 const date = ref(
-  route.query.date
-    ? String(route.query.date)
+  route.query.departureAt
+    ? String(route.query.departureAt)
     : `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
         2,
-        "0"
-      )}-${String(today.getDate()).padStart(2, "0")}`
+        "0",
+      )}-${String(today.getDate()).padStart(2, "0")}`,
 );
 
 watch(
-  () => route.query.date,
+  () => route.query.departureAt,
   (newDate) => {
     if (newDate) date.value = String(newDate);
-  }
+  },
 );
 const displayDate = ref(date.value.split("-").reverse().join("."));
 
@@ -48,7 +53,7 @@ const passengersLabel = ref(
     passengers.value === 1
       ? langStore.t("passenger")
       : langStore.t("passengers")
-  }`
+  }`,
 );
 
 const increase = () => {
@@ -77,7 +82,7 @@ const loadTrips = async () => {
     emit("search", {
       from: langStore.cKeyByValue(from.value),
       to: langStore.cKeyByValue(to.value),
-      date: date.value,
+      departureAt: date.value,
       seats: passengers.value,
     });
     await router.push({
@@ -85,7 +90,7 @@ const loadTrips = async () => {
       query: {
         from: langStore.cKeyByValue(from.value),
         to: langStore.cKeyByValue(to.value),
-        date: date.value,
+        departureAt: date.value,
         seats: passengers.value.toString(),
       },
     });
@@ -152,7 +157,11 @@ const onDateSelected = (val: string | Date) => {
           class="autocompl"
         />
       </template>
-      <v-date-picker v-model="date" @update:model-value="onDateSelected" />
+      <v-date-picker
+        :min="new Date()"
+        v-model="date"
+        @update:model-value="onDateSelected"
+      />
     </v-menu>
 
     <v-text-field

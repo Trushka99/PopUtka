@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import type { Ref } from "vue";
 import { useLangStore } from "@/stores/langStore";
 import Loading from "@/components/Loading.vue";
@@ -16,7 +16,16 @@ import {
   getUser,
 } from "@/api";
 import { useRoute } from "vue-router";
+const openedSections = ref({
+  my: true,
+  pending: true,
+  active: true,
+  full: false,
+});
 
+function toggleSection(key: keyof typeof openedSections.value) {
+  openedSections.value[key] = !openedSections.value[key];
+}
 import HistoryTripCard from "@/components/HistoryTripCard.vue";
 const router = useRouter();
 const editingPhone = ref<boolean>(false);
@@ -37,7 +46,6 @@ function toggleEditingField(
   }
 }
 const langStore = useLangStore();
-console.log(langStore.user);
 const loading = ref(true);
 const user = ref<any>(null);
 const reviews = ref<any>(null);
@@ -88,7 +96,26 @@ const carPhotoInput = ref<HTMLInputElement | null>(null);
 function openCarPhotoDialog() {
   carPhotoInput.value?.click();
 }
+const pendingTrips = computed(
+  () =>
+    user.value?.activeTrips?.filter((t: any) =>
+      t.bookings?.some((b: any) => b.status === "pending"),
+    ) || [],
+);
 
+const activeTrips = computed(
+  () =>
+    user.value?.activeTrips?.filter(
+      (t: any) =>
+        t.availableSeats > 0 &&
+        !t.bookings?.some((b: any) => b.status === "pending"),
+    ) || [],
+);
+
+const fullTrips = computed(
+  () =>
+    user.value?.activeTrips?.filter((t: any) => t.availableSeats === 0) || [],
+);
 async function uploadCarPhoto(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
@@ -112,33 +139,35 @@ async function uploadAvatar(e: Event) {
   }
 }
 
-onMounted(async () => {
-  loading.value = true;
+watch(
+  () => route.fullPath, // можно route.path или route.params.id
+  async (newPath, oldPath) => {
+    loading.value = true;
 
-  try {
-    let userId: string;
-    if (route.path === "/users/me") {
-      userId = langStore.user.id;
-      user.value = langStore.user;
-    } else if (route.params.id) {
-      userId = route.params.id as string;
-      const data = await getUser(userId);
-      user.value = data.data.data.user;
-    } else {
-      console.warn("User ID not found in route, using current user");
-      userId = langStore.user.id;
+    try {
+      let userId: string;
+      if (route.path === "/users/me") {
+        userId = langStore.user.id;
+        user.value = langStore.user;
+      } else if (route.params.id) {
+        userId = route.params.id as string;
+        const data = await getUser(userId);
+        user.value = data.data.data;
+      } else {
+        userId = langStore.user.id;
+      }
+
+      const apiRev = await getReviews(userId);
+      const rev = apiRev.data || apiRev;
+      reviews.value = rev.data?.reviews || rev.reviews || [];
+    } catch (err) {
+      console.warn("API failed, using fallback data", err);
+    } finally {
+      loading.value = false;
     }
-
-    const apiRev = await getReviews(userId);
-    const rev = apiRev.data || apiRev;
-    reviews.value = rev.data?.reviews || rev.reviews || [];
-  } catch (err) {
-    console.warn("API failed, using fallback data", err);
-  } finally {
-    console.log(user.value);
-    loading.value = false;
-  }
-});
+  },
+  { immediate: true },
+);
 async function saveCar() {
   try {
     const res = await updateCar(langStore.user.id, {
@@ -205,7 +234,7 @@ const age = computed(() => {
             :src="
               user.avatar
                 ? `https://api.pop-utka.uz${user.avatar}`
-                : '/images/test-avatar.jpg'
+                : 'https://img.freepik.com/premium-vector/character-avatar-isolated_729149-194801.jpg?semt=ais_incoming&w=740&q=80'
             "
             alt="avatar"
           />
@@ -484,19 +513,96 @@ const age = computed(() => {
       </section>
 
       <section v-show="activeSection === 'bookings'" class="section-card">
-        <h2>Текущие бронирования</h2>
-        <div class="cards-list">
-          <BookingCard
-            v-for="b in user.myBookings"
-            :key="b.id"
-            :trip="{ type: 'booking', data: b }"
-          />
-          <BookingCard
-            v-if="user.role === 'driver'"
-            v-for="t in user.activeTrips"
-            :key="t.id"
-            :trip="{ type: 'trip', data: t }"
-          />
+        <!-- МОИ БРОНИ -->
+        <div class="booking-section my" v-if="user.myBookings.length">
+          <h3>Мои бронирования</h3>
+          <div class="cards-list">
+            <BookingCard
+              v-for="b in user.myBookings"
+              :key="b.id"
+              :trip="{ type: 'booking', data: b }"
+            />
+          </div>
+        </div>
+
+        <!-- PENDING -->
+        <div class="booking-section pending" v-if="pendingTrips.length">
+          <div class="section-header" @click="toggleSection('pending')">
+            <div class="left">
+              <span class="icon">
+                <v-icon size="18">mdi-timer-sand</v-icon>
+              </span>
+              <span class="title">Ожидают подтверждения</span>
+            </div>
+
+            <div class="right">
+              <span class="count">{{ pendingTrips.length }}</span>
+              <span class="arrow" :class="{ open: openedSections.pending }">
+                <v-icon size="18">mdi-arrow-down-bold</v-icon></span
+              >
+            </div>
+          </div>
+          <div v-show="openedSections.pending" class="cards-list">
+            <BookingCard
+              v-for="t in pendingTrips"
+              :key="t.id"
+              :trip="{ type: 'trip', data: t }"
+            />
+          </div>
+        </div>
+
+        <!-- АКТИВНЫЕ -->
+        <div class="booking-section active" v-if="activeTrips.length">
+          <div class="section-header" @click="toggleSection('active')">
+            <div class="left">
+              <span class="icon">
+                <v-icon size="18">mdi-check-circle-outline</v-icon>
+              </span>
+              <span class="title"> Активные поездки</span>
+            </div>
+
+            <div class="right">
+              <span class="count">{{ activeTrips.length }}</span>
+              <span class="arrow" :class="{ open: openedSections.active }"
+                ><v-icon size="18">mdi-arrow-down-bold</v-icon></span
+              >
+            </div>
+          </div>
+          <div class="cards-list">
+            <BookingCard
+              v-show="openedSections.active"
+              v-for="t in activeTrips"
+              :key="t.id"
+              :trip="{ type: 'trip', data: t }"
+            />
+          </div>
+        </div>
+
+        <!-- ЗАПОЛНЕННЫЕ -->
+        <div class="booking-section full" v-if="fullTrips.length">
+          <div class="section-header" @click="toggleSection('full')">
+            <div class="left">
+              <span class="icon">
+                <v-icon size="18">mdi-close-circle-outline</v-icon>
+              </span>
+              <span class="title">Заполненные</span>
+            </div>
+
+            <div class="right">
+              <span class="count">{{ fullTrips.length }}</span>
+              <span class="arrow" :class="{ open: openedSections.full }"
+                ><v-icon size="18">mdi-arrow-down-bold</v-icon></span
+              >
+            </div>
+          </div>
+          <div class="cards-list">
+            <BookingCard
+              v-show="openedSections.full"
+              v-for="t in fullTrips"
+              :key="t.id"
+              :trip="{ type: 'trip', data: t }"
+            />
+          </div>
         </div>
         <div
           v-if="user.myBookings.length === 0 && user.activeTrips.length === 0"
@@ -645,7 +751,33 @@ const age = computed(() => {
   color: #374151;
   font-weight: 600;
 }
+.booking-section {
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
 
+.booking-section.pending {
+  background-color: #ffedd5;
+  border-color: #fdba74;
+}
+
+.booking-section.active {
+  background-color: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.booking-section.full {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.booking-section.my {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-color: #93c5fd;
+}
 .ver-item.ok {
   background: #ecfdf5;
   color: #065f46;
@@ -716,7 +848,21 @@ const age = computed(() => {
   gap: 10px;
   margin-bottom: 12px;
 }
+.booking-section.pending .section-header {
+  background: #fff7ed;
+}
 
+.booking-section.active .section-header {
+  background: #f0fdf4;
+}
+
+.booking-section.full .section-header {
+  background: #fef2f2;
+}
+
+.booking-section.my .section-header {
+  background: #eff6ff;
+}
 .car-photo-wrap {
   position: relative;
   width: 220px;
@@ -820,7 +966,76 @@ const age = computed(() => {
   background: #eef2ff;
   border-color: #c7e0ff;
 }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(6px);
 
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+.section-header .left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.section-header .title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.section-header .icon {
+  font-size: 16px;
+}
+
+.section-header .right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.count {
+  font-size: 12px;
+  font-weight: 600;
+  background: white;
+  color: #111827;
+  padding: 3px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.arrow {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.arrow.open {
+  transform: rotate(180deg);
+}
 .section-card {
   background: #fff;
   padding: 20px;
