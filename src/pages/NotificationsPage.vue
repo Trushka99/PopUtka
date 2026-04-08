@@ -154,6 +154,7 @@ const formatDate = (dateStr: string) => {
 <style scoped>
 .notifications-page {
   padding: 12px;
+  padding-bottom: 60px;
 }
 
 .notifications-wrapper {

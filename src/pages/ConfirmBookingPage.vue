@@ -96,13 +96,10 @@ const options: Intl.DateTimeFormatOptions = {
             <h4>
               {{
                 addDurationToTime(
-                  new Date(trip.trip.departureAt).toLocaleTimeString(
-                    "ru-RU",
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    },
-                  ),
+                  new Date(trip.trip.departureAt).toLocaleTimeString("ru-RU", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
                   trip.trip.tripInfo.duration,
                 )
               }}
@@ -276,7 +273,11 @@ const options: Intl.DateTimeFormatOptions = {
           height="48"
         >
           <v-icon start>mdi-chat</v-icon>
-          Написать водителю
+          {{
+            trip.passngerId === langStore.user.id
+              ? langStore.t("contact_drive")
+              : langStore.t("contact_pass")
+          }}
         </v-btn>
 
         <Transition name="chat-expand">

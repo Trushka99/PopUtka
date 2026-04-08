@@ -166,6 +166,7 @@ const data = computed(() => [
   scroll-behavior: smooth;
   scrollbar-width: none;
   flex: 1;
+  padding-bottom: 1rem;
 }
 .slider__container::-webkit-scrollbar {
   display: none;

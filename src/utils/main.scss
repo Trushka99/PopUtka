@@ -1,0 +1,15 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100dvh;
+  min-height: 100dvh;
+}
+
+body.default-page {
+  background-color: #fff;
+}
+
+body.login-page {
+  background-color: #c1e8ff;
+}

@@ -151,7 +151,7 @@ const departureDate = computed(() =>
     </div>
 
     <div class="perforation"></div>
-    <div class="bookings" v-if="bookings.length">
+    <div class="bookings">
       <div v-for="b in bookings" :key="b.id">
         <RouterLink
           class="link"

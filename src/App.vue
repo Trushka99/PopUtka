@@ -3,11 +3,26 @@ import HeaderComponent from "./components/HeaderComponent.vue";
 import FooterComponent from "./components/FooterComponent.vue";
 import Chat from "./components/Chat.vue";
 import { RouterView, useRoute } from "vue-router";
-import { ref } from "vue";
+import { watch } from "vue";
+import "./utils/main.scss";
 import MobileBottomMenu from "./components/MobileBottomMenu.vue";
 const route = useRoute();
 import { useSnackbarStore } from "@/stores/snackbarStore";
 const snackbar = useSnackbarStore();
+const setBodyClass = () => {
+  if (route.path === "/login") {
+    document.body.classList.add("login-page");
+    document.body.classList.remove("default-page");
+  } else {
+    document.body.classList.add("default-page");
+    document.body.classList.remove("login-page");
+  }
+};
+// при инициализации
+setBodyClass();
+
+// следим за изменением маршрута
+watch(route, setBodyClass);
 </script>
 
 <template>
