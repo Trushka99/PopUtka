@@ -90,18 +90,16 @@ watch(
           class="chat-item"
           @click="openChat(chat)"
         >
-          <div class="avatar">
-            <v-avatar v-if="getChatPartner(chat).avatar" size="40" class="mr-3">
-              <img
-                :src="`https://api.pop-utka.uz${getChatPartner(chat).avatar}`"
-                alt="Driver"
-                class="avatar"
-              />
-            </v-avatar>
+          <v-avatar size="40" class="mr-3" v-if="getChatPartner(chat).avatar">
+            <img
+              :src="`https://api.pop-utka.uz${getChatPartner(chat).avatar}`"
+              alt="Driver"
+              class="avatar"
+            />
+          </v-avatar>
 
-            <div v-else class="avatar-placeholder">
-              {{ getChatPartner(chat).firstName[0] }}
-            </div>
+          <div v-else class="avatar-placeholder">
+            {{ getChatPartner(chat).firstName[0] }}
           </div>
           <div class="chat-info">
             <div class="chat-name">
@@ -168,7 +166,7 @@ watch(
         .avatar {
           width: 50px;
           height: 50px;
-          margin-right: 10px;
+          object-fit: cover;
           border-radius: 50%;
           overflow: hidden;
           display: flex;
