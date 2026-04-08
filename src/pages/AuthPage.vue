@@ -228,13 +228,18 @@ const sex = ["Мужской", "Женский"];
 .background {
   background-image: url("/images/background.png");
   width: 100%;
-  height: 100vh;
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top) 1rem env(safe-area-inset-bottom) 1rem;
+  inset: 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
   justify-content: center;
   align-items: center;
+  @media (max-width: 768px) {
+    min-height: 113dvh;
+  }
 }
 
 .login-card {

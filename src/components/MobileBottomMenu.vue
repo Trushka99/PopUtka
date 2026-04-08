@@ -6,7 +6,10 @@ import CreateTrip from "@/pages/CreateTrip.vue";
 <template>
   <div class="mobile-bottom-bar">
     <div class="menu_list">
-      <RouterLink class="link" to="/search">
+      <RouterLink
+        class="link"
+        :to="`/search?departureAt=${new Date().toISOString().split('T')[0]}`"
+      >
         <div class="menu_item">
           <v-icon size="large" color="rgba(0, 128, 255, 1)">mdi-magnify</v-icon>
         </div></RouterLink
@@ -24,9 +27,13 @@ import CreateTrip from "@/pages/CreateTrip.vue";
           <CreateTrip />
         </template>
       </v-dialog>
-      <div class="menu_item">
-        <v-icon size="large" color="rgba(0, 128, 255, 1)">mdi-list-box</v-icon>
-      </div>
+      <RouterLink class="link" to="/chats">
+        <div class="menu_item">
+          <v-icon size="large" color="rgba(0, 128, 255, 1)"
+            >mdi-list-box</v-icon
+          >
+        </div></RouterLink
+      >
       <RouterLink class="link" to="/notifications">
         <div class="menu_item">
           <v-icon size="large" color="rgba(0, 128, 255, 1)">

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import type { Ref } from "vue";
 import { useLangStore } from "@/stores/langStore";
 import Loading from "@/components/Loading.vue";
 import BookingCard from "@/components/BookingCard.vue";
 import ReviewCard from "@/components/ReviewCard.vue";
 import { useRouter } from "vue-router";
+import { createChat } from "@/api";
+
 import {
   apiUploadAvatar,
   logout,
@@ -103,7 +105,14 @@ const pendingTrips = computed(
       t.bookings?.some((b: any) => b.status === "pending"),
     ) || [],
 );
-
+const reRouteToChat = () => {
+  createChat(user.value.id)
+    .then((res) => {
+      console.log(res);
+      router.push(`/chats/${res.data.data.id}`);
+    })
+    .catch((err) => console.error(err));
+};
 const activeTrips = computed(
   () =>
     user.value?.activeTrips?.filter(
@@ -392,10 +401,12 @@ const age = computed(() => {
             </v-container>
           </div>
 
-          <!-- <div class="actions">
-            <button class="btn btn-primary">{{ langStore.t("write") }}</button>
+          <div class="actions" v-if="!isMeRoute">
+            <button v-on:click="reRouteToChat()" class="btn btn-primary">
+              {{ langStore.t("write") }}
+            </button>
             <button class="btn btn-outline">{{ langStore.t("report") }}</button>
-          </div> -->
+          </div>
         </div>
         <div v-if="user.car && isMeRoute" class="car-block">
           <h3 class="small-title">Автомобиль</h3>
@@ -527,7 +538,10 @@ const age = computed(() => {
         </div>
 
         <!-- PENDING -->
-        <div class="booking-section pending" v-if="pendingTrips.length">
+        <div
+          class="booking-section pending"
+          v-if="pendingTrips.length && langStore.user.role === 'driver'"
+        >
           <div class="section-header" @click="toggleSection('pending')">
             <div class="left">
               <span class="icon">
@@ -553,7 +567,10 @@ const age = computed(() => {
         </div>
 
         <!-- АКТИВНЫЕ -->
-        <div class="booking-section active" v-if="activeTrips.length">
+        <div
+          class="booking-section active"
+          v-if="activeTrips.length && langStore.user.role === 'driver'"
+        >
           <div class="section-header" @click="toggleSection('active')">
             <div class="left">
               <span class="icon">
@@ -580,7 +597,10 @@ const age = computed(() => {
         </div>
 
         <!-- ЗАПОЛНЕННЫЕ -->
-        <div class="booking-section full" v-if="fullTrips.length">
+        <div
+          class="booking-section full"
+          v-if="fullTrips.length && langStore.user.role === 'driver'"
+        >
           <div class="section-header" @click="toggleSection('full')">
             <div class="left">
               <span class="icon">

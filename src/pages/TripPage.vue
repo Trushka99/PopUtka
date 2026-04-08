@@ -186,6 +186,7 @@ const options: Intl.DateTimeFormatOptions = {
             <v-icon icon="mdi-chevron-right" size="24" />
           </div>
           <v-btn
+            v-if="trip.driverId !== langStore.user.id"
             @click="createBooking"
             class="search-btn"
             color="#00AEEF"
@@ -204,6 +205,7 @@ const options: Intl.DateTimeFormatOptions = {
 .trip-cont {
   width: 80%;
   margin: 0 auto;
+  padding-bottom: 70px;
 }
 .trip-card {
   padding: 20px;

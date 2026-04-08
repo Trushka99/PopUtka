@@ -1,35 +1,3 @@
-<!-- src/components/Chat.vue -->
-<template>
-  <div class="chat-wrapper">
-    <div class="chat-header">
-      <span>Чат</span>
-      <button class="close" @click="$emit('close')">✕</button>
-    </div>
-
-    <div ref="messagesRef" class="messages">
-      <div
-        v-for="(msg, i) in messages"
-        :key="i"
-        class="message"
-        :class="{ mine: msg.senderId === langStore.user.id }"
-      >
-        <div class="bubble">
-          <span class="text">{{ msg.text }}</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="input">
-      <input
-        v-model="text"
-        placeholder="Введите сообщение…"
-        @keyup.enter="send"
-      />
-      <button @click="send">➤</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useLangStore } from "@/stores/langStore";
@@ -107,13 +75,41 @@ onBeforeUnmount(() => {
   socket.off("new-message");
 });
 </script>
+<template>
+  <div class="chat-wrapper">
+    <div class="chat-header">
+      <span>Чат</span>
+      <button class="close" @click="$emit('close')">✕</button>
+    </div>
+
+    <div ref="messagesRef" class="messages">
+      <div
+        v-for="(msg, i) in messages"
+        :key="i"
+        class="message"
+        :class="{ mine: msg.senderId === langStore.user.id }"
+      >
+        <div class="bubble">
+          <span class="text">{{ msg.text }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="input">
+      <input
+        v-model="text"
+        placeholder="Введите сообщение…"
+        @keyup.enter="send"
+      />
+      <button @click="send">➤</button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .chat-wrapper {
-  bottom: 20px;
-  right: 20px;
   width: 100%;
-  height: 480px;
+  height: 91%;
   background: white;
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);

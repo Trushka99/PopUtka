@@ -7,12 +7,24 @@ import AuthPage from "@/pages/AuthPage.vue";
 import MyProfilePage from "@/pages/MyProfilePage.vue";
 import NotificationsPage from "@/pages/NotificationsPage.vue";
 import ConfirmBookingPage from "@/pages/ConfirmBookingPage.vue";
+import ChatsPage from "@/pages/ChatsPage.vue";
 const routes = [
   { path: "/", component: HomePage, meta: { layout: "default" } },
   { path: "/login", component: AuthPage, meta: { layout: "empty" } },
   {
     path: "/search",
     component: TripListPage,
+    meta: { layout: "default", requiresAuth: true },
+  },
+  {
+    path: "/chats/:id",
+    name: "chats",
+    component: ChatsPage,
+    meta: { layout: "default", requiresAuth: true },
+  },
+  {
+    path: "/chats",
+    component: ChatsPage,
     meta: { layout: "default", requiresAuth: true },
   },
   {

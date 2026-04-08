@@ -1,5 +1,8 @@
 {
   "en": {
+    "contact_pass": "Contact passenger",
+    "contact_drive": "Contact driver",
+
     "user_registered": "User successfully registered",
     "registration_server_error": "Server error during registration",
     "login_password_required": "Login/email and password are required",
@@ -251,6 +254,8 @@
     "cannot_delete_admin": "Нельзя удалить администратора",
     "user_deleted_with_data": "Пользователь и все связанные данные удалены",
     "complaint_userid_reason_required": "ID пользователя и причина жалобы обязательны",
+    "contact_pass": "Написать пассажиру",
+    "contact_drive": "написать водителю",
     "cannot_complain_self": "Нельзя пожаловаться на самого себя",
     "complaint_sent": "Жалоба отправлена администрации",
     "complaint_not_found": "Жалоба не найдена",
@@ -440,6 +445,8 @@
     "online": "Онлайн"
   },
   "uz": {
+    "contact_pass": "Yo'lovchiga yozing",
+    "contact_drive": "Haydovchiga yozing",
     "user_not_found": "Foydalanuvchi topilmadi",
     "verification_code_sent": "Tasdiqlash kodi yuborildi",
     "verification_code_send_error": "Kod yuborishda xato",
