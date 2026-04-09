@@ -68,7 +68,7 @@ const handleReview = (data: any) => {
           {{ new Date(trip.departureAt).toLocaleDateString("ru-RU") }}
         </span>
         <v-btn class="review-btn" @click="showReview = true">
-          Оставить отзыв
+          {{ langStore.t("addReview") }}
         </v-btn>
       </div>
     </div>

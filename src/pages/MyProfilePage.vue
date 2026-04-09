@@ -218,7 +218,7 @@ const age = computed(() => {
   <div v-else class="profile-fullscreen">
     <div v-if="carModalOpen" class="modal-backdrop">
       <div class="modal">
-        <h3>Автомобиль</h3>
+        <h3>{{ langStore.t("car") }}</h3>
 
         <div class="form">
           <input v-model="carForm.model" placeholder="Модель" />
@@ -239,7 +239,7 @@ const age = computed(() => {
       <div class="card main-card">
         <div class="avatar-wrap">
           <img
-            class="avatar"
+            :class="isMeRoute ? 'avatar' : 'avatar other'"
             @click="openFileDialog"
             :src="
               user.avatar
@@ -254,6 +254,7 @@ const age = computed(() => {
             accept="image/*"
             @change="uploadAvatar"
             style="display: none"
+            :disabled="!isMeRoute"
           />
         </div>
 
@@ -409,7 +410,7 @@ const age = computed(() => {
           </div>
         </div>
         <div v-if="user.car && isMeRoute" class="car-block">
-          <h3 class="small-title">Автомобиль</h3>
+          <h3 class="small-title">{{ langStore.t("car") }}</h3>
           <div class="car-info">
             <div class="car-title">
               {{ user.car.brand }} {{ user.car.model }}
@@ -508,26 +509,17 @@ const age = computed(() => {
             <h4>{{ langStore.t("contacts") }}</h4>
             <div>{{ user.phone ?? "—" }}</div>
             <div>{{ user.email ?? "—" }}</div>
-            <div class="muted">
-              {{ langStore.t("signup") }}:
-              {{
-                user.createdAt
-                  ? new Date(user.createdAt).toLocaleDateString("ru-RU")
-                  : "—"
-              }}
-            </div>
           </div>
         </div>
       </section>
       <section v-show="activeSection === 'trips'" class="section-card">
-        <h2>История поездок</h2>
         <HistoryTripCard v-for="t in user.tripHistory" :key="t.id" :trip="t" />
       </section>
 
       <section v-show="activeSection === 'bookings'" class="section-card">
         <!-- МОИ БРОНИ -->
         <div class="booking-section my" v-if="user.myBookings.length">
-          <h3>Мои бронирования</h3>
+          <h3>{{ langStore.t("my") }}</h3>
           <div class="cards-list">
             <BookingCard
               v-for="b in user.myBookings"
@@ -547,7 +539,7 @@ const age = computed(() => {
               <span class="icon">
                 <v-icon size="18">mdi-timer-sand</v-icon>
               </span>
-              <span class="title">Ожидают подтверждения</span>
+              <span class="title">{{ langStore.t("pending") }}</span>
             </div>
 
             <div class="right">
@@ -576,7 +568,7 @@ const age = computed(() => {
               <span class="icon">
                 <v-icon size="18">mdi-check-circle-outline</v-icon>
               </span>
-              <span class="title"> Активные поездки</span>
+              <span class="title">{{ langStore.t("pending") }}</span>
             </div>
 
             <div class="right">
@@ -606,7 +598,7 @@ const age = computed(() => {
               <span class="icon">
                 <v-icon size="18">mdi-close-circle-outline</v-icon>
               </span>
-              <span class="title">Заполненные</span>
+              <span class="title">{{ langStore.t("full") }}</span>
             </div>
 
             <div class="right">
@@ -721,6 +713,9 @@ const age = computed(() => {
   border: 5px solid #1976d2;
   box-shadow: 0 10px 30px rgba(25, 118, 210, 0.12);
   cursor: pointer;
+}
+.other {
+  cursor: auto;
 }
 
 .user-head {

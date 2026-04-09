@@ -163,15 +163,6 @@ watch(selectedLang, (newLang) => {
         class="header__link"
         to="/login"
       >
-        <v-btn class="header__driver">{{
-          langStore.t("driver")
-        }}</v-btn></RouterLink
-      >
-      <RouterLink
-        v-if="Object.keys(langStore.user).length === 0"
-        class="header__link"
-        to="/login"
-      >
         <v-btn class="header__driver" color="#5865f2">{{
           langStore.t("pass")
         }}</v-btn></RouterLink
@@ -332,16 +323,31 @@ watch(selectedLang, (newLang) => {
     <RouterLink class="header__link" to="/">{{
       langStore.t("home")
     }}</RouterLink>
-    <RouterLink class="header__link" to="/">{{
-      langStore.t("drivers")
-    }}</RouterLink>
-    <span class="header__link">{{ langStore.t("rides") }}</span>
+    <RouterLink
+      class="header__link"
+      :to="`/search?departureAt=${new Date().toISOString().split('T')[0]}`"
+    >
+      <span class="header__link">{{ langStore.t("rides") }}</span></RouterLink
+    >
     <span class="header__link">{{ langStore.t("about us") }}</span>
     <span class="header__link">{{ langStore.t("contacts") }}</span>
-    <v-btn class="header__driver" block>{{ langStore.t("driver") }}</v-btn>
-    <v-btn class="header__driver" color="#5865f2" block>{{
-      langStore.t("pass")
-    }}</v-btn>
+    <RouterLink
+      v-if="Object.keys(langStore.user).length === 0"
+      class="header__link"
+      to="/login"
+    >
+      <v-btn class="header__driver" block>{{
+        langStore.t("driver")
+      }}</v-btn></RouterLink
+    >
+    <v-btn
+      v-if="Object.keys(langStore.user).length === 0"
+      to="/login"
+      class="header__driver"
+      color="#5865f2"
+      block
+      >{{ langStore.t("pass") }}</v-btn
+    >
     <v-select
       v-model="selectedLang"
       :items="langOptions"

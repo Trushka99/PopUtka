@@ -50,6 +50,12 @@ const avatarUrl = computed(() =>
     ? `https://api.pop-utka.uz${props.trip.driver.avatar}`
     : null,
 );
+const options: Intl.DateTimeFormatOptions = {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+};
+
 console.log(props.trip);
 </script>
 
@@ -68,13 +74,16 @@ console.log(props.trip);
         <div class="trip-column">
           <div class="trip-item">
             <v-icon size="24" color="blue">mdi-calendar</v-icon>
-            <span class="trip-text"
-              >{{
-                new Date(props.trip.departureAt).toLocaleDateString("ru-RU", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })
+            <span class="trip-text">
+              {{
+                new Intl.DateTimeFormat(
+                  langstore.currentLang === "ru"
+                    ? "ru-RU"
+                    : langstore.currentLang === "en"
+                      ? "en-EN"
+                      : "uz-Cyrl-UZ",
+                  options,
+                ).format(new Date(trip.departureAt))
               }}
               {{
                 new Date(props.trip.departureAt).toLocaleTimeString("ru-RU", {

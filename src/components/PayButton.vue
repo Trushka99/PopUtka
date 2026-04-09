@@ -8,12 +8,10 @@ const { user, id } = defineProps<{
 }>();
 const pay = async () => {
   try {
-    const res = await createPayment(
-      {
-        tripId: id,
-        amount: 1000,
-      },
-    );
+    const res = await createPayment({
+      tripId: id,
+      amount: 1000,
+    });
 
     const transId = res.data.data.paymentId;
 
@@ -39,7 +37,7 @@ const pay = async () => {
 <template>
   <button @click="pay" class="pay-btn">
     <span class="icon"></span>
-    <span class="text">Оплатить картой</span>
+    <span class="text">{{ langStore.t("pay") }}</span>
     <span class="shine"></span>
   </button>
 </template>

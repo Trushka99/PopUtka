@@ -1,11 +1,16 @@
 <script setup lang="ts">
-const links = [
-  "Првила сервиса",
-  "Безопасность",
-  "Помощь",
-  "Для бизнеса",
-  "Партнерам",
-];
+import { useLangStore } from "@/stores/langStore";
+import { computed } from "vue";
+const langStore = useLangStore();
+const links = computed(() => {
+  return [
+    langStore.t("rules"),
+    langStore.t("security"),
+    langStore.t("assistance"),
+    langStore.t("forbuiz"),
+    langStore.t("affiliate"),
+  ];
+});
 </script>
 <template>
   <v-footer class="footer">
@@ -21,7 +26,7 @@ const links = [
 
     <div class="footer__copyright">
       {{ new Date().getFullYear() }} —
-      <strong> Pop.utka. Все права защищены.</strong>
+      <strong> Pop.utka. {{ langStore.t("reserved") }}.</strong>
     </div>
   </v-footer>
 </template>

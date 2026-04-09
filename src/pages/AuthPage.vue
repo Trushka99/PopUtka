@@ -83,7 +83,7 @@ const sex = ["Мужской", "Женский"];
 
       <v-card-text v-if="activeTab === 'login'">
         <v-text-field
-          label="Email или телефон"
+          :label="`${langStore.t('email')} ${langStore.t('or')} ${langStore.t('phone')} `"
           outlined
           v-model="registerForm.email"
           dense
@@ -183,7 +183,7 @@ const sex = ["Мужской", "Женский"];
           class="mt-4 mb-2 login-btn"
           block
         >
-          {{ langStore.t("regisrt") }}
+          {{ langStore.t("registr") }}
         </v-btn>
         <span class="error">{{ error }}</span>
       </v-card-text>

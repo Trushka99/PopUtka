@@ -36,7 +36,7 @@ function formatDuration(minutes: number) {
   const mins = minutes % 60;
 
   if (hrs === 0) return `${mins} мин`;
-  return `${hrs} ч ${mins} мин`;
+  return `${hrs} ${langStore.t("hours")} ${mins} ${langStore.t("min")}`;
 }
 function addDurationToTime(timeStr: string, durationMinutes: number) {
   const [hours, minutes] = timeStr.split(":").map(Number);
@@ -181,7 +181,7 @@ const options: Intl.DateTimeFormatOptions = {
           <div class="trip-flex hover">
             <div style="display: flex; gap: 25px">
               <h4>1 {{ langStore.t("passenger") }}</h4>
-              <h4>{{ trip.price }} ₽</h4>
+              <h4>{{ trip.price }} UZS</h4>
             </div>
             <v-icon icon="mdi-chevron-right" size="24" />
           </div>

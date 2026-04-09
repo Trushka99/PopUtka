@@ -29,7 +29,6 @@ const bookings = computed(() =>
   trip.type === "trip" ? trip.data.bookings : [],
 );
 
-// Можно ли завершить поездку
 const canFinishTrip = computed(
   () =>
     trip.type === "trip" &&
@@ -76,7 +75,9 @@ const rejTrip = async (id: string) => {
 const formatDuration = (minutes: number) => {
   const hrs = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return hrs === 0 ? `${mins} мин` : `${hrs} ч ${mins} мин`;
+  return hrs === 0
+    ? `${mins} ${langStore.t("min")}`
+    : `${hrs} ${langStore.t("hours")} ${mins} ${langStore.t("min")}`;
 };
 
 const addDurationToTime = (timeStr: string, durationMinutes: number) => {
@@ -144,7 +145,7 @@ const departureDate = computed(() =>
         <PayClickButton :id="trip.data.id" />
         <div class="actions" v-if="canFinishTrip">
           <v-btn block class="finish-btn" @click="finishTrip(baseTrip.id)">
-            Завершить поездку
+            {{ langStore.t("complete") }}
           </v-btn>
         </div>
       </div>
@@ -158,8 +159,14 @@ const departureDate = computed(() =>
           :to="{ name: 'bookings', params: { id: b.id } }"
         >
           <div class="booking">
-            <v-avatar size="56" class="mr-3">
-              <v-img :src="`https://api.pop-utka.uz${b.passenger.avatar}`" />
+            <v-avatar size="56" class="mr-3 avatar">
+              <v-img
+                v-if="b.passenger.avatar"
+                :src="`https://api.pop-utka.uz${b.passenger.avatar}`"
+              />
+              <span v-else class="text-h6">
+                {{ b.passenger.firstName[0].toUpperCase() }}
+              </span>
             </v-avatar>
             <div>
               <h3>{{ b.passenger.firstName }}</h3>
@@ -169,8 +176,12 @@ const departureDate = computed(() =>
         </RouterLink>
 
         <div v-if="b.status === 'pending'">
-          <v-btn @click="confTrip(b.id)" class="confirm">Подтвердить</v-btn>
-          <v-btn @click="rejTrip(b.id)" class="reject">Отклонить</v-btn>
+          <v-btn @click="confTrip(b.id)" class="confirm">{{
+            langStore.t("accept")
+          }}</v-btn>
+          <v-btn @click="rejTrip(b.id)" class="reject">{{
+            langStore.t("reject")
+          }}</v-btn>
         </div>
 
         <v-chip
@@ -190,6 +201,19 @@ const departureDate = computed(() =>
 <style scoped lang="scss">
 .actions {
   padding: 12px 0 0;
+}
+.link {
+  text-decoration: none;
+}
+.avatar {
+  border: 1px solid rgba(0, 0, 0, 0.2); /* мягкий контур */
+  background-color: #d0ebff; /* светлый голубой фон */
+  color: #1a1a1a; /* буква внутри — тёмная для контраста */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border-radius: 50%;
 }
 .finish-btn {
   width: 100%;

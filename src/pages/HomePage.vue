@@ -94,7 +94,7 @@ const data = computed(() => [
     <section class="hero">
       <div class="description">
         <h1 class="mainContent">
-          Для тех,
+          {{ langStore.t("for_those") }}
           <span>
             <img
               class="duckImage"
@@ -102,7 +102,7 @@ const data = computed(() => [
               alt="Duck drive a taxi"
             />
           </span>
-          кому по пути
+          {{ langStore.t("same_way") }}
         </h1>
       </div>
       <SearchingForm />
