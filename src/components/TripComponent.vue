@@ -45,7 +45,7 @@ function formatDuration(minutes: number) {
   const mins = minutes % 60;
 
   if (hrs === 0) return `${mins} мин`;
-  return `${hrs} ч ${mins} мин`;
+  return `${hrs} ${langStore.t("hours")} ${mins} ${langStore.t("min")}`;
 }
 function addDurationToTime(timeStr: string, durationMinutes: number) {
   const [hours, minutes] = timeStr.split(":").map(Number);

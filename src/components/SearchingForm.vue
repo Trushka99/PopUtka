@@ -48,32 +48,21 @@ watch(
 const displayDate = ref(date.value.split("-").reverse().join("."));
 
 const passengers = ref(1);
-const passengersLabel = ref(
-  `${passengers.value} ${
+const passengersLabel = computed(() => {
+  return `${passengers.value} ${
     passengers.value === 1
       ? langStore.t("passenger")
       : langStore.t("passengers")
-  }`,
-);
-
+  }`;
+});
 const increase = () => {
   if (passengers.value < 8) {
     passengers.value++;
-    passengersLabel.value = `${passengers.value} ${
-      passengers.value === 1
-        ? langStore.t("passenger")
-        : langStore.t("passengers")
-    }`;
   }
 };
 const decrease = () => {
   if (passengers.value > 1) {
     passengers.value--;
-    passengersLabel.value = `${passengers.value} ${
-      passengers.value === 1
-        ? langStore.t("passenger")
-        : langStore.t("passengers")
-    }`;
   }
 };
 

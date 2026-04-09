@@ -114,7 +114,7 @@ watch(localMaxPrice, (val) => emit("update:maxPrice", val));
       </v-container>
       <v-container class="radios" fluid>
         <div class="flex">
-          <h3 class="title">Время</h3>
+          <h3 class="title">{{ langStore.t('time') }}</h3>
           <v-icon>mdi-clock-time-four-outline</v-icon>
         </div>
         <v-row justify="space-between">

@@ -43,7 +43,7 @@ function formatDuration(minutes: number) {
   const mins = minutes % 60;
 
   if (hrs === 0) return `${mins} мин`;
-  return `${hrs} ч ${mins} мин`;
+  return `${hrs} ${langStore.t("hours")} ${mins} ${langStore.t("min")}`;
 }
 function addDurationToTime(timeStr: string, durationMinutes: number) {
   const [hours, minutes] = timeStr.split(":").map(Number);
@@ -208,22 +208,24 @@ const options: Intl.DateTimeFormatOptions = {
             </div>
           </div>
           <v-btn
+            v-if="trip.trip.driver.id === langStore.user.id"
             @click="confirm"
             class="search-btn"
             color="#00AEEF"
             rounded="lg"
             height="48"
           >
-            Одобрить
+            {{ langStore.t("accept") }}
           </v-btn>
           <v-btn
+            v-if="trip.trip.driver.id === langStore.user.id"
             @click="reject"
             class="search-btn"
             color="#00AEEF"
             rounded="lg"
             height="48"
           >
-            Отклонить
+            {{ langStore.t("reject") }}
           </v-btn>
         </v-card>
         <v-card v-else class="trip-card" elevation="2" rounded="lg">
@@ -295,7 +297,7 @@ const options: Intl.DateTimeFormatOptions = {
       </div>
     </div>
   </div>
-  <div v-else>Ошибка: поездка не найдена</div>
+  <div v-else>{{ langStore.t("trips_search_error") }}</div>
 </template>
 <style scoped lang="scss">
 .trip-cont {
