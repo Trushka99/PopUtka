@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
+import PayForm from "./PayForm.vue";
 import { useLangStore } from "@/stores/langStore";
 import {
   confirmBooking,
@@ -11,6 +12,10 @@ import { RouterLink } from "vue-router";
 import PayButton from "./PayButton.vue";
 import PayClickButton from "./PayClickButton.vue";
 import type { TTripCard, TripCoordinates, Location } from "@/utils/types";
+const sheet = ref();
+const openSheet = () => {
+  sheet.value.open();
+};
 
 const langStore = useLangStore();
 const { trip } = defineProps<{ trip: TTripCard }>();
@@ -54,6 +59,10 @@ const finishTrip = async (id: string) => {
 };
 
 const confTrip = async (id: string) => {
+  if (trip.data.status === "created") {
+    openSheet();
+    return;
+  }
   try {
     const res = await confirmBooking(id);
     console.log("Бронь подтверждена:", res);
@@ -141,8 +150,6 @@ const departureDate = computed(() =>
         <span class="duration">{{
           formatDuration(baseTrip.tripInfo.duration)
         }}</span>
-        <PayButton :user="langStore.user" :id="trip.data.id" />
-        <PayClickButton :id="trip.data.id" />
         <div class="actions" v-if="canFinishTrip">
           <v-btn block class="finish-btn" @click="finishTrip(baseTrip.id)">
             {{ langStore.t("complete") }}
@@ -174,7 +181,6 @@ const departureDate = computed(() =>
             </div>
           </div>
         </RouterLink>
-
         <div v-if="b.status === 'pending'">
           <v-btn @click="confTrip(b.id)" class="confirm">{{
             langStore.t("accept")
@@ -196,6 +202,7 @@ const departureDate = computed(() =>
       </div>
     </div>
   </v-card>
+  <PayForm ref="sheet" :trip="trip" />
 </template>
 
 <style scoped lang="scss">

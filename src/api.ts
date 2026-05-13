@@ -8,6 +8,7 @@ export const billingApi = axios.create({
   baseURL: "https://billing.pop-utka.uz",
   withCredentials: true,
 });
+
 const handleRequest = async (request: any) => {
   const MOCK_MODE = false;
 
@@ -31,6 +32,11 @@ const handleRequest = async (request: any) => {
 export const createPayment = (data: any) => {
   return billingApi.post("/api/payment/orders", data);
 };
+
+export const getPayment = (paymentId: string) => {
+  return billingApi.get(`/api/payment/status/${paymentId}`);
+};
+
 export const createChat = (id: string) => {
   return handleRequest(
     api.post("/chats", {
@@ -159,6 +165,43 @@ export const rejectBooking = async (id: string) => {
 };
 export const getUser = async (id: string) => {
   return handleRequest(api.get(`/users/${id}`));
+};
+export const createCode = async ({
+  phone,
+  type,
+}: {
+  phone: string;
+  type: string;
+}) => {
+  return handleRequest(
+    api.post("/otp", {
+      phone,
+      type,
+    }),
+  );
+};
+export const confirmCode = async ({
+  phone,
+  type,
+  inputCode,
+  userId,
+  userRole,
+}: {
+  phone: string;
+  type: string;
+  inputCode: string;
+  userId: string;
+  userRole: string;
+}) => {
+  return handleRequest(
+    api.post("/otp/verify", {
+      phone,
+      type,
+      inputCode,
+      userId,
+      userRole,
+    }),
+  );
 };
 export const updateCar = async (
   id: string,

@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { register, login } from "@/api";
 import { useLangStore } from "@/stores/langStore";
 import { useRouter, useRoute } from "vue-router";
+import { createCode, confirmCode } from "@/api";
 const router = useRouter();
 const route = useRoute();
 const redirectPath = route.query.redirect?.toString() || "/";
@@ -20,13 +21,46 @@ const registerForm = ref({
   lastName: "",
   gender: "",
   birthDate: "",
+  id: "",
 });
-const loginHandle = () => {
-  const { email, password } = registerForm.value;
-  return login(email, password)
-    .then((res) => {
-      router.push(redirectPath);
-    })
+const code = ref<string>("");
+const loginHandle = async () => {
+  try {
+    const { email, password } = registerForm.value;
+    const res = await login(email, password);
+
+    const user = res.data.data.user;
+    registerForm.value.phone = user.phone;
+    registerForm.value.id = user.id;
+    registerForm.value.role = user.role;
+    step.value = "code";
+  } catch (err: any) {
+    const errText = err.response.data.code;
+    error.value = langStore.t(errText.toLowerCase());
+    throw err; // ← ВАЖНО
+  }
+};
+const sendCode = async () => {
+  try {
+    await loginHandle();
+
+    const res = await createCode({
+      phone: registerForm.value.phone,
+      type: "login",
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
+const confirmcode = () => {
+  confirmCode({
+    phone: registerForm.value.phone,
+    type: "login",
+    inputCode: code.value,
+    userId: registerForm.value.id,
+    userRole: registerForm.value.role,
+  })
+    .then((res) => router.push(redirectPath))
     .catch((err) => {
       const errText = err.response.data.code;
       error.value = langStore.t(errText.toLowerCase());
@@ -65,12 +99,29 @@ const handleRegister = async () => {
   }
 };
 const roles = ["Пользователь", "Водитель"];
+const step = ref("form");
 const sex = ["Мужской", "Женский"];
 </script>
 
 <template>
   <div class="background">
-    <v-card class="login-card" elevation="0">
+    <v-card class="login-card" elevation="0" v-if="step === 'code'">
+      <v-text-field
+        label="Введите код из смс"
+        outlined
+        v-model="code"
+        dense
+        class="custom-field"
+      ></v-text-field>
+      <v-btn
+        @click="confirmcode"
+        color="gradient-orange"
+        class="mt-4 mb-2 login-btn"
+        block
+        >Отправить</v-btn
+      >
+    </v-card>
+    <v-card v-else class="login-card" elevation="0">
       <v-tabs
         class="tabs"
         v-model="activeTab"
@@ -99,7 +150,7 @@ const sex = ["Мужской", "Женский"];
         ></v-text-field>
 
         <v-btn
-          @click="loginHandle"
+          @click="sendCode"
           color="gradient-orange"
           class="mt-4 mb-2 login-btn"
           block
