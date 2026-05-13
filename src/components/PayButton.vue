@@ -2,9 +2,11 @@
 import { createPayment } from "@/api";
 import { useLangStore } from "@/stores/langStore";
 const langStore = useLangStore();
-const { user, id } = defineProps<{
-  user: any;
+const { id } = defineProps<{
   id: string;
+}>();
+const emit = defineEmits<{
+  (e: "created", id: string): void;
 }>();
 const pay = async () => {
   try {
@@ -14,7 +16,7 @@ const pay = async () => {
     });
 
     const transId = res.data.data.paymentId;
-
+    emit("created", transId);
     // @ts-ignore
     window.createPaymentRequest(
       {

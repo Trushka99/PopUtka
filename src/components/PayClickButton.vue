@@ -75,14 +75,14 @@ const handlePay = async () => {
 
 <style scoped lang="scss">
 .click_logo {
-  padding: 6px 12px;
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 12px;
   cursor: pointer;
   color: #fff;
   font-size: 14px;
   font-family: Arial;
   font-weight: bold;
-  border: 1px solid #037bc8;
-  border-radius: 6px;
   background: linear-gradient(#27a8e0 0%, #1c8ed7 100%);
   display: flex;
   align-items: center;
