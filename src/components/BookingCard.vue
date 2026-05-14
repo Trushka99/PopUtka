@@ -146,10 +146,34 @@ const departureDate = computed(() =>
       </v-row>
 
       <div class="info">
-        <span class="date">{{ departureDate }}</span>
-        <span class="duration">{{
-          formatDuration(baseTrip.tripInfo.duration)
-        }}</span>
+        <div class="meta">
+          <div class="meta-item">
+            <div class="meta-icon">
+              <v-icon size="16">mdi-calendar</v-icon>
+            </div>
+
+            <div class="meta-text">
+              <span class="meta-label">Дата</span>
+              <strong>{{ departureDate }}</strong>
+            </div>
+          </div>
+
+          <div class="meta-divider"></div>
+
+          <div class="meta-item">
+            <div class="meta-icon duration">
+              <v-icon size="16">mdi-clock-outline</v-icon>
+            </div>
+
+            <div class="meta-text">
+              <span class="meta-label">В пути</span>
+              <strong>
+                {{ formatDuration(baseTrip.tripInfo.duration) }}
+              </strong>
+            </div>
+          </div>
+        </div>
+
         <div class="actions" v-if="canFinishTrip">
           <v-btn block class="finish-btn" @click="finishTrip(baseTrip.id)">
             {{ langStore.t("complete") }}
@@ -208,6 +232,10 @@ const departureDate = computed(() =>
 <style scoped lang="scss">
 .actions {
   padding: 12px 0 0;
+}
+.date_cont {
+  display: flex;
+  flex-direction: column;
 }
 .link {
   text-decoration: none;
@@ -487,10 +515,101 @@ const departureDate = computed(() =>
   }
 
   .info {
-    font-size: 14px;
-    color: #336a7a;
+    margin-top: 14px;
     display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+
+    padding: 14px 16px;
+
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.35);
+
+    border: 1px solid rgba(255, 255, 255, 0.45);
+
+    backdrop-filter: blur(10px);
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      0 6px 16px rgba(0, 70, 100, 0.08);
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .meta-icon {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(
+      135deg,
+      rgba(0, 180, 255, 0.18),
+      rgba(0, 140, 255, 0.12)
+    );
+
+    color: #0077b6;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      0 4px 10px rgba(0, 100, 180, 0.08);
+
+    &.duration {
+      background: linear-gradient(
+        135deg,
+        rgba(0, 210, 160, 0.18),
+        rgba(0, 180, 120, 0.12)
+      );
+
+      color: #009970;
+    }
+  }
+
+  .meta-text {
+    display: flex;
+    flex-direction: column;
+
+    strong {
+      font-size: 14px;
+      color: #00384d;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+  }
+
+  .meta-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(0, 61, 82, 0.55);
+    margin-bottom: 2px;
+  }
+
+  .meta-divider {
+    width: 1px;
+    align-self: stretch;
+
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(0, 70, 100, 0.12),
+      transparent
+    );
   }
 
   .perforation {

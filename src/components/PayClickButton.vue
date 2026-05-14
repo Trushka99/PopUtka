@@ -2,6 +2,9 @@
 import { ref } from "vue";
 import { createPayment } from "@/api";
 import { useLangStore } from "@/stores/langStore";
+const emit = defineEmits<{
+  (e: "created", id: string): void;
+}>();
 
 const props = defineProps<{
   id: string;
@@ -17,7 +20,6 @@ const handlePay = async () => {
   error.value = "";
   loading.value = true;
 
-  // ✅ открываем окно СРАЗУ
   const payWindow = window.open("", "_blank");
 
   if (!payWindow) {
@@ -26,16 +28,13 @@ const handlePay = async () => {
     return;
   }
 
-  // можно показать "загрузку" в новом окне
-  payWindow.document.write(
-    "<h3 style='font-family:sans-serif'>Загрузка оплаты...</h3>",
-  );
-
   try {
     const res = await createPayment({
       tripId: props.id,
       amount: props.amount || 1000,
     });
+    const transId = res.data.data.paymentId;
+    emit("created", transId);
 
     const paymentId = res.data.data.paymentId;
 
@@ -49,7 +48,6 @@ const handlePay = async () => {
       card_type: "uzcard",
     });
 
-    // ✅ редирект уже в открытом окне
     payWindow.location.href = `https://my.click.uz/services/pay?${params.toString()}`;
   } catch (err) {
     console.error(err);
