@@ -10,7 +10,7 @@ const props = defineProps<{
     withUser?: { id: string; firstName: string; avatar: string | null };
   };
 }>();
-
+console.log(props.trip);
 const emit = defineEmits(["update:modelValue", "submit"]);
 const array = computed(() => {
   if (props.trip.role === "passenger") {
@@ -36,6 +36,7 @@ const selectedPassenger = ref<{
   id: string;
   firstName: string;
   avatar: string | null;
+  role: string | null;
 } | null>(null);
 
 const menu = ref(false);
@@ -50,7 +51,7 @@ const clear = () => {
 };
 
 // остальное
-const rating = ref(0);
+const rating = ref({ clean: 0, driving: 0, behaviour: 0 });
 const comment = ref("");
 
 const submit = async () => {
@@ -142,18 +143,48 @@ const submit = async () => {
 
       <!-- Рейтинг -->
       <div class="rating-box">
-        <div class="rating-label">Оценка поездки</div>
+        <div class="rating-label">Чистота салона</div>
 
         <v-rating
           class="big-rating"
-          v-model="rating"
+          v-model="rating.clean"
           length="5"
           color="amber"
           hover
         />
 
         <div class="rating-hint">
-          {{ rating ? `${rating} из 5` : "Выберите оценку" }}
+          {{ rating.clean ? `${rating.clean} из 5` : "Выберите оценку" }}
+        </div>
+      </div>
+      <div class="rating-box">
+        <div class="rating-label">Вождение</div>
+
+        <v-rating
+          class="big-rating"
+          v-model="rating.driving"
+          length="5"
+          color="amber"
+          hover
+        />
+
+        <div class="rating-hint">
+          {{ rating.driving ? `${rating.driving} из 5` : "Выберите оценку" }}
+        </div>
+      </div>
+      <div v-if="props.trip?.role === 'passenger'" class="rating-box">
+        <div class="rating-label">Вежливость</div>
+
+        <v-rating
+          class="big-rating"
+          v-model="rating.behaviour"
+          length="5"
+          color="amber"
+          hover
+        />
+
+        <div class="rating-hint">
+          {{ rating.behaviour ? `${rating.behaviour} из 5` : "Выберите оценку" }}
         </div>
       </div>
 
@@ -196,6 +227,9 @@ const submit = async () => {
   padding: 16px;
   text-align: center;
   margin: 20px 0;
+  width: 70%;
+  margin: 0 auto;
+  margin-bottom: 20px;
 }
 
 .rating-label {

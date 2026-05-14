@@ -4,8 +4,13 @@ import PayButton from "./PayButton.vue";
 import PayClickButton from "./PayClickButton.vue";
 import { useLangStore } from "@/stores/langStore";
 import type { TTripCard } from "@/utils/types";
+import Loading from "./Loading.vue";
+import SuccessPayment from "./SuccessPayment.vue";
+import FailPayment from "./FailPayment.vue";
 const isOpen = ref(false);
+const payStatus = ref<string>("error");
 const langStore = useLangStore();
+const loading = ref<boolean>(false);
 const open = () => (isOpen.value = true);
 const close = () => (isOpen.value = false);
 const { trip } = defineProps<{ trip: TTripCard }>();
@@ -23,19 +28,23 @@ const startPolling = (id: string) => {
     if (status === "paid" || status === "success") {
       clearInterval(interval!);
       interval = null;
-      close();
+
+      trip.data.status = "paid";
+      payStatus.value = "success";
+      loading.value = false;
     }
 
-    if (status === "failed" || status === "expired") {
+    if (status === "failed" || status === "expired" || status === "cancelled") {
       clearInterval(interval!);
       interval = null;
-      close();
+      payStatus.value = "error";
+      loading.value = false;
     }
   }, 1000);
 };
 const onPaymentCreated = (id: string) => {
   paymentId.value = id;
-
+  loading.value = true;
   startPolling(id);
 };
 defineExpose({ open, close });
@@ -44,20 +53,25 @@ defineExpose({ open, close });
 <template>
   <v-dialog v-model="isOpen" max-width="420" transition="scale-transition">
     <div class="payment-modal">
-      <div class="modal-header">
-        <h3>Оплата поездки</h3>
-        <v-btn icon="mdi-close" variant="text" @click="close" />
-      </div>
+      <Loading v-if="loading" />
+      <SuccessPayment v-else-if="payStatus === 'success'" @close="close" />
+      <FailPayment v-else-if="payStatus === 'error'" @close="close" />
+      <div v-else>
+        <div class="modal-header">
+          <h3>Оплата поездки</h3>
+          <v-btn icon="mdi-close" variant="text" @click="close" />
+        </div>
 
-      <div class="modal-content">
-        <p class="subtitle">Выберите способ оплаты</p>
+        <div class="modal-content">
+          <p class="subtitle">Выберите способ оплаты</p>
 
-        <PayButton
-          @created="onPaymentCreated"
-          :user="langStore.user"
-          :id="trip.data.id"
-        />
-        <PayClickButton :id="trip.data.id" />
+          <PayButton
+            @created="onPaymentCreated"
+            :user="langStore.user"
+            :id="trip.data.id"
+          />
+          <PayClickButton @created="onPaymentCreated" :id="trip.data.id" />
+        </div>
       </div>
     </div>
   </v-dialog>
