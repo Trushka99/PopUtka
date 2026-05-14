@@ -8,7 +8,7 @@ import Loading from "./Loading.vue";
 import SuccessPayment from "./SuccessPayment.vue";
 import FailPayment from "./FailPayment.vue";
 const isOpen = ref(false);
-const payStatus = ref<string>("error");
+const payStatus = ref<string>("");
 const langStore = useLangStore();
 const loading = ref<boolean>(false);
 const open = () => (isOpen.value = true);
