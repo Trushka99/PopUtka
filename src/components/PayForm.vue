@@ -23,7 +23,7 @@ const startPolling = (id: string) => {
   interval = setInterval(async () => {
     const res = await getPayment(id);
 
-    const status = res.data.status;
+    const status = res.data.data.status;
 
     if (status === "paid" || status === "success") {
       clearInterval(interval!);
