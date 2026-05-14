@@ -68,7 +68,7 @@ const submit = async () => {
     console.log("ERROR PIDORASINA");
   }
 
-  rating.value = 0;
+  rating.value = { clean: 0, driving: 0, behaviour: 0 };
   comment.value = "";
   selectedPassenger.value = null;
   close();
@@ -87,6 +87,8 @@ const submit = async () => {
         <template #activator="{ props: menuProps }">
           <v-text-field
             v-bind="menuProps"
+            :model-value="selectedPassenger?.firstName || ''"
+            :placeholder="'Выберите пассажира'"
             readonly
             clearable
             @click:clear="clear"
@@ -104,13 +106,6 @@ const submit = async () => {
                   "
                 />
               </v-avatar>
-            </template>
-
-            <template #default>
-              <span v-if="selectedPassenger">
-                {{ selectedPassenger.firstName }}
-              </span>
-              <span v-else class="text-grey"> Выберите пассажира </span>
             </template>
           </v-text-field>
         </template>
@@ -184,7 +179,9 @@ const submit = async () => {
         />
 
         <div class="rating-hint">
-          {{ rating.behaviour ? `${rating.behaviour} из 5` : "Выберите оценку" }}
+          {{
+            rating.behaviour ? `${rating.behaviour} из 5` : "Выберите оценку"
+          }}
         </div>
       </div>
 
