@@ -49,7 +49,7 @@ export const getChats = () => {
 export const createReview = async (
   tripId: string,
   targetUserId: string,
-  rating: number,
+  rating: any,
   text: string,
 ) => {
   return handleRequest(
