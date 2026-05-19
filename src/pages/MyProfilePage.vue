@@ -7,7 +7,7 @@ import BookingCard from "@/components/BookingCard.vue";
 import ReviewCard from "@/components/ReviewCard.vue";
 import { useRouter } from "vue-router";
 import { createChat } from "@/api";
-
+import ChangeNumberForm from "@/components/ChangeNumberForm.vue";
 import {
   apiUploadAvatar,
   logout,
@@ -55,7 +55,11 @@ const number = ref<string>(langStore.user.phone);
 const email = ref<string>(langStore.user.email);
 const desc = ref<string>(langStore.user.about);
 const fileInput = ref<HTMLInputElement | null>(null);
-const carModalOpen = ref(false);
+const changingNumberModal = ref<boolean>(false);
+const carModalOpen = ref<boolean>(false);
+const changeNumberOpen = () => {
+  changingNumberModal.value = true;
+};
 const logOUT = () => {
   logout()
     .then(() => {
@@ -349,7 +353,7 @@ const age = computed(() => {
                 density="compact"
               >
                 <template #append-inner>
-                  <v-icon size="small" class="mr-2" @click="togglePhoneEditing">
+                  <v-icon size="small" class="mr-2" @click="changeNumberOpen">
                     {{
                       editingPhone
                         ? "mdi-pencil-off-outline"
@@ -449,6 +453,10 @@ const age = computed(() => {
             />
           </div>
         </div>
+        <div v-if="changingNumberModal" class="modal-backdrop">
+          <ChangeNumberForm v-model="changingNumberModal" />
+        </div>
+
         <button
           v-if="isMeRoute"
           class="btn btn-outline btn-sm"

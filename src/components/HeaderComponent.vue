@@ -124,7 +124,11 @@ const langOptions = [
     value: "uz",
   },
 ];
-
+const titles = computed<Record<string, string>>(() => ({
+  booking_request: langStore.t("book_request"),
+  booking_confirmed: langStore.t("payment_success"),
+  booking_rejected: langStore.t("booking_rejected"),
+}));
 const selectedLang = ref(langStore.currentLang || "ru");
 
 watch(selectedLang, (newLang) => {
@@ -238,9 +242,11 @@ watch(selectedLang, (newLang) => {
           <v-card min-width="350" elevation="10">
             <v-list class="notifications-list">
               <v-list-item
-                v-for="n in langStore.notifications"
+                v-for="n in langStore.notifications.filter(
+                  (n: any) => !n.isRead,
+                )"
                 :key="n.id"
-                :class="[{ unread: !n.isRead }]"
+                class="unread"
               >
                 <template #prepend>
                   <v-icon :color="getTypeColor(n.type)">
@@ -249,10 +255,24 @@ watch(selectedLang, (newLang) => {
                 </template>
 
                 <v-list-item-title :class="{ bold: !n.isRead }">
-                  {{ n.title }}
+                  {{ titles[String(n.type)] }}
                 </v-list-item-title>
                 <v-list-item-subtitle>
-                  {{ n.message }}
+                  {{
+                    n.type === "booking_request" &&
+                    langStore.user.role === "driver"
+                      ? `${n.params.passengerName} ${langStore.t("booked")} ${n.params.seats} ${langStore.t("seats")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)} `
+                      : n.type === "booking_request" &&
+                          langStore.user.role === "passenger"
+                        ? `${langStore.t("wait_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}  `
+                        : n.type === "booking_confirmed" &&
+                            langStore.user.role === "passenger"
+                          ? `${langStore.t("driver")} ${langStore.t("confirmed_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}`
+                          : n.type === "booking_rejected" &&
+                              langStore.user.role === "passenger"
+                            ? `${langStore.t("driver")} ${langStore.t("rejected_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}`
+                            : null
+                  }}
                 </v-list-item-subtitle>
 
                 <template #append>
@@ -275,8 +295,15 @@ watch(selectedLang, (newLang) => {
                 </v-list-item-subtitle>
               </v-list-item>
 
-              <v-list-item v-if="langStore.notifications.length === 0">
-                <v-list-item-title>Нет уведомлений</v-list-item-title>
+              <v-list-item
+                v-if="
+                  langStore.notifications.filter((n: any) => !n.isRead)
+                    .length === 0
+                "
+              >
+                <v-list-item-title>{{
+                  langStore.t("no_notif")
+                }}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-card>
