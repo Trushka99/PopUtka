@@ -6,11 +6,8 @@ import {
   confirmBooking,
   rejectBooking,
   completeTrip,
-  createPayment,
 } from "@/api";
 import { RouterLink } from "vue-router";
-import PayButton from "./PayButton.vue";
-import PayClickButton from "./PayClickButton.vue";
 import type { TTripCard, TripCoordinates, Location } from "@/utils/types";
 const sheet = ref();
 const openSheet = () => {
