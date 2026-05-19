@@ -58,7 +58,6 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
     "0",
   )}`;
 }
-
 const options: Intl.DateTimeFormatOptions = {
   weekday: "long",
   day: "numeric",
@@ -77,7 +76,7 @@ const options: Intl.DateTimeFormatOptions = {
               ? "en-EN"
               : "uz-Cyrl-UZ",
           options,
-        ).format(new Date(trip.trip.departureAt))
+        ).format(new Date(trip.booking.trip.departureAt))
       }}
     </h2>
     <div class="trip-flex">
@@ -86,21 +85,27 @@ const options: Intl.DateTimeFormatOptions = {
           <div class="flex-cont">
             <h4>
               {{
-                new Date(trip.trip.departureAt).toLocaleTimeString("ru-RU", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                new Date(trip.booking.trip.departureAt).toLocaleTimeString(
+                  "ru-RU",
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                )
               }}
             </h4>
-            <p>{{ formatDuration(trip.trip.tripInfo.duration) }}</p>
+            <p>{{ formatDuration(trip.booking.trip.tripInfo.duration) }}</p>
             <h4>
               {{
                 addDurationToTime(
-                  new Date(trip.trip.departureAt).toLocaleTimeString("ru-RU", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                  trip.trip.tripInfo.duration,
+                  new Date(trip.booking.trip.departureAt).toLocaleTimeString(
+                    "ru-RU",
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    },
+                  ),
+                  trip.booking.trip.tripInfo.duration,
                 )
               }}
             </h4>
@@ -108,12 +113,16 @@ const options: Intl.DateTimeFormatOptions = {
           <div class="line"></div>
           <div class="flex-cont">
             <div>
-              <h3>{{ langStore.с(trip.trip.from.cityKey.toLowerCase()) }}</h3>
-              <p>{{ trip.trip.from.address }}</p>
+              <h3>
+                {{ langStore.с(trip.booking.trip.from.cityKey.toLowerCase()) }}
+              </h3>
+              <p>{{ trip.booking.trip.from.address }}</p>
             </div>
             <div>
-              <h3>{{ langStore.с(trip.trip.to.cityKey.toLowerCase()) }}</h3>
-              <p>{{ trip.trip.to.address }}</p>
+              <h3>
+                {{ langStore.с(trip.booking.trip.to.cityKey.toLowerCase()) }}
+              </h3>
+              <p>{{ trip.booking.trip.to.address }}</p>
             </div>
           </div>
         </div>
@@ -125,15 +134,15 @@ const options: Intl.DateTimeFormatOptions = {
               params: {
                 id:
                   langStore.user.id !== trip.passengerId
-                    ? trip.passengerId
-                    : trip.trip.driver.id,
+                    ? trip.booking.passengerId
+                    : trip.booking.trip.driverId,
               },
             }"
           >
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
                 <img
-                  :src="`https://api.pop-utka.uz${trip.trip.driver.avatar}`"
+                  :src="`https://api.pop-utka.uz${trip.booking.trip.driver.avatar}`"
                   alt="Driver"
                   class="avatar"
                 />
@@ -142,16 +151,18 @@ const options: Intl.DateTimeFormatOptions = {
                 <span class="font-weight-medium"
                   >{{
                     langStore.user.id !== trip.passengerId
-                      ? trip.passenger.firstName
-                      : trip.trip.driver.firstName
+                      ? trip.booking.passenger.firstName
+                      : trip.booking.driver.firstName
                   }}
                   {{
                     langStore.user.id !== trip.passengerId
-                      ? trip.passenger.lastName
-                      : trip.trip.driver.lastName
+                      ? trip.booking.passenger.lastName
+                      : trip.booking.trip.driver.lastName
                   }}</span
                 >
-                <span class="ml-1">★ {{ trip.trip.driver.rating }}</span>
+                <span class="ml-1"
+                  >★ {{ trip.booking.trip.driver.rating }}</span
+                >
               </div>
               <v-icon icon="mdi-chevron-right" size="24" /></div
           ></RouterLink>
@@ -175,7 +186,7 @@ const options: Intl.DateTimeFormatOptions = {
             <p>Редко отменяет поездки</p>
           </div>
 
-          <p>{{ trip.description }}</p>
+          <p>{{ trip.booking.description }}</p>
 
           <v-divider class="my-3"></v-divider>
           <div v-if="trip.instantBooking" style="display: flex">
@@ -186,9 +197,9 @@ const options: Intl.DateTimeFormatOptions = {
             <v-icon icon="mdi-account-multiple" size="24" class="mr-2" />
             <p>{{ langStore.t("maxTwoBackSeats") }}</p>
           </div>
-          <div v-if="trip.trip.driver.car" style="display: flex">
+          <div v-if="trip.booking.trip.driver.car" style="display: flex">
             <v-icon color="grey" icon="mdi-car" size="24" class="mr-2" />
-            <p>{{ trip.trip.driver.car.model }}</p>
+            <p>{{ trip.booking.trip.driver.car.model }}</p>
           </div>
         </v-card>
       </div>
@@ -204,7 +215,7 @@ const options: Intl.DateTimeFormatOptions = {
           <div class="trip-flex">
             <div style="display: flex; gap: 25px">
               <h4>1 {{ langStore.t("passenger") }}</h4>
-              <h4>{{ trip.trip.price }} UZS</h4>
+              <h4>{{ trip.booking.trip.price }} UZS</h4>
             </div>
           </div>
           <v-btn
@@ -232,7 +243,7 @@ const options: Intl.DateTimeFormatOptions = {
           <div class="trip-flex">
             <div style="display: flex; gap: 25px">
               <h4>1 {{ langStore.t("passenger") }}</h4>
-              <h4>{{ trip.trip.price }} UZS</h4>
+              <h4>{{ trip.booking.trip.price }} UZS</h4>
             </div>
           </div>
           <v-chip

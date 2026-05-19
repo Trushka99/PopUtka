@@ -183,22 +183,31 @@ export const confirmCode = async ({
   phone,
   type,
   inputCode,
-  userId,
-  userRole,
 }: {
   phone: string;
   type: string;
   inputCode: string;
-  userId: string;
-  userRole: string;
 }) => {
   return handleRequest(
     api.post("/otp/verify", {
       phone,
       type,
       inputCode,
-      userId,
-      userRole,
+    }),
+  );
+};
+
+export const resetPass = async ({
+  phone,
+  newPassword,
+}: {
+  phone: string;
+  newPassword: string;
+}) => {
+  return handleRequest(
+    api.post("/pass/reset", {
+      phone,
+      newPassword,
     }),
   );
 };

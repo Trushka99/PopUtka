@@ -57,10 +57,9 @@ const props = defineProps<{
 }>();
 onMounted(async () => {
   const res = await createChat(props.passengerId);
-
   chatId.value = res.data.data.id;
   const chat = await getChatByID(String(chatId.value));
-  messages.value = chat.data.data.messages;
+  messages.value = chat.data.data.chat.messages;
   socket.emit("join-chat", String(chatId.value));
 
   socket.on("new-message", (msg: Message) => {

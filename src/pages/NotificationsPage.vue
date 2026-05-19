@@ -62,6 +62,11 @@ const formatDate = (dateStr: string) => {
     month: "2-digit",
   });
 };
+const titles = computed<Record<string, string>>(() => ({
+  booking_request: langStore.t("book_request"),
+  booking_confirmed: langStore.t("payment_success"),
+  booking_rejected: langStore.t("booking_rejected"),
+}));
 </script>
 
 <template>
@@ -95,8 +100,23 @@ const formatDate = (dateStr: string) => {
           </template>
 
           <div class="content">
-            <div class="title">{{ n.title }}</div>
-            <div class="message">{{ n.message }}</div>
+            <div class="title">{{ titles[String(n.type)] }}</div>
+            <div class="message">
+              {{
+                n.type === "booking_request" && langStore.user.role === "driver"
+                  ? `${n.params.passengerName} ${langStore.t("booked")} ${n.params.seats} ${langStore.t("seats")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)} `
+                  : n.type === "booking_request" &&
+                      langStore.user.role === "passenger"
+                    ? `${langStore.t("wait_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}  `
+                    : n.type === "booking_confirmed" &&
+                        langStore.user.role === "passenger"
+                      ? `${langStore.t("driver")} ${langStore.t("confirmed_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}`
+                      : n.type === "booking_rejected" &&
+                          langStore.user.role === "passenger"
+                        ? `${langStore.t("driver")} ${langStore.t("rejected_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}`
+                        : null
+              }}
+            </div>
             <div class="date">{{ formatDate(n.createdAt) }}</div>
           </div>
 
@@ -135,8 +155,23 @@ const formatDate = (dateStr: string) => {
           </template>
 
           <div class="content">
-            <div class="title">{{ n.title }}</div>
-            <div class="message">{{ n.message }}</div>
+            <div class="title">{{ titles[String(n.type)] }}</div>
+            <div class="message">
+              {{
+                n.type === "booking_request" && langStore.user.role === "driver"
+                  ? `${n.params.passengerName} ${langStore.t("booked")} ${n.params.seats} ${langStore.t("seats")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)} `
+                  : n.type === "booking_request" &&
+                      langStore.user.role === "passenger"
+                    ? `${langStore.t("wait_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}  `
+                    : n.type === "booking_confirmed" &&
+                        langStore.user.role === "passenger"
+                      ? `${langStore.t("driver")} ${langStore.t("confirmed_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}`
+                      : n.type === "booking_rejected" &&
+                          langStore.user.role === "passenger"
+                        ? `${langStore.t("driver")} ${langStore.t("rejected_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}`
+                        : null
+              }}
+            </div>
             <div class="date">{{ formatDate(n.createdAt) }}</div>
           </div>
         </v-list-item>

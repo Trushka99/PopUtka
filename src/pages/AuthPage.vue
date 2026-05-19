@@ -1,16 +1,43 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { register, login } from "@/api";
+import { register, login, createCode, confirmCode, resetPass } from "@/api";
 import { useLangStore } from "@/stores/langStore";
 import { useRouter, useRoute } from "vue-router";
-import { createCode, confirmCode } from "@/api";
 const router = useRouter();
 const route = useRoute();
 const redirectPath = route.query.redirect?.toString() || "/";
 
 const langStore = useLangStore();
 const activeTab = ref("login");
+const recover = ref<boolean>(false);
+const codePage = ref<boolean>(false);
 const error = ref<string | null>(null);
+const confirmcode = async () => {
+  try {
+    error.value = null;
+
+    await confirmCode({
+      phone: "998901148203",
+      type: "recover",
+      inputCode: registerForm.value.code,
+    });
+
+    await resetPass({
+      phone: registerForm.value.phone,
+      newPassword: registerForm.value.password,
+    });
+
+    recover.value = false;
+    codePage.value = false;
+  } catch (err: any) {
+    console.log(err);
+
+    const errText = err?.response?.data?.code;
+
+    error.value = langStore.t(errText?.toLowerCase?.() || "unknown_error");
+  }
+};
+
 const registerForm = ref({
   username: "",
   email: "",
@@ -21,50 +48,23 @@ const registerForm = ref({
   lastName: "",
   gender: "",
   birthDate: "",
-  id: "",
+  code: "",
 });
-const code = ref<string>("");
 const loginHandle = async () => {
+  const { email, password } = registerForm.value;
   try {
-    const { email, password } = registerForm.value;
     const res = await login(email, password);
-
-    const user = res.data.data.user;
-    registerForm.value.phone = user.phone;
-    registerForm.value.id = user.id;
-    registerForm.value.role = user.role;
-    step.value = "code";
-  } catch (err: any) {
+    router.push(redirectPath);
+  } catch (err) {
     const errText = err.response.data.code;
     error.value = langStore.t(errText.toLowerCase());
-    throw err; // ← ВАЖНО
   }
 };
-const sendCode = async () => {
-  try {
-    await loginHandle();
-
-    const res = await createCode({
-      phone: registerForm.value.phone,
-      type: "login",
-    });
-  } catch (err) {
-    console.error(err);
-  }
-};
-const confirmcode = () => {
-  confirmCode({
-    phone: registerForm.value.phone,
-    type: "login",
-    inputCode: code.value,
-    userId: registerForm.value.id,
-    userRole: registerForm.value.role,
-  })
-    .then((res) => router.push(redirectPath))
-    .catch((err) => {
-      const errText = err.response.data.code;
-      error.value = langStore.t(errText.toLowerCase());
-    });
+const forgot = async () => {
+  const res = await createCode({ phone: "998901148203", type: "recover" });
+  console.log(res);
+  recover.value = false;
+  codePage.value = true;
 };
 const handleRegister = async () => {
   const {
@@ -99,27 +99,93 @@ const handleRegister = async () => {
   }
 };
 const roles = ["Пользователь", "Водитель"];
-const step = ref("form");
 const sex = ["Мужской", "Женский"];
 </script>
 
 <template>
   <div class="background">
-    <v-card class="login-card" elevation="0" v-if="step === 'code'">
-      <v-text-field
-        label="Введите код из смс"
-        outlined
-        v-model="code"
-        dense
-        class="custom-field"
-      ></v-text-field>
-      <v-btn
-        @click="confirmcode"
-        color="gradient-orange"
-        class="mt-4 mb-2 login-btn"
-        block
-        >Отправить</v-btn
-      >
+    <v-card v-if="recover" class="login-card recover-card" elevation="0">
+      <div class="recover-header">
+        <h2>{{ langStore.t("recover_password") }}</h2>
+
+        <span class="recover-subtitle">
+          {{ langStore.t("enter_phone") }}
+        </span>
+      </div>
+
+      <v-card-text>
+        <v-text-field
+          :label="langStore.t('phone')"
+          outlined
+          dense
+          v-model="registerForm.phone"
+          class="custom-field"
+        />
+        <v-text-field
+          :label="langStore.t('new_password')"
+          type="password"
+          v-model="registerForm.password"
+          outlined
+          dense
+          class="custom-field"
+        />
+
+        <v-text-field
+          :label="langStore.t('repeat_password')"
+          type="password"
+          v-model="registerForm.password"
+          outlined
+          dense
+          class="custom-field"
+        />
+
+        <v-btn
+          @click="forgot"
+          color="gradient-orange"
+          class="mt-4 mb-2 login-btn"
+          block
+        >
+          {{ langStore.t("save") }}
+        </v-btn>
+
+        <v-btn variant="text" class="back-btn" block @click="recover = false">
+          {{ langStore.t("back") }}
+        </v-btn>
+
+        <span class="error">{{ error }}</span>
+      </v-card-text>
+    </v-card>
+    <v-card v-else-if="codePage" class="login-card recover-card" elevation="0">
+      <div class="recover-header">
+        <h2>{{ langStore.t("recover_password") }}</h2>
+
+        <span class="recover-subtitle"> {{ langStore.t("sms") }} </span>
+      </div>
+
+      <v-card-text>
+        <v-text-field
+          :label="langStore.t('sms')"
+          outlined
+          dense
+          v-model="registerForm.code"
+          class="custom-field"
+        />
+
+        <v-btn
+          @click="confirmcode"
+          color="gradient-orange"
+          class="mt-4 mb-2 login-btn"
+          block
+        >
+          {{ langStore.t("save") }}
+        </v-btn>
+
+        <v-btn variant="text" class="back-btn" block @click="recover = false">
+          {{ langStore.t("back") }}
+        </v-btn>
+
+        <span class="error">{{ error }}</span>
+      </v-card-text>
     </v-card>
     <v-card v-else class="login-card" elevation="0">
       <v-tabs
@@ -134,7 +200,13 @@ const sex = ["Мужской", "Женский"];
 
       <v-card-text v-if="activeTab === 'login'">
         <v-text-field
-          :label="`${langStore.t('email')} ${langStore.t('or')} ${langStore.t('phone')} `"
+          :label="
+            [
+              langStore.t('email'),
+              langStore.t('or'),
+              langStore.t('phone'),
+            ].join(' ')
+          "
           outlined
           v-model="registerForm.email"
           dense
@@ -150,11 +222,11 @@ const sex = ["Мужской", "Женский"];
         ></v-text-field>
 
         <v-btn
-          @click="sendCode"
+          @click="loginHandle"
           color="gradient-orange"
           class="mt-4 mb-2 login-btn"
           block
-          >Войти</v-btn
+          >{{ langStore.t("login") }}</v-btn
         >
         <span class="error">{{ error }}</span>
       </v-card-text>
@@ -234,14 +306,19 @@ const sex = ["Мужской", "Женский"];
           class="mt-4 mb-2 login-btn"
           block
         >
-          {{ langStore.t("registr") }}
+          {{ langStore.t("regisrt") }}
         </v-btn>
         <span class="error">{{ error }}</span>
       </v-card-text>
-      <!-- <div class="forgot-password">{{ langStore.t("forgot") }}</div>
+      <v-btn
+        @click="() => (recover = true)"
+        variant="text"
+        class="forgot-password"
+      >
+        {{ langStore.t("forgot") }}
+      </v-btn>
+      <!-- <div class="divider-text">{{ langStore.t("or") }}</div>
 
-      <div class="divider-text">{{ langStore.t("or") }}</div> -->
-      <!-- 
       <v-row justify="space-between" class="social-buttons">
         <v-btn outlined class="flex-grow-1 mx-1 social-btn">
           <img class="icon" src="/images/Google_logo.png" /> Google
@@ -383,16 +460,35 @@ const sex = ["Мужской", "Женский"];
   }
 
   .forgot-password {
-    margin-top: 12px;
+    border-radius: 14px !important;
+    padding: 10px 16px !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(0, 0, 0, 0.75) !important;
     font-size: 14px;
-    color: black;
-    cursor: pointer;
-    transition: color 0.3s;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0.2px;
+
+    transition:
+      all 0.25s ease,
+      transform 0.2s ease,
+      box-shadow 0.25s ease;
+
     &:hover {
-      color: #ffb347;
+      background: rgba(255, 179, 71, 0.14) !important;
+      border-color: rgba(255, 179, 71, 0.35);
+
+      color: #ff7a00 !important;
+
+      transform: translateY(-1px);
+
+      box-shadow:
+        0 4px 14px rgba(255, 122, 0, 0.12),
+        0 0 0 1px rgba(255, 179, 71, 0.08);
     }
   }
-
   .divider-text {
     margin: 20px 0;
     font-size: 14px;
