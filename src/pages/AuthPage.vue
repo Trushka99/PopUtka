@@ -55,7 +55,7 @@ const loginHandle = async () => {
   try {
     const res = await login(email, password);
     router.push(redirectPath);
-  } catch (err) {
+  } catch (err: any) {
     const errText = err.response.data.code;
     error.value = langStore.t(errText.toLowerCase());
   }
