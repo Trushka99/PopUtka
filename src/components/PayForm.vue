@@ -17,6 +17,7 @@ const { trip } = defineProps<{ trip: TTripCard }>();
 import { getPayment } from "@/api";
 const paymentId = ref<string | null>(null);
 let interval: ReturnType<typeof setInterval> | null = null;
+  
 const startPolling = (id: string) => {
   if (interval) clearInterval(interval);
 

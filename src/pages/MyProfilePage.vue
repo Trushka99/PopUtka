@@ -120,16 +120,10 @@ const reRouteToChat = () => {
 const activeTrips = computed(
   () =>
     user.value?.activeTrips?.filter(
-      (t: any) =>
-        t.availableSeats > 0 &&
-        !t.bookings?.some((b: any) => b.status === "pending"),
+      (t: any) => !t.bookings?.some((b: any) => b.status === "pending"),
     ) || [],
 );
 
-const fullTrips = computed(
-  () =>
-    user.value?.activeTrips?.filter((t: any) => t.availableSeats === 0) || [],
-);
 async function uploadCarPhoto(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
@@ -596,35 +590,6 @@ const age = computed(() => {
           </div>
         </div>
 
-        <!-- ЗАПОЛНЕННЫЕ -->
-        <div
-          class="booking-section full"
-          v-if="fullTrips.length && langStore.user.role === 'driver'"
-        >
-          <div class="section-header" @click="toggleSection('full')">
-            <div class="left">
-              <span class="icon">
-                <v-icon size="18">mdi-close-circle-outline</v-icon>
-              </span>
-              <span class="title">{{ langStore.t("full") }}</span>
-            </div>
-
-            <div class="right">
-              <span class="count">{{ fullTrips.length }}</span>
-              <span class="arrow" :class="{ open: openedSections.full }"
-                ><v-icon size="18">mdi-arrow-down-bold</v-icon></span
-              >
-            </div>
-          </div>
-          <div class="cards-list">
-            <BookingCard
-              v-show="openedSections.full"
-              v-for="t in fullTrips"
-              :key="t.id"
-              :trip="{ type: 'trip', data: t }"
-            />
-          </div>
-        </div>
         <div
           v-if="user.myBookings.length === 0 && user.activeTrips.length === 0"
           class="empty"
