@@ -154,6 +154,9 @@ const data = computed(() => [
   display: flex;
   align-items: center;
   gap: 15px;
+  @media (max-width: 920px) {
+    display: none;
+  }
 }
 .home__button {
   min-width: 48px;
