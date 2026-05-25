@@ -21,7 +21,7 @@ import { useRoute } from "vue-router";
 const openedSections = ref({
   my: true,
   pending: true,
-  active: true,
+  active: false,
   full: false,
 });
 
@@ -518,83 +518,88 @@ const age = computed(() => {
         <HistoryTripCard v-for="t in user.tripHistory" :key="t.id" :trip="t" />
       </section>
 
-      <section v-show="activeSection === 'bookings'" class="section-card">
-        <!-- МОИ БРОНИ -->
-        <div class="booking-section my" v-if="user.myBookings.length">
-          <h3>{{ langStore.t("my") }}</h3>
-          <div class="cards-list">
+      <section
+        v-show="activeSection === 'bookings'"
+        class="section-card bookings"
+      >
+        <!-- ACTIVE -->
+        <div
+          v-if="activeTrips.length && langStore.user.role === 'driver'"
+          class="booking-collapse"
+        >
+          <button class="collapse-trigger" @click="toggleSection('active')">
+            <div class="collapse-left">
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div class="dot active"></div>
+
+                <span class="pending-title"> Active trips </span>
+              </div>
+              <span class="active-count">
+                {{ activeTrips.length }}
+              </span>
+            </div>
+
+            <v-icon
+              size="18"
+              class="collapse-arrow"
+              :class="{ open: openedSections.active }"
+            >
+              mdi-chevron-down
+            </v-icon>
+          </button>
+
+          <transition name="collapse">
+            <div v-show="openedSections.active" class="compact-list">
+              <BookingCard
+                v-for="t in [...activeTrips].reverse()"
+                :key="t.id"
+                :trip="{ type: 'trip', data: t }"
+              />
+            </div>
+          </transition>
+        </div>
+
+        <!-- PENDING -->
+        <div
+          v-if="pendingTrips.length && langStore.user.role === 'driver'"
+          class="pending-block"
+        >
+          <div class="pending-header">
+            <div class="pending-left">
+              <div class="dot pending"></div>
+
+              <div>
+                <div class="pending-title">Pending requests</div>
+
+                <div class="pending-subtitle">Requires confirmation</div>
+              </div>
+            </div>
+
+            <div class="pending-count">
+              {{ pendingTrips.length }}
+            </div>
+          </div>
+
+          <div class="compact-list pending-list">
+            <BookingCard
+              v-for="t in [...pendingTrips].reverse()"
+              :key="t.id"
+              :trip="{ type: 'trip', data: t }"
+            />
+          </div>
+        </div>
+
+        <!-- MY BOOKINGS -->
+        <div v-if="user.myBookings.length" class="my-bookings">
+          <div class="minimal-title">My bookings</div>
+
+          <div class="compact-list">
             <BookingCard
               v-for="b in user.myBookings"
               :key="b.id"
               :trip="{ type: 'booking', data: b }"
             />
           </div>
-        </div>
-
-        <!-- PENDING -->
-        <div
-          class="booking-section pending"
-          v-if="pendingTrips.length && langStore.user.role === 'driver'"
-        >
-          <div class="section-header" @click="toggleSection('pending')">
-            <div class="left">
-              <span class="icon">
-                <v-icon size="18">mdi-timer-sand</v-icon>
-              </span>
-              <span class="title">{{ langStore.t("pending") }}</span>
-            </div>
-
-            <div class="right">
-              <span class="count">{{ pendingTrips.length }}</span>
-              <span class="arrow" :class="{ open: openedSections.pending }">
-                <v-icon size="18">mdi-arrow-down-bold</v-icon></span
-              >
-            </div>
-          </div>
-          <div v-show="openedSections.pending" class="cards-list">
-            <BookingCard
-              v-for="t in pendingTrips"
-              :key="t.id"
-              :trip="{ type: 'trip', data: t }"
-            />
-          </div>
-        </div>
-
-        <!-- АКТИВНЫЕ -->
-        <div
-          class="booking-section active"
-          v-if="activeTrips.length && langStore.user.role === 'driver'"
-        >
-          <div class="section-header" @click="toggleSection('active')">
-            <div class="left">
-              <span class="icon">
-                <v-icon size="18">mdi-check-circle-outline</v-icon>
-              </span>
-              <span class="title">{{ langStore.t("pending") }}</span>
-            </div>
-
-            <div class="right">
-              <span class="count">{{ activeTrips.length }}</span>
-              <span class="arrow" :class="{ open: openedSections.active }"
-                ><v-icon size="18">mdi-arrow-down-bold</v-icon></span
-              >
-            </div>
-          </div>
-          <div class="cards-list">
-            <BookingCard
-              v-show="openedSections.active"
-              v-for="t in activeTrips"
-              :key="t.id"
-              :trip="{ type: 'trip', data: t }"
-            />
-          </div>
-        </div>
-
-        <div
-          v-if="user.myBookings.length === 0 && user.activeTrips.length === 0"
-          class="empty"
-        >
-          Бронирований нет
         </div>
       </section>
 
@@ -611,6 +616,178 @@ const age = computed(() => {
 </template>
 
 <style scoped lang="scss">
+.bookings {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.booking-collapse {
+  position: relative;
+  padding: 18px;
+  border-radius: 22px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.08),
+    rgba(59, 130, 246, 0.02)
+  );
+
+  border: 1px solid rgba(59, 130, 246, 0.08);
+}
+
+.collapse-trigger {
+  width: 100%;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: transparent;
+  border: none;
+
+  cursor: pointer;
+
+  padding: 0;
+}
+
+.collapse-left {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.collapse-count {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.collapse-arrow {
+  color: #9ca3af;
+  transition: transform 0.25s ease;
+}
+
+.collapse-arrow.open {
+  transform: rotate(180deg);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot.active {
+  background: #3b82f6;
+
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.12),
+    0 0 18px rgba(59, 130, 246, 0.35);
+}
+.dot.pending {
+  background: #f59e0b;
+  box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.08);
+}
+
+.compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  margin-top: 16px;
+}
+
+.pending-block {
+  background: rgba(255, 248, 235, 0.55);
+
+  border: 1px solid rgba(245, 158, 11, 0.08);
+
+  border-radius: 24px;
+
+  padding: 18px;
+}
+
+.pending-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.pending-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pending-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.pending-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.pending-count {
+  height: 28px;
+  min-width: 28px;
+
+  padding: 0 10px;
+  border-radius: 999px;
+
+  background: #fff7ed;
+  color: #ea580c;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+.active-count {
+  height: 28px;
+  min-width: 28px;
+
+  padding: 0 10px;
+  border-radius: 999px;
+
+  background: #3b83f638;
+  color: #1e6deb;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pending-list {
+  position: relative;
+}
+
+.section-card.bookings {
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.04);
+}
+.minimal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+
+  margin-bottom: 14px;
+}
 .profile-fullscreen {
   display: grid;
   grid-template-columns: 20% 1fr;
@@ -740,33 +917,7 @@ const age = computed(() => {
   color: #374151;
   font-weight: 600;
 }
-.booking-section {
-  border-radius: 14px;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid transparent;
-  transition: all 0.25s ease;
-}
 
-.booking-section.pending {
-  background-color: #ffedd5;
-  border-color: #fdba74;
-}
-
-.booking-section.active {
-  background-color: #d1fae5;
-  border-color: #6ee7b7;
-}
-
-.booking-section.full {
-  background-color: #fee2e2;
-  border-color: #fca5a5;
-}
-
-.booking-section.my {
-  background: linear-gradient(135deg, #eff6ff, #dbeafe);
-  border-color: #93c5fd;
-}
 .ver-item.ok {
   background: #ecfdf5;
   color: #065f46;
@@ -836,21 +987,6 @@ const age = computed(() => {
   align-items: center;
   gap: 10px;
   margin-bottom: 12px;
-}
-.booking-section.pending .section-header {
-  background: #fff7ed;
-}
-
-.booking-section.active .section-header {
-  background: #f0fdf4;
-}
-
-.booking-section.full .section-header {
-  background: #fef2f2;
-}
-
-.booking-section.my .section-header {
-  background: #eff6ff;
 }
 .car-photo-wrap {
   position: relative;
@@ -955,29 +1091,6 @@ const age = computed(() => {
   background: #eef2ff;
   border-color: #c7e0ff;
 }
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 14px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  backdrop-filter: blur(6px);
-
-  &:hover {
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-.section-header .left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 .collapse-enter-active,
 .collapse-leave-active {
   transition: all 0.3s ease;
@@ -994,20 +1107,6 @@ const age = computed(() => {
 .collapse-leave-from {
   opacity: 1;
   transform: translateY(0) scale(1);
-}
-.section-header .title {
-  font-weight: 700;
-  font-size: 14px;
-}
-
-.section-header .icon {
-  font-size: 16px;
-}
-
-.section-header .right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 .count {
   font-size: 12px;
