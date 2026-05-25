@@ -2,11 +2,7 @@
 import { computed, ref } from "vue";
 import PayForm from "./PayForm.vue";
 import { useLangStore } from "@/stores/langStore";
-import {
-  confirmBooking,
-  rejectBooking,
-  completeTrip,
-} from "@/api";
+import { confirmBooking, rejectBooking, completeTrip } from "@/api";
 import { RouterLink } from "vue-router";
 import type { TTripCard, TripCoordinates, Location } from "@/utils/types";
 const sheet = ref();
@@ -35,7 +31,8 @@ const canFinishTrip = computed(
   () =>
     trip.type === "trip" &&
     trip.data.role === "driver" &&
-    trip.data.status !== "completed",
+    trip.data.status !== "completed" &&
+    Date.parse(trip.data.departureAt) < Date.now(),
 );
 
 // Методы

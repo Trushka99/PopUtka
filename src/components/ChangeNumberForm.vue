@@ -23,7 +23,7 @@ const sendCode = async () => {
     loading.value = true;
     error.value = "";
     const res = await createCode({
-      phone: "998901148203",
+      phone: form.value.phone,
       type: "change_phone",
     });
     console.log(res);
@@ -42,7 +42,7 @@ const sendConfirm = async () => {
     error.value = "";
 
     const code = await confirmCode({
-      phone: "998901148203",
+      phone: form.value.phone,
       type: "change_phone",
       inputCode: form.value.code,
     });

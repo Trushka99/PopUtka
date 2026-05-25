@@ -11,13 +11,14 @@ const langStore = useLangStore();
 const activeTab = ref("login");
 const recover = ref<boolean>(false);
 const codePage = ref<boolean>(false);
+const registCodePage = ref<boolean>(false);
 const error = ref<string | null>(null);
 const confirmcode = async () => {
   try {
     error.value = null;
 
     await confirmCode({
-      phone: "998901148203",
+      phone: registerForm.value.phone,
       type: "recover",
       inputCode: registerForm.value.code,
     });
@@ -61,10 +62,31 @@ const loginHandle = async () => {
   }
 };
 const forgot = async () => {
-  const res = await createCode({ phone: "998901148203", type: "recover" });
+  const res = await createCode({
+    phone: registerForm.value.phone,
+    type: "recover",
+  });
   console.log(res);
   recover.value = false;
   codePage.value = true;
+};
+const sendCodeRegistr = async () => {
+  try {
+    error.value = null;
+
+    await createCode({
+      phone: registerForm.value.phone,
+      type: "register",
+    });
+
+    registCodePage.value = true;
+  } catch (err: any) {
+    console.error(err);
+
+    const errText = err?.response?.data?.code;
+
+    error.value = langStore.t(errText?.toLowerCase?.() || "unknown_error");
+  }
 };
 const handleRegister = async () => {
   const {
@@ -79,6 +101,11 @@ const handleRegister = async () => {
     birthDate,
   } = registerForm.value;
   try {
+    await confirmCode({
+      phone: registerForm.value.phone,
+      type: "register",
+      inputCode: registerForm.value.code,
+    });
     const response = await register({
       username,
       email,
@@ -181,6 +208,43 @@ const sex = ["Мужской", "Женский"];
         </v-btn>
 
         <v-btn variant="text" class="back-btn" block @click="recover = false">
+          {{ langStore.t("back") }}
+        </v-btn>
+
+        <span class="error">{{ error }}</span>
+      </v-card-text> </v-card
+    ><v-card
+      v-else-if="registCodePage"
+      class="login-card recover-card"
+      elevation="0"
+    >
+      <div class="recover-header">
+        <h2>{{ langStore.t("signup") }}</h2>
+
+        <span class="recover-subtitle">
+          {{ langStore.t("sms") }}
+        </span>
+      </div>
+
+      <v-card-text>
+        <v-text-field
+          :label="langStore.t('sms')"
+          outlined
+          dense
+          v-model="registerForm.code"
+          class="custom-field"
+        />
+
+        <v-btn
+          @click="handleRegister"
+          color="gradient-orange"
+          class="mt-4 mb-2 login-btn"
+          block
+        >
+          {{ langStore.t("confirm") }}
+        </v-btn>
+
+        <v-btn variant="text" class="back-btn" block @click="codePage = false">
           {{ langStore.t("back") }}
         </v-btn>
 
@@ -301,12 +365,12 @@ const sex = ["Мужской", "Женский"];
         ></v-select>
 
         <v-btn
-          @click="handleRegister"
+          @click="sendCodeRegistr"
           color="gradient-orange"
           class="mt-4 mb-2 login-btn"
           block
         >
-          {{ langStore.t("regisrt") }}
+          {{ langStore.t("registr") }}
         </v-btn>
         <span class="error">{{ error }}</span>
       </v-card-text>
