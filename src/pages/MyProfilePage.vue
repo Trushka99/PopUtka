@@ -235,11 +235,11 @@ const age = computed(() => {
   );
 });
 </script>
-
-<template>
-  <Loading v-if="loading" />
-
-  <div v-else class="profile-fullscreen">
+<template v-if="loading">
+  <Loading />
+</template>
+<template v-else-if="user">
+  <div class="profile-fullscreen">
     <div v-if="carModalOpen" class="modal-backdrop">
       <div class="modal">
         <h3>{{ langStore.t("car") }}</h3>
