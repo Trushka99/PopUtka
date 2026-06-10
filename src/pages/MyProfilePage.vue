@@ -124,9 +124,13 @@ const carPhotoInput = ref<HTMLInputElement | null>(null);
 function openCarPhotoDialog() {
   carPhotoInput.value?.click();
 }
+const tripsSource = computed(() =>
+  isMeRoute.value ? langStore.user : user.value,
+);
+
 const pendingTrips = computed(
   () =>
-    user.value?.activeTrips?.filter((t: any) =>
+    tripsSource.value?.activeTrips?.filter((t: any) =>
       t.bookings?.some((b: any) => b.status === "pending"),
     ) || [],
 );
@@ -140,7 +144,7 @@ const reRouteToChat = () => {
 };
 const activeTrips = computed(
   () =>
-    user.value?.activeTrips?.filter(
+    tripsSource.value?.activeTrips?.filter(
       (t: any) => !t.bookings?.some((b: any) => b.status === "pending"),
     ) || [],
 );

@@ -6,8 +6,10 @@ import { confirmBooking, rejectBooking, completeTrip } from "@/api";
 import { RouterLink } from "vue-router";
 import type { TTripCard, TripCoordinates, Location } from "@/utils/types";
 const sheet = ref();
-const openSheet = () => {
+const selectedBooking = ref<string>("");
+const openSheet = (id: string) => {
   sheet.value.open();
+  selectedBooking.value = id;
 };
 
 const langStore = useLangStore();
@@ -54,7 +56,7 @@ const finishTrip = async (id: string) => {
 
 const confTrip = async (id: string) => {
   if (trip.data.status === "created") {
-    openSheet();
+    openSheet(id);
     return;
   }
   try {
@@ -240,7 +242,7 @@ const departureDate = computed(() =>
       </div>
     </div>
   </v-card>
-  <PayForm ref="sheet" :trip="trip" />
+  <PayForm :bookingId="selectedBooking" ref="sheet" :trip="trip" />
 </template>
 
 <style scoped lang="scss">
