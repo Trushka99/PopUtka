@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { createCode, confirmCode, updateProfile } from "@/api";
+import { useLangStore } from "@/stores/langStore";
 const props = defineProps<{
   modelValue: boolean;
 }>();
-
+const langStore = useLangStore();
 const emit = defineEmits<{
   (e: "update:modelValue", value: boolean): void;
 }>();
@@ -26,6 +27,7 @@ const sendCode = async () => {
       phone: form.value.phone,
       type: "change_phone",
     });
+    langStore.user.phone = form.value.phone;
     console.log(res);
   } catch (err: any) {
     loading.value = false;

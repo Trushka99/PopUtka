@@ -145,7 +145,9 @@ const sex = ["Мужской", "Женский"];
           :label="langStore.t('phone')"
           outlined
           dense
+          maxlength="12"
           v-model="registerForm.phone"
+          @input="registerForm.phone = registerForm.phone.replace(/\D/g, '')"
           class="custom-field"
         />
         <v-text-field
@@ -328,7 +330,9 @@ const sex = ["Мужской", "Женский"];
           :label="langStore.t('phone')"
           outlined
           dense
+          maxlength="12"
           v-model="registerForm.phone"
+          @input="registerForm.phone = registerForm.phone.replace(/\D/g, '')"
           class="custom-field"
         ></v-text-field>
         <v-text-field
