@@ -6,6 +6,7 @@ import { useLangStore } from "@/stores/langStore";
 import type { TTripCard } from "@/utils/types";
 import Loading from "./Loading.vue";
 import SuccessPayment from "./SuccessPayment.vue";
+import { confirmBooking } from "@/api";
 import FailPayment from "./FailPayment.vue";
 const isOpen = ref(false);
 const payStatus = ref<string>("");
@@ -13,11 +14,14 @@ const langStore = useLangStore();
 const loading = ref<boolean>(false);
 const open = () => (isOpen.value = true);
 const close = () => (isOpen.value = false);
-const { trip } = defineProps<{ trip: TTripCard }>();
+const { trip, bookingId } = defineProps<{
+  trip: TTripCard;
+  bookingId: string;
+}>();
 import { getPayment } from "@/api";
 const paymentId = ref<string | null>(null);
 let interval: ReturnType<typeof setInterval> | null = null;
-  
+console.log(trip);
 const startPolling = (id: string) => {
   if (interval) clearInterval(interval);
 
@@ -29,9 +33,11 @@ const startPolling = (id: string) => {
     if (status === "paid" || status === "success") {
       clearInterval(interval!);
       interval = null;
+      await confirmBooking(bookingId);
 
       trip.data.status = "paid";
       payStatus.value = "success";
+
       loading.value = false;
     }
 
