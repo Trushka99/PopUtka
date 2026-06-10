@@ -33,7 +33,13 @@ const startPolling = (id: string) => {
     if (status === "paid" || status === "success") {
       clearInterval(interval!);
       interval = null;
-      await confirmBooking(bookingId);
+      await confirmBooking(id);
+      if (trip.type === "trip") {
+        const booking = trip.data.bookings.find((b: any) => b.id === bookingId);
+        if (booking) {
+          booking.status = "confirmed";
+        }
+      }
 
       trip.data.status = "paid";
       payStatus.value = "success";

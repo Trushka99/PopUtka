@@ -180,8 +180,8 @@ watch(
     try {
       let userId: string;
       if (route.path === "/users/me") {
+        await langStore.initUser();
         userId = langStore.user.id;
-        user.value = langStore.user;
       } else if (route.params.id) {
         userId = route.params.id as string;
         const data = await getUser(userId);

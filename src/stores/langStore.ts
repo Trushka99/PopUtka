@@ -58,8 +58,6 @@ export const useLangStore = defineStore("lang", {
     async initUser() {
       try {
         const res = await getMe();
-        console.log(res.data.data);
-        console.log(res.data.data);
         this.setNotifications(res.data.data.notifications);
         this.setUser(res.data.data.user);
       } catch (err) {
