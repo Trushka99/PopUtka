@@ -337,7 +337,7 @@ const age = computed(() => {
             <v-container class="contact">
               <strong>{{ langStore.t("phone") }}:</strong>
               <v-text-field
-                v-model="number"
+                v-model="langStore.user.phone"
                 :readonly="!editingPhone"
                 variant="solo"
                 :clearable="editingPhone"
