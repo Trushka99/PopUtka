@@ -54,6 +54,21 @@ const reviews = ref<any>(null);
 const number = ref<string>(langStore.user.phone);
 const email = ref<string>(langStore.user.email);
 const desc = ref<string>(langStore.user.about);
+watch(
+  () => langStore.user.email,
+  (value) => {
+    email.value = value ?? "";
+  },
+  { immediate: true },
+);
+
+watch(
+  () => langStore.user.about,
+  (value) => {
+    desc.value = value ?? "";
+  },
+  { immediate: true },
+);
 const fileInput = ref<HTMLInputElement | null>(null);
 const changingNumberModal = ref<boolean>(false);
 const carModalOpen = ref<boolean>(false);
@@ -76,10 +91,16 @@ const carForm = ref({
   year: "",
   licensePlate: "",
 });
-const changeData = (body: any) => {
-  updateProfile(body)
-    .then((res) => console.log(res))
-    .catch((err) => console.log(err));
+const changeData = async (body: Partial<typeof langStore.user>) => {
+  try {
+    const res = await updateProfile(body);
+
+    Object.assign(langStore.user, body);
+
+    console.log(res);
+  } catch (err) {
+    console.log(err);
+  }
 };
 function openCarModal() {
   if (user.value?.car) {

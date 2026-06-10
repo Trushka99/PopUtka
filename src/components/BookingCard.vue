@@ -59,6 +59,16 @@ const confTrip = async (id: string) => {
   }
   try {
     const res = await confirmBooking(id);
+    const trip = langStore.user.activeTrips.find((trip: any) =>
+      trip.bookings?.some((b: any) => b.id === id),
+    );
+
+    const booking = trip.bookings.find((b: any) => b.id === id);
+
+    if (booking) {
+      booking.status = "confirmed";
+    }
+
     console.log("Бронь подтверждена:", res);
   } catch (err) {
     console.error(err);
@@ -68,6 +78,16 @@ const confTrip = async (id: string) => {
 const rejTrip = async (id: string) => {
   try {
     const res = await rejectBooking(id);
+    const trip = langStore.user.activeTrips.find((trip: any) =>
+      trip.bookings?.some((b: any) => b.id === id),
+    );
+
+    const booking = trip.bookings.find((b: any) => b.id === id);
+
+    if (booking) {
+      booking.status = "rejected";
+    }
+
     console.log("Бронь отклонена:", res);
   } catch (err) {
     console.error(err);
