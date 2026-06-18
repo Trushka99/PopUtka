@@ -6,6 +6,7 @@ import { getBooking } from "@/api";
 import Loading from "@/components/Loading.vue";
 import { useLangStore } from "@/stores/langStore";
 import { confirmBooking, rejectBooking } from "@/api";
+import PayForm from "@/components/PayForm.vue";
 const menu = ref<boolean>(false);
 const togleChat = () => {
   menu.value = !menu.value;
@@ -15,13 +16,24 @@ const langStore = useLangStore();
 const route = useRoute();
 const trip = ref<any | null>(null);
 const loading = ref<boolean>(false);
+const sheet = ref();
+
+const openSheet = () => {
+  sheet.value.open();
+};
+
 const confirm = () => {
-  confirmBooking(trip.value.id)
+  if (trip.value.booking.trip.status === "created") {
+    openSheet();
+    return;
+  }
+
+  confirmBooking(String(route.params.id))
     .then(() => console.log("Бронь одобрена"))
     .catch((err) => console.log(err));
 };
 const reject = () => {
-  rejectBooking(trip.value.id)
+  rejectBooking(String(route.params.id))
     .then(() => console.log("Бронь одобрена"))
     .catch((err) => console.log(err));
 };
@@ -31,12 +43,14 @@ onMounted(() => {
   getBooking(String(route.params.id))
     .then((res) => {
       trip.value = res.data.data;
-      console.log(res.data.data);
     })
     .catch((err) => {
       console.error("API ERROR:", err);
     })
-    .finally(() => (loading.value = false));
+    .finally(() => {
+      loading.value = false;
+      console.log(trip.value.booking);
+    });
 });
 function formatDuration(minutes: number) {
   const hrs = Math.floor(minutes / 60);
@@ -142,7 +156,15 @@ const options: Intl.DateTimeFormatOptions = {
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
                 <img
-                  :src="`https://api.pop-utka.uz${trip.booking.trip.driver.avatar}`"
+                  :src="
+                    langStore.user.id === trip.passengerId
+                      ? trip.booking.trip.driver.avatar
+                        ? `https://api.pop-utka.uz${trip.booking.trip.driver.avatar}`
+                        : 'https://img.freepik.com/premium-vector/character-avatar-isolated_729149-194801.jpg?semt=ais_incoming&w=740&q=80'
+                      : trip.booking.passenger.avatar
+                        ? `https://api.pop-utka.uz${trip.booking.passenger.avatar}`
+                        : 'https://img.freepik.com/premium-vector/character-avatar-isolated_729149-194801.jpg?semt=ais_incoming&w=740&q=80'
+                  "
                   alt="Driver"
                   class="avatar"
                 />
@@ -189,10 +211,6 @@ const options: Intl.DateTimeFormatOptions = {
           <p>{{ trip.booking.description }}</p>
 
           <v-divider class="my-3"></v-divider>
-          <div v-if="trip.instantBooking" style="display: flex">
-            <v-icon color="yellow" icon="mdi-flash" size="24" class="mr-2" />
-            <p>{{ langStore.t("instant") }}</p>
-          </div>
           <div v-if="trip.maxTwoBackSeats" style="display: flex">
             <v-icon icon="mdi-account-multiple" size="24" class="mr-2" />
             <p>{{ langStore.t("maxTwoBackSeats") }}</p>
@@ -206,7 +224,8 @@ const options: Intl.DateTimeFormatOptions = {
       <div class="lefside">
         <v-card
           v-if="
-            langStore.user.id !== trip.passengerId && trip.status === 'pending'
+            langStore.user.id !== trip.booking.passengerId &&
+            trip.booking.status === 'pending'
           "
           class="trip-card"
           elevation="2"
@@ -219,7 +238,7 @@ const options: Intl.DateTimeFormatOptions = {
             </div>
           </div>
           <v-btn
-            v-if="trip.trip.driver.id === langStore.user.id"
+            v-if="trip.booking.trip.driverId === langStore.user.id"
             @click="confirm"
             class="search-btn"
             color="#00AEEF"
@@ -229,7 +248,7 @@ const options: Intl.DateTimeFormatOptions = {
             {{ langStore.t("accept") }}
           </v-btn>
           <v-btn
-            v-if="trip.trip.driver.id === langStore.user.id"
+            v-if="trip.booking.trip.driverId === langStore.user.id"
             @click="reject"
             class="search-btn"
             color="#00AEEF"
@@ -247,7 +266,7 @@ const options: Intl.DateTimeFormatOptions = {
             </div>
           </div>
           <v-chip
-            v-if="trip.status === 'confirmed'"
+            v-if="trip.booking.status === 'confirmed'"
             color="success"
             variant="tonal"
             prepend-icon="mdi-check-circle"
@@ -261,6 +280,22 @@ const options: Intl.DateTimeFormatOptions = {
           >
             {{ trip.status }}
           </v-chip>
+          <v-chip
+            v-else-if="trip.booking.status === 'pending'"
+            color="warning"
+            variant="tonal"
+            prepend-icon="mdi-account-clock"
+            class="status-chip confirmed"
+            style="
+              font-size: 17px;
+              width: 30%;
+              display: flex;
+              justify-content: center;
+            "
+          >
+            {{ trip.status }}
+          </v-chip>
+
           <v-chip
             v-else
             color="error"
@@ -297,10 +332,11 @@ const options: Intl.DateTimeFormatOptions = {
           <div v-if="menu" class="chat-container">
             <Chat
               :passengerId="
-                langStore.user.id === trip.passengerId
-                  ? trip.trip.driver.id
-                  : trip.passengerId
+                langStore.user.id === trip.booking.passengerId
+                  ? trip.booking.trip.driver.id
+                  : trip.booking.passengerId
               "
+              type="comp"
               @close="togleChat"
             />
           </div>
@@ -309,6 +345,12 @@ const options: Intl.DateTimeFormatOptions = {
     </div>
   </div>
   <div v-else>{{ langStore.t("trips_search_error") }}</div>
+  <PayForm
+    v-if="trip"
+    :bookingId="String(route.params.id)"
+    ref="sheet"
+    :trip="{ type: 'booking', data: trip.booking.trip }"
+  />
 </template>
 <style scoped lang="scss">
 .trip-cont {
@@ -352,6 +394,7 @@ const options: Intl.DateTimeFormatOptions = {
   display: flex;
   flex-direction: column;
   gap: 25px;
+  justify-content: space-between;
 }
 .flex-cont {
   display: flex;

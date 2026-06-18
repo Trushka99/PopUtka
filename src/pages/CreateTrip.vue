@@ -6,12 +6,36 @@ import { createTrip } from "@/api";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 import { useTripStore } from "@/stores/tripStore";
 const tripStore = useTripStore();
-
+const formError = ref<string>("");
 import Loading from "@/components/Loading.vue";
 const props = defineProps<{
   closeDialog?: () => void;
 }>();
+const validationError = computed(() => {
+  if (!from.value) {
+    return langStore.t("selectDepartureCity");
+  }
 
+  if (!to.value) {
+    return langStore.t("selectDestinationCity");
+  }
+
+  if (!price.value || price.value <= 0) {
+    return langStore.t("enterPrice");
+  }
+
+  if (!departureTime.value) {
+    return langStore.t("selectDepartureTime");
+  }
+
+  const departure = new Date(`${date.value}T${departureTime.value}:00`);
+
+  if (departure <= new Date()) {
+    return langStore.t("departureMustBeFuture");
+  }
+
+  return "";
+});
 const snackbar = useSnackbarStore();
 
 const langStore = useLangStore();
@@ -25,7 +49,6 @@ const departureTime = ref<string>("");
 const price = ref<number>(0);
 const availableSeats = ref<number>(1);
 const description = ref("");
-const instantBooking = ref(false);
 const maxTwoBackSeats = ref(false);
 
 const showMenuTime = ref(false);
@@ -73,33 +96,48 @@ const tripData = computed(() => ({
     address: fromAddress.value,
   },
   to: { cityKey: langStore.cKeyByValue(to.value), address: toAddress.value },
-  departureAt: new Date(`${date.value}T${departureTime.value}:00`).toISOString(),
+  departureAt: new Date(
+    `${date.value}T${departureTime.value}:00`,
+  ).toISOString(),
   price: price.value,
   availableSeats: availableSeats.value,
   description: description.value,
-  instantBooking: instantBooking.value,
   maxTwoBackSeats: maxTwoBackSeats.value,
 }));
+const handleTime = (val: string) => {
+  departureTime.value = val;
 
+  if (val?.length === 5) {
+    showMenuTime.value = false;
+  }
+};
 const submitTrip = () => {
+  formError.value = "";
 
-  if (!from.value || !to.value || !price.value || !departureTime.value) {
-    alert(langStore.t("fillAllFields"));
+  if (validationError.value) {
+    formError.value = validationError.value;
     return;
   }
 
-  console.log("Отправляем данные:", tripData.value);
   loading.value = true;
+
   createTrip(tripData.value)
     .then((res) => {
-      console.log(res);
       tripStore.addTrip(res.data.data);
+
+      snackbar.success(langStore.t("tripCreated"));
+
+      props.closeDialog?.();
     })
-    .catch((err) => console.error(err))
+    .catch((err) => {
+      console.error(err);
+
+      formError.value = langStore.t("tripCreateError");
+
+      snackbar.error(langStore.t("tripCreateError"));
+    })
     .finally(() => {
       loading.value = false;
-      props.closeDialog?.();
-      snackbar.notify("Поездка успешно создана!");
     });
 };
 </script>
@@ -176,6 +214,7 @@ const submitTrip = () => {
         >
           <v-date-picker
             :model-value="date"
+            :min="new Date().toISOString().split('T')[0]"
             @update:model-value="onDateSelected"
           />
         </v-menu>
@@ -198,10 +237,10 @@ const submitTrip = () => {
           min-width="0"
         >
           <v-time-picker
-            color="primary"
-            format="24hr"
             v-model="departureTime"
-            @click:minute="showMenuTime = false"
+            format="24hr"
+            color="primary"
+            @update:modelValue="handleTime"
           />
         </v-menu>
       </v-text-field>
@@ -280,19 +319,17 @@ const submitTrip = () => {
       <v-row class="mt-2">
         <v-col cols="12" sm="6">
           <v-switch
-            v-model="instantBooking"
-            color="primary"
-            :label="langStore.t('instant')"
-          />
-        </v-col>
-        <v-col cols="12" sm="6">
-          <v-switch
             v-model="maxTwoBackSeats"
             color="primary"
             :label="langStore.t('maxTwoBackSeats')"
           />
         </v-col>
       </v-row>
+      <div v-if="formError" class="form-error">
+        <v-icon size="18">mdi-alert-circle-outline</v-icon>
+
+        <span>{{ formError }}</span>
+      </div>
 
       <!-- Кнопка -->
       <v-btn
@@ -316,7 +353,24 @@ const submitTrip = () => {
   padding: 30px;
   width: 100%;
 }
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
+  margin-top: 12px;
+  margin-bottom: 4px;
+
+  padding: 10px 14px;
+
+  border-radius: 12px;
+
+  background: rgba(244, 67, 54, 0.08);
+  color: #d32f2f;
+
+  font-size: 14px;
+  font-weight: 500;
+}
 .passengers-modal {
   border-radius: 16px;
   background: #f9fafb;

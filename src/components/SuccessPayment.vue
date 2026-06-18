@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-
+import { useLangStore } from "@/stores/langStore";
 const props = defineProps<{ amount?: number }>();
 const emit = defineEmits<{ (e: "close"): void }>();
-
+const langStore = useLangStore();
 const time = computed(() =>
   new Date().toLocaleTimeString("ru-RU", {
     hour: "2-digit",
@@ -21,14 +21,14 @@ const time = computed(() =>
       </svg>
     </div>
 
-    <div class="badge">Payment successful</div>
+    <div class="badge">{{ langStore.t("paymentsuc") }}</div>
 
-    <h1>Готово 🎉</h1>
-    <p>Оплата прошла успешно. Ваша поездка подтверждена.</p>
+    <h1>{{ langStore.t("completed") }} 🎉</h1>
+    <p>{{ langStore.t("Approved") }}</p>
 
     <div class="block">
       <div class="row">
-        <span>Статус</span>
+        <span>{{ langStore.t("status") }}</span>
         <b class="ok">PAID</b>
       </div>
 
@@ -38,12 +38,14 @@ const time = computed(() =>
       </div>
 
       <div class="row" v-if="amount">
-        <span>Сумма</span>
+        <span>{{ langStore.t("sum") }}</span>
         <b>{{ amount }} ₽</b>
       </div>
     </div>
 
-    <button class="btn" @click="emit('close')">Вернуться</button>
+    <button class="btn" @click="emit('close')">
+      {{ langStore.t("return") }}
+    </button>
   </div>
 </template>
 <style scoped lang="scss">

@@ -218,9 +218,6 @@ async function saveCar() {
     alert("Не удалось сохранить автомобиль");
   }
 }
-function togglePhoneEditing() {
-  toggleEditingField(editingPhone, number, langStore.user.phone);
-}
 function toggleEmailEditing() {
   toggleEditingField(editingEmail, email, langStore.user.email);
 }
@@ -286,14 +283,13 @@ const age = computed(() => {
           <div class="name">
             {{ user.firstName }} <span class="last">{{ user.lastName }}</span>
             <v-btn
-              icon
               v-if="isMeRoute"
-              variant="text"
-              size="small"
               class="logout-btn"
+              variant="text"
               @click="logOUT"
             >
-              <v-icon size="20">mdi-logout</v-icon>
+              <v-icon size="18">mdi-logout</v-icon>
+              <span>{{ langStore.t("logout") }}</span>
             </v-btn>
           </div>
           <v-textarea
@@ -541,7 +537,11 @@ const age = computed(() => {
         </div>
       </section>
       <section v-show="activeSection === 'trips'" class="section-card">
-        <HistoryTripCard v-for="t in user.tripHistory" :key="t.id" :trip="t" />
+        <HistoryTripCard
+          v-for="t in langStore.user.tripHistory"
+          :key="t.id"
+          :trip="t"
+        />
       </section>
 
       <section
@@ -642,6 +642,36 @@ const age = computed(() => {
 </template>
 
 <style scoped lang="scss">
+.logout-btn {
+  margin-left: 12px !important;
+  border-radius: 999px !important;
+
+  padding: 0 14px !important;
+  height: 38px !important;
+
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #dc2626 !important;
+
+  border: 1px solid rgba(239, 68, 68, 0.12);
+
+  text-transform: none;
+  font-weight: 600;
+  letter-spacing: 0;
+
+  transition: all 0.25s ease;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.14) !important;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.15);
+  }
+
+  .v-icon {
+    margin-right: 6px;
+  }
+}
 .bookings {
   display: flex;
   flex-direction: column;

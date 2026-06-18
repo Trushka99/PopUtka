@@ -254,11 +254,9 @@ export const bookTrip = async ({
 export const createTrip = async ({
   from,
   to,
-
   price,
   availableSeats,
   description,
-  instantBooking,
   maxTwoBackSeats,
   departureAt,
 }: {
@@ -268,7 +266,6 @@ export const createTrip = async ({
   price: number;
   availableSeats: number;
   description: string;
-  instantBooking: boolean;
   maxTwoBackSeats: boolean;
 }) => {
   return handleRequest(
@@ -279,7 +276,6 @@ export const createTrip = async ({
       price,
       availableSeats,
       description,
-      instantBooking,
       maxTwoBackSeats,
     }),
   );

@@ -17,7 +17,6 @@ const driverGender = ref<string | null>(null);
 const minPrice = ref<number | null>(null);
 const maxPrice = ref<number | null>(null);
 const loading = ref<boolean>(false);
-const instantBookingOnly = ref<boolean | null>(null);
 const verifiedOnly = ref<boolean | null>(null);
 const sortBy = ref<"cheapest" | "earliest">("earliest");
 const loadingAfterFilters = ref<boolean>(false);
@@ -56,7 +55,6 @@ const applyFilters = () => {
     driverGender: driverGender.value,
     minPrice: minPrice.value,
     maxPrice: maxPrice.value,
-    instantBookingOnly: instantBookingOnly.value,
     verifiedOnly: verifiedOnly.value,
     sortBy: sortBy.value,
   });
@@ -94,7 +92,6 @@ const handleSearch = (filters: any) => {
         v-model:driverGender="driverGender"
         v-model:minPrice="minPrice"
         v-model:maxPrice="maxPrice"
-        v-model:instant-booking-only="instantBookingOnly"
         v-model:verified-only="verifiedOnly"
         v-model:sortBy="sortBy"
       />

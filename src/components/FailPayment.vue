@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-
+import { useLangStore } from "@/stores/langStore";
+const langStore = useLangStore();
 const props = defineProps<{
   amount?: number;
   reason?: string;
@@ -30,18 +31,17 @@ const time = computed(() =>
       </svg>
     </div>
 
-    <div class="badge failed-badge">Payment failed</div>
+    <div class="badge failed-badge">{{ langStore.t("paymentfail") }}</div>
 
-    <h1>Не удалось оплатить 😕</h1>
+    <h1>{{ langStore.t("paymentfail2") }}</h1>
 
     <p>
-      Платёж не был завершён. Попробуйте снова или используйте другой способ
-      оплаты.
+      {{ langStore.t("paymentfail3") }}
     </p>
 
     <div class="block">
       <div class="row">
-        <span>Статус</span>
+        <span>{{ langStore.t("status") }}</span>
         <b class="fail">FAILED</b>
       </div>
 
@@ -51,22 +51,15 @@ const time = computed(() =>
       </div>
 
       <div class="row" v-if="amount">
-        <span>Сумма</span>
-        <b>{{ amount }} ₽</b>
-      </div>
-
-      <div class="row" v-if="reason">
-        <span>Причина</span>
-        <b>{{ reason }}</b>
+        <span>{{ langStore.t("sum") }}</span>
+        <b>{{ amount }} UZS</b>
       </div>
     </div>
 
     <div class="actions">
-      <button class="btn retry" @click="emit('retry')">
-        Попробовать снова
+      <button class="btn close" @click="emit('close')">
+        {{ langStore.t("return") }}
       </button>
-
-      <button class="btn close" @click="emit('close')">Закрыть</button>
     </div>
   </div>
 </template>

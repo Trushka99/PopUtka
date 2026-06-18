@@ -245,7 +245,18 @@
     "date_check_server_error": "Server error checking date",
     "cannot_review_self": "You cannot leave a review for yourself",
     "already_reviewed_trip": "You have already left a review for this trip",
-    "already_booked_trip": "You have already booked this trip"
+    "already_booked_trip": "You have already booked this trip",
+    "paymentfor": "Payment for the trip",
+    "paymethod": "Select a payment method",
+    "paymentsuc": "Payment successful",
+    "completed": "Sucess",
+    "Approved": "Payment has been successful. Your trip is confirmed.",
+    "status": "Status",
+    "sum": "Ammount",
+    "return": "Return",
+    "paymentfail": "Payment failed",
+    "paymentfail2": "Failed to pay",
+    "paymentfail3": "Payment was not completed. Please try again or use a different payment method.."
   },
   "ru": {
     "user_not_found": "Пользователь не найден",
@@ -496,7 +507,18 @@
     "edit car": "Редактировать автомобиль",
     "cash": "Наличные",
     "card": "Карта",
-    "online": "Онлайн"
+    "online": "Онлайн",
+    "paymentfor": "Оплата поездки",
+    "paymethod": "Выберите способ оплаты",
+    "paymentsuc": "Успех",
+    "completed": "Готово",
+    "Approved": "Оплата прошла успешно. Ваша поездка подтверждена",
+    "status": "Статус",
+    "sum": "Сумма",
+    "return": "Вернуться",
+    "paymentfail": "Платеж неуспешен",
+    "paymentfail2": "Не удалось оплатить",
+    "paymentfail3": "Платёж не был завершён. Попробуйте снова или используйте другой способ оплаты."
   },
   "uz": {
     "contact_pass": "Yo'lovchiga yozing",
@@ -746,6 +768,17 @@
     "profile_updated_success": "Profil muvaffaqiyatli yangilandi",
     "user_update_error": "Foydalanuvchini yangilashda server xatosi",
     "profile_update_error": "Profilni yangilashda server xatosi",
-    "or": "yoki"
+    "or": "yoki",
+    "paymentfor": "Sayohat uchun to'lov",
+    "paymethod": "To'lov usulini tanlang",
+    "paymentsuc": "Muvaffaqiyat",
+    "completed": "Tayyor",
+    "Approved": "To'lov muvaffaqiyatli amalga oshirildi. Sayohatingiz tasdiqlandi.",
+    "status": "Holat",
+    "sum": "Summa",
+    "return": "Qaytish",
+    "paymentfail": "To'lov amalga oshmadi",
+    "paymentfail2": "To'lov amalga oshmadi",
+    "paymentfail3": "To'lov amalga oshirilmadi. Qaytadan urinib ko'ring yoki boshqa to'lov usulidan foydalaning."
   }
 }
