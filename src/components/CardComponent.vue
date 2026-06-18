@@ -30,7 +30,6 @@ interface TripExample {
   price: number;
   availableSeats: number;
   description: string;
-  instantBooking: boolean;
   maxTwoBackSeats: boolean;
   status: string;
   tripInfo: any;

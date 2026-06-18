@@ -8,14 +8,12 @@ const props = defineProps<{
   driverGender: string | null;
   minPrice: number | null;
   maxPrice: number | null;
-  instantBookingOnly: boolean | null;
   verifiedOnly: boolean | null;
   sortBy: "cheapest" | "earliest";
   loadFilters: () => void;
 }>();
 const emit = defineEmits<{
   (e: "update:timeFrom", value: string | null): void;
-  (e: "update:instantBookingOnly", value: boolean | null): void;
   (e: "update:verifiedOnly", value: boolean | null): void;
   (e: "update:sortBy", value: "cheapest" | "earliest"): void;
   (e: "update:timeTo", value: string | null): void;
@@ -36,9 +34,6 @@ watch(localDriverGender, (val) => emit("update:driverGender", val));
 
 const localMinPrice = ref(props.minPrice);
 watch(localMinPrice, (val) => emit("update:minPrice", val));
-
-const localInstant = ref(props.instantBookingOnly);
-watch(localInstant, (val) => emit("update:instantBookingOnly", val));
 
 const localVerified = ref(props.verifiedOnly);
 watch(localVerified, (val) => emit("update:verifiedOnly", val));
@@ -80,17 +75,6 @@ watch(localMaxPrice, (val) => emit("update:maxPrice", val));
             <div>{{ langStore.t("verified") }}</div>
           </template>
         </v-checkbox>
-
-        <v-checkbox
-          density="compact"
-          hide-details
-          v-model="localInstant"
-          color="primary"
-        >
-          <template #label>
-            <div>{{ langStore.t("instant") }}</div>
-          </template>
-        </v-checkbox>
       </v-container>
       <v-container class="radios" fluid>
         <div class="flex">
@@ -114,7 +98,7 @@ watch(localMaxPrice, (val) => emit("update:maxPrice", val));
       </v-container>
       <v-container class="radios" fluid>
         <div class="flex">
-          <h3 class="title">{{ langStore.t('time') }}</h3>
+          <h3 class="title">{{ langStore.t("time") }}</h3>
           <v-icon>mdi-clock-time-four-outline</v-icon>
         </div>
         <v-row justify="space-between">

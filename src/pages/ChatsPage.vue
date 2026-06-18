@@ -120,7 +120,11 @@ watch(
     </div>
 
     <div v-else class="chat-panel">
-      <Chat :passengerId="activePassengerId" @close="router.push('/chats')" />
+      <Chat
+        :passengerId="activePassengerId"
+        type="page"
+        @close="router.push('/chats')"
+      />
     </div>
   </div>
 </template>
@@ -277,7 +281,6 @@ watch(
 
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
-
 
     box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.04);
   }

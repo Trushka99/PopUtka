@@ -54,7 +54,10 @@ const send = () => {
 };
 const props = defineProps<{
   passengerId: string;
+  type: string;
 }>();
+console.log(props);
+
 onMounted(async () => {
   const res = await createChat(props.passengerId);
   chatId.value = res.data.data.id;
@@ -75,7 +78,11 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-  <div class="chat-wrapper">
+  <div
+    :class="
+      props.type === 'page' ? 'chat-wrapper' : 'chat-wrapper chat-wrapper_small'
+    "
+  >
     <div class="chat-header">
       <span>Чат</span>
       <button class="close" @click="$emit('close')">✕</button>
@@ -116,6 +123,9 @@ onBeforeUnmount(() => {
   flex-direction: column;
   overflow: hidden;
   animation: slideUp 0.25s ease;
+}
+.chat-wrapper_small {
+  height: 30dvh;
 }
 
 @keyframes slideUp {

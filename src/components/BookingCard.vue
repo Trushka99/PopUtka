@@ -40,6 +40,35 @@ const canFinishTrip = computed(
 // Методы
 const finishTrip = async (id: string) => {
   try {
+    const trip = langStore.user.activeTrips.find((trip: any) => trip.id === id);
+
+    const historyTrip = {
+      tripId: trip.id,
+      role: trip.role,
+      from: trip.from,
+      to: trip.to,
+      price: trip.price,
+      status: "completed",
+      departureAt: trip.departureAt,
+      completedAt: new Date().toISOString(),
+
+      passengers: trip.bookings.map((booking: any) => ({
+        id: booking.passenger.id,
+        seats: booking.seats,
+        avatar: booking.passenger.avatar,
+        firstName: booking.passenger.firstName,
+        lastName: booking.passenger.lastName,
+      })),
+    };
+    const updatedUser = {
+      ...langStore.user,
+      activeTrips: langStore.user.activeTrips.filter(
+        (trip: any) => trip.id !== id,
+      ),
+      tripHistory: [historyTrip, ...(langStore.user.tripHistory || [])],
+    };
+
+    langStore.setUser(updatedUser);
     const response = await completeTrip(id);
     const data = await response.json();
 
@@ -47,10 +76,8 @@ const finishTrip = async (id: string) => {
       console.error("Ошибка завершения поездки:", data.message);
       return;
     }
-
-    console.log("Поездка завершена:", data);
   } catch (err) {
-    console.error("Сетевая ошибка при завершении поездки:", err);
+    console.error(JSON.stringify(err, null, 2));
   }
 };
 

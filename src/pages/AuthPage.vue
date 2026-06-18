@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { register, login, createCode, confirmCode, resetPass } from "@/api";
 import { useLangStore } from "@/stores/langStore";
 import { useRouter, useRoute } from "vue-router";
@@ -12,6 +12,7 @@ const activeTab = ref("login");
 const recover = ref<boolean>(false);
 const codePage = ref<boolean>(false);
 const registCodePage = ref<boolean>(false);
+const showPassword = ref<boolean>(false);
 const error = ref<string | null>(null);
 const confirmcode = async () => {
   try {
@@ -38,7 +39,17 @@ const confirmcode = async () => {
     error.value = langStore.t(errText?.toLowerCase?.() || "unknown_error");
   }
 };
+const passwordRules = [
+  (v: string) => !!v || "Password is required",
 
+  (v: string) =>
+    (v && v.length >= 8 && v.length <= 20) ||
+    "Password must be 8–20 characters",
+
+  (v: string) =>
+    /^[A-Za-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/.test(v) ||
+    "Only Latin letters allowed (A–Z, a–z)",
+];
 const registerForm = ref({
   username: "",
   email: "",
@@ -50,11 +61,34 @@ const registerForm = ref({
   gender: "",
   birthDate: "",
   code: "",
+  loginstr: "",
+});
+const isLoginDisabled = computed(() => {
+  return (
+    !registerForm.value.loginstr.trim() || !registerForm.value.password.trim()
+  );
+});
+const isRegDisabled = computed(() => {
+  return (
+    !registerForm.value.username.trim() ||
+    !registerForm.value.email.trim() ||
+    !registerForm.value.phone.trim() ||
+    !registerForm.value.role.trim() ||
+    !registerForm.value.firstName.trim() ||
+    !registerForm.value.lastName.trim() ||
+    !registerForm.value.gender.trim() ||
+    !registerForm.value.birthDate.trim() ||
+    !registerForm.value.password.trim()
+  );
 });
 const loginHandle = async () => {
-  const { email, password } = registerForm.value;
+  if (isLoginDisabled.value) {
+    return;
+  }
+
+  const { loginstr, password } = registerForm.value;
   try {
-    const res = await login(email, password);
+    const res = await login(loginstr, password);
     router.push(redirectPath);
   } catch (err: any) {
     const errText = err.response.data.code;
@@ -71,6 +105,9 @@ const forgot = async () => {
   codePage.value = true;
 };
 const sendCodeRegistr = async () => {
+  if (isRegDisabled.value) {
+    return;
+  }
   try {
     error.value = null;
 
@@ -145,6 +182,7 @@ const sex = ["Мужской", "Женский"];
           :label="langStore.t('phone')"
           outlined
           dense
+          prefix="+"
           maxlength="12"
           v-model="registerForm.phone"
           @input="registerForm.phone = registerForm.phone.replace(/\D/g, '')"
@@ -209,7 +247,7 @@ const sex = ["Мужской", "Женский"];
           {{ langStore.t("save") }}
         </v-btn>
 
-        <v-btn variant="text" class="back-btn" block @click="recover = false">
+        <v-btn variant="text" class="back-btn" block @click="codePage = false">
           {{ langStore.t("back") }}
         </v-btn>
 
@@ -246,7 +284,12 @@ const sex = ["Мужской", "Женский"];
           {{ langStore.t("confirm") }}
         </v-btn>
 
-        <v-btn variant="text" class="back-btn" block @click="codePage = false">
+        <v-btn
+          variant="text"
+          class="back-btn"
+          block
+          @click="registCodePage = false"
+        >
           {{ langStore.t("back") }}
         </v-btn>
 
@@ -265,38 +308,38 @@ const sex = ["Мужской", "Женский"];
       </v-tabs>
 
       <v-card-text v-if="activeTab === 'login'">
-        <v-text-field
-          :label="
-            [
-              langStore.t('email'),
-              langStore.t('or'),
-              langStore.t('phone'),
-            ].join(' ')
-          "
-          outlined
-          v-model="registerForm.email"
-          dense
-          class="custom-field"
-        ></v-text-field>
-        <v-text-field
-          :label="langStore.t('password')"
-          type="password"
-          v-model="registerForm.password"
-          outlined
-          dense
-          class="custom-field"
-        ></v-text-field>
+        <form @submit.prevent="loginHandle">
+          <v-text-field
+            :label="`${langStore.t('email')} / ${langStore.t('username')}`"
+            outlined
+            v-model="registerForm.loginstr"
+            dense
+            class="custom-field"
+          ></v-text-field>
+          <v-text-field
+            :label="langStore.t('password')"
+            :type="showPassword ? 'text' : 'password'"
+            :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+            @click:append-inner="showPassword = !showPassword"
+            v-model="registerForm.password"
+            outlined
+            dense
+            class="custom-field"
+          ></v-text-field>
 
-        <v-btn
-          @click="loginHandle"
-          color="gradient-orange"
-          class="mt-4 mb-2 login-btn"
-          block
-          >{{ langStore.t("login") }}</v-btn
-        >
-        <span class="error">{{ error }}</span>
+          <v-btn
+            type="submit"
+            :disabled="isLoginDisabled"
+            color="gradient-orange"
+            class="mt-4 mb-2 login-btn"
+            block
+          >
+            {{ langStore.t("login") }}
+          </v-btn>
+          <span class="error">{{ error }}</span>
+        </form>
       </v-card-text>
-      <v-card-text v-else>
+      <v-card-text @keydown.enter.prevent="sendCodeRegistr" v-else>
         <v-text-field
           :label="langStore.t('name')"
           outlined
@@ -326,10 +369,12 @@ const sex = ["Мужской", "Женский"];
           v-model="registerForm.username"
           class="custom-field"
         ></v-text-field>
+
         <v-text-field
           :label="langStore.t('phone')"
           outlined
           dense
+          prefix="+"
           maxlength="12"
           v-model="registerForm.phone"
           @input="registerForm.phone = registerForm.phone.replace(/\D/g, '')"
@@ -345,12 +390,15 @@ const sex = ["Мужской", "Женский"];
 
         <v-text-field
           :label="langStore.t('password')"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
+          :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+          @click:append-inner="showPassword = !showPassword"
+          v-model="registerForm.password"
+          :rules="passwordRules"
           outlined
           dense
-          v-model="registerForm.password"
           class="custom-field"
-        ></v-text-field>
+        />
         <v-select
           :label="langStore.t('role')"
           :items="roles"
@@ -373,6 +421,7 @@ const sex = ["Мужской", "Женский"];
           color="gradient-orange"
           class="mt-4 mb-2 login-btn"
           block
+          :disabled="isRegDisabled"
         >
           {{ langStore.t("registr") }}
         </v-btn>
@@ -486,6 +535,16 @@ const sex = ["Мужской", "Женский"];
   }
 
   .custom-field {
+    :deep(input:-webkit-autofill),
+    :deep(input:-webkit-autofill:hover),
+    :deep(input:-webkit-autofill:focus) {
+      -webkit-text-fill-color: #333 !important;
+      -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+      box-shadow: 0 0 0 1000px transparent inset !important;
+      background-color: transparent !important;
+      transition: background-color 9999s ease-in-out 0s;
+    }
+
     background: transparent !important;
     border-radius: 15px;
     margin-bottom: 16px;
@@ -538,7 +597,7 @@ const sex = ["Мужской", "Женский"];
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0.2px;
-
+    width: 90%;
     transition:
       all 0.25s ease,
       transform 0.2s ease,

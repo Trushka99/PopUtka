@@ -21,35 +21,55 @@ const { trip, bookingId } = defineProps<{
 import { getPayment } from "@/api";
 const paymentId = ref<string | null>(null);
 let interval: ReturnType<typeof setInterval> | null = null;
-console.log(trip);
 const startPolling = (id: string) => {
   if (interval) clearInterval(interval);
 
   interval = setInterval(async () => {
-    const res = await getPayment(id);
+    try {
+      const res = await getPayment(id);
 
-    const status = res.data.data.status;
+      const status = res.data.data.status;
+      console.log(status);
 
-    if (status === "paid" || status === "success") {
-      clearInterval(interval!);
-      interval = null;
-      await confirmBooking(id);
-      if (trip.type === "trip") {
-        const booking = trip.data.bookings.find((b: any) => b.id === bookingId);
-        if (booking) {
-          booking.status = "confirmed";
+      if (status === "paid" || status === "success") {
+        clearInterval(interval!);
+        interval = null;
+
+        const res2 = await confirmBooking(bookingId);
+        console.log(res2);
+
+        if (trip.type === "trip") {
+          const booking = trip.data.bookings.find(
+            (b: any) => b.id === bookingId,
+          );
+
+          if (booking) {
+            booking.status = "confirmed";
+          }
         }
+
+        trip.data.status = "paid";
+        payStatus.value = "success";
+        loading.value = false;
       }
 
-      trip.data.status = "paid";
-      payStatus.value = "success";
+      if (
+        status === "failed" ||
+        status === "expired" ||
+        status === "cancelled"
+      ) {
+        clearInterval(interval!);
+        interval = null;
 
-      loading.value = false;
-    }
+        payStatus.value = "error";
+        loading.value = false;
+      }
+    } catch (error) {
+      console.error("Polling error:", error);
 
-    if (status === "failed" || status === "expired" || status === "cancelled") {
       clearInterval(interval!);
       interval = null;
+
       payStatus.value = "error";
       loading.value = false;
     }
@@ -71,12 +91,12 @@ defineExpose({ open, close });
       <FailPayment v-else-if="payStatus === 'error'" @close="close" />
       <div v-else>
         <div class="modal-header">
-          <h3>Оплата поездки</h3>
+          <h3>{{ langStore.t("paymentfor") }}</h3>
           <v-btn icon="mdi-close" variant="text" @click="close" />
         </div>
 
         <div class="modal-content">
-          <p class="subtitle">Выберите способ оплаты</p>
+          <p class="subtitle">{{ langStore.t("paymethod") }}</p>
 
           <PayButton
             @created="onPaymentCreated"

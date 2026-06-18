@@ -9,7 +9,6 @@ interface Driver {
   verified: boolean;
 }
 const langStore = useLangStore();
-console.log(langStore.user);
 interface Trip {
   from: { cityKey: string; address: string };
   to: { cityKey: string; address: string };
@@ -33,13 +32,11 @@ interface Trip {
     };
   };
   driver: Driver;
-  instantBooking?: boolean;
   maxTwoBackSeats?: boolean;
   id: number;
 }
 
 const { trip } = defineProps<{ trip: Trip }>();
-console.log(trip);
 function formatDuration(minutes: number) {
   const hrs = Math.floor(minutes / 60);
   const mins = minutes % 60;
@@ -110,7 +107,11 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
 
         <v-avatar size="40" class="mr-3">
           <img
-            :src="`https://api.pop-utka.uz${trip.driver.avatar}`"
+            :src="
+              trip.driver.avatar
+                ? `https://api.pop-utka.uz${trip.driver.avatar}`
+                : 'https://img.freepik.com/premium-vector/character-avatar-isolated_729149-194801.jpg?semt=ais_incoming&w=740&q=80'
+            "
             alt="Driver"
             class="avatar"
           />
@@ -124,16 +125,6 @@ function addDurationToTime(timeStr: string, durationMinutes: number) {
         </div>
 
         <div class="conditions d-flex align-center">
-          <v-icon
-            v-if="trip.instantBooking"
-            icon="mdi-flash"
-            size="20"
-            class="mr-1"
-          />
-          <span v-if="trip.instantBooking" class="mr-4 text-caption">{{
-            langStore.t("instant")
-          }}</span>
-
           <v-icon
             v-if="trip.maxTwoBackSeats"
             icon="mdi-account-multiple"

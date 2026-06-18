@@ -122,7 +122,11 @@ const options: Intl.DateTimeFormatOptions = {
             <div class="trip-flex hover">
               <v-avatar size="40" class="mr-3">
                 <img
-                  :src="`https://api.pop-utka.uz${trip.driver.avatar}`"
+                  :src="
+                    trip.driver.avatar
+                      ? `https://api.pop-utka.uz${trip.driver.avatar}`
+                      : 'https://img.freepik.com/premium-vector/character-avatar-isolated_729149-194801.jpg?semt=ais_incoming&w=740&q=80'
+                  "
                   alt="Driver"
                   class="avatar"
                 />
@@ -158,10 +162,7 @@ const options: Intl.DateTimeFormatOptions = {
           <p>{{ trip.description }}</p>
 
           <v-divider class="my-3"></v-divider>
-          <div v-if="trip.instantBooking" style="display: flex">
-            <v-icon color="yellow" icon="mdi-flash" size="24" class="mr-2" />
-            <p>{{ langStore.t("instant") }}</p>
-          </div>
+    
           <div v-if="trip.maxTwoBackSeats" style="display: flex">
             <v-icon icon="mdi-account-multiple" size="24" class="mr-2" />
             <p>{{ langStore.t("maxTwoBackSeats") }}</p>
