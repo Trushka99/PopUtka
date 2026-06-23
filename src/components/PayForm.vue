@@ -5,6 +5,7 @@ import PayClickButton from "./PayClickButton.vue";
 import { useLangStore } from "@/stores/langStore";
 import type { TTripCard } from "@/utils/types";
 import Loading from "./Loading.vue";
+
 import SuccessPayment from "./SuccessPayment.vue";
 import { confirmBooking } from "@/api";
 import FailPayment from "./FailPayment.vue";
@@ -12,6 +13,7 @@ const isOpen = ref(false);
 const payStatus = ref<string>("");
 const langStore = useLangStore();
 const loading = ref<boolean>(false);
+const paymentSuccess = ref(false);
 const open = () => (isOpen.value = true);
 const close = () => (isOpen.value = false);
 const { trip, bookingId } = defineProps<{
@@ -31,24 +33,14 @@ const startPolling = (id: string) => {
       const status = res.data.data.status;
       console.log(status);
 
-      if (status === "paid" || status === "success") {
+      if (status === "pending" || status === "success") {
         clearInterval(interval!);
         interval = null;
 
-        const res2 = await confirmBooking(bookingId);
-        console.log(res2);
+        await confirmBooking(bookingId);
 
-        if (trip.type === "trip") {
-          const booking = trip.data.bookings.find(
-            (b: any) => b.id === bookingId,
-          );
+        paymentSuccess.value = true;
 
-          if (booking) {
-            booking.status = "confirmed";
-          }
-        }
-
-        trip.data.status = "paid";
         payStatus.value = "success";
         loading.value = false;
       }
@@ -75,19 +67,49 @@ const startPolling = (id: string) => {
     }
   }, 1000);
 };
+const handleSuccessClose = () => {
+  if (paymentSuccess.value && trip.type === "trip") {
+    const booking = trip.data.bookings.find((b: any) => b.id === bookingId);
+
+    if (booking) {
+      booking.status = "confirmed";
+    }
+
+    trip.data.status = "paid";
+  }
+
+  close();
+};
 const onPaymentCreated = (id: string) => {
   paymentId.value = id;
   loading.value = true;
   startPolling(id);
 };
+const onDialogChange = (value: boolean) => {
+  if (value) return;
+
+  if (payStatus.value === "success") {
+    handleSuccessClose();
+  } else {
+    close();
+  }
+};
 defineExpose({ open, close });
 </script>
 
 <template>
-  <v-dialog v-model="isOpen" max-width="420" transition="scale-transition">
+  <v-dialog
+    v-model="isOpen"
+    max-width="420"
+    @update:model-value="onDialogChange"
+    transition="scale-transition"
+  >
     <div class="payment-modal">
       <Loading v-if="loading" />
-      <SuccessPayment v-else-if="payStatus === 'success'" @close="close" />
+      <SuccessPayment
+        v-else-if="payStatus === 'success'"
+        @close="handleSuccessClose"
+      />
       <FailPayment v-else-if="payStatus === 'error'" @close="close" />
       <div v-else>
         <div class="modal-header">
