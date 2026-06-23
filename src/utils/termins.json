@@ -261,7 +261,23 @@
     "feman": "Female",
     "password_required": "Password is required",
     "password_length": "Password must be 8–20 characters",
-    "password_latin_only": "Only Latin letters allowed (A–Z, a–z)"
+    "password_latin_only": "Only Latin letters allowed (A–Z, a–z)",
+    "selDeparture": "Select the departure city",
+    "selDest": "Select the destination city",
+    "enterPrice": "Write the price",
+    "departureMustBeFuture": "Departure date must be in the future",
+    "selectDepartureTime": "Select a departure time",
+    "phone_required": "Phone number is required",
+    "phone_length": "Phone number must contain 11–15 digits",
+    "name_required": "Name is required",
+    "name_letters_only": "Only letters are allowed",
+    "name_max_length": "Maximum 20 characters allowed",
+    "email_required": "Email is required",
+    "invalid_email": "Invalid email format",
+    "email_domain_not_allowed": "This email domain is not allowed",
+    "birthdate_required": "Date of birth is required",
+    "birthdate_future": "Date of birth cannot be in the future",
+    "must_be_18": "You must be at least 18 years old"
   },
   "ru": {
     "user_not_found": "Пользователь не найден",
@@ -446,7 +462,20 @@
     "confirm": "Подтвердить",
     "confirmed_book": "подтвердил бронь",
     "rejected_book": "отклонил бронь",
+    "phone_required": "Введите номер телефона",
+    "phone_length": "Номер телефона должен содержать от 11 до 15 цифр",
 
+    "name_required": "Введите имя",
+    "name_letters_only": "Допускаются только буквы",
+    "name_max_length": "Максимальная длина — 20 символов",
+
+    "email_required": "Введите адрес электронной почты",
+    "invalid_email": "Некорректный формат электронной почты",
+    "email_domain_not_allowed": "Этот домен электронной почты не поддерживается",
+
+    "birthdate_required": "Укажите дату рождения",
+    "birthdate_future": "Дата рождения не может быть в будущем",
+    "must_be_18": "Вам должно быть не менее 18 лет",
     "createTrip": "Создать поездку",
     "departureTime": "Время отправления",
     "description": "Описание",
@@ -528,7 +557,12 @@
     "feman": "Женский",
     "password_required": "Требуется пароль",
     "password_length": "Пароль должен состоять из 8–20 символов.",
-    "password_latin_only": "Разрешены только латинские буквы (A–Z, a–z)."
+    "password_latin_only": "Разрешены только латинские буквы (A–Z, a–z)=",
+    "selDeparture": "Выберите город отправления",
+    "selDest": "Выберите город назначения",
+    "enterPrice": "Укажите стоимость",
+    "departureMustBeFuture": "Дата и время отправления должны быть в будущем",
+    "selectDepartureTime": "Выберите время отправления"
   },
   "uz": {
     "contact_pass": "Yo'lovchiga yozing",
@@ -794,6 +828,25 @@
     "feman": "Ayol",
     "password_required": "Parol talab qilinadi",
     "password_length": "Parol uzunligi 8-20 belgidan iborat bo'lishi kerak.",
-    "password_latin_only": "Faqat lotin harflariga ruxsat beriladi (A–Z, a–z)"
+    "password_latin_only": "Faqat lotin harflariga ruxsat beriladi (A–Z, a–z)",
+    "selDeparture": "Jo'nash shahrini tanlang",
+    "selDest": "Borish shahrini tanlang",
+    "enterPrice": "Narxni kiriting",
+    "departureMustBeFuture": "Jo'nash sanasi va vaqti kelajakda bo‘lishi kerak",
+    "selectDepartureTime": "Jo'nash vaqtini tanlang",
+    "phone_required": "Telefon raqamini kiriting",
+    "phone_length": "Telefon raqami 11–15 ta raqamdan iborat bo‘lishi kerak",
+
+    "name_required": "Ismni kiriting",
+    "name_letters_only": "Faqat harflardan foydalanish mumkin",
+    "name_max_length": "Maksimal uzunlik — 20 ta belgi",
+
+    "email_required": "Elektron pochta manzilini kiriting",
+    "invalid_email": "Elektron pochta formati noto‘g‘ri",
+    "email_domain_not_allowed": "Bu elektron pochta domeniga ruxsat berilmagan",
+
+    "birthdate_required": "Tug‘ilgan sanani kiriting",
+    "birthdate_future": "Tug‘ilgan sana kelajakda bo‘lishi mumkin emas",
+    "must_be_18": "Siz kamida 18 yoshda bo‘lishingiz kerak"
   }
 }

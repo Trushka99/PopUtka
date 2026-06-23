@@ -13,11 +13,11 @@ const props = defineProps<{
 }>();
 const validationError = computed(() => {
   if (!from.value) {
-    return langStore.t("selectDepartureCity");
+    return langStore.t("selDeparture");
   }
 
   if (!to.value) {
-    return langStore.t("selectDestinationCity");
+    return langStore.t("selDest");
   }
 
   if (!price.value || price.value <= 0) {
