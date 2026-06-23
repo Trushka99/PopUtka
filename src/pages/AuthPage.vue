@@ -3,10 +3,11 @@ import { ref, computed } from "vue";
 import { register, login, createCode, confirmCode, resetPass } from "@/api";
 import { useLangStore } from "@/stores/langStore";
 import { useRouter, useRoute } from "vue-router";
+import LanguagePicker from "@/components/LanguagePicker.vue";
 const router = useRouter();
 const route = useRoute();
 const redirectPath = route.query.redirect?.toString() || "/";
-
+const buttonLoading = ref<boolean>(false);
 const langStore = useLangStore();
 const activeTab = ref("login");
 const recover = ref<boolean>(false);
@@ -16,6 +17,7 @@ const showPassword = ref<boolean>(false);
 const error = ref<string | null>(null);
 const confirmcode = async () => {
   try {
+    buttonLoading.value = true;
     error.value = null;
 
     await confirmCode({
@@ -37,19 +39,26 @@ const confirmcode = async () => {
     const errText = err?.response?.data?.code;
 
     error.value = langStore.t(errText?.toLowerCase?.() || "unknown_error");
+  } finally {
+    buttonLoading.value = false;
   }
 };
+const isPasswordValid = computed(() => {
+  return passwordRules.every(
+    (rule) => rule(registerForm.value.password) === true,
+  );
+});
 const passwordRules = [
-  (v: string) => !!v || "Password is required",
+  (v: string) => !!v || langStore.t("password_required"),
 
   (v: string) =>
-    (v && v.length >= 8 && v.length <= 20) ||
-    "Password must be 8–20 characters",
+    (v && v.length >= 8 && v.length <= 20) || langStore.t("password_length"),
 
   (v: string) =>
     /^[A-Za-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/.test(v) ||
-    "Only Latin letters allowed (A–Z, a–z)",
+    langStore.t("password_latin_only"),
 ];
+
 const registerForm = ref({
   username: "",
   email: "",
@@ -78,7 +87,8 @@ const isRegDisabled = computed(() => {
     !registerForm.value.lastName.trim() ||
     !registerForm.value.gender.trim() ||
     !registerForm.value.birthDate.trim() ||
-    !registerForm.value.password.trim()
+    !registerForm.value.password.trim() ||
+    !isPasswordValid.value
   );
 });
 const loginHandle = async () => {
@@ -88,11 +98,14 @@ const loginHandle = async () => {
 
   const { loginstr, password } = registerForm.value;
   try {
+    buttonLoading.value = true;
     const res = await login(loginstr, password);
     router.push(redirectPath);
   } catch (err: any) {
     const errText = err.response.data.code;
     error.value = langStore.t(errText.toLowerCase());
+  } finally {
+    buttonLoading.value = false;
   }
 };
 const forgot = async () => {
@@ -100,7 +113,6 @@ const forgot = async () => {
     phone: registerForm.value.phone,
     type: "recover",
   });
-  console.log(res);
   recover.value = false;
   codePage.value = true;
 };
@@ -138,6 +150,7 @@ const handleRegister = async () => {
     birthDate,
   } = registerForm.value;
   try {
+    buttonLoading.value = true;
     await confirmCode({
       phone: registerForm.value.phone,
       type: "register",
@@ -160,14 +173,18 @@ const handleRegister = async () => {
     console.error("Ошибка регистрации", err);
     const errText = err.response.data.code;
     error.value = langStore.t(errText.toLowerCase());
+  } finally {
+    buttonLoading.value = false;
   }
 };
-const roles = ["Пользователь", "Водитель"];
-const sex = ["Мужской", "Женский"];
+const roles = computed(() => [langStore.t("passenger"), langStore.t("driver")]);
+
+const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
 </script>
 
 <template>
   <div class="background">
+    <language-picker />
     <v-card v-if="recover" class="login-card recover-card" elevation="0">
       <div class="recover-header">
         <h2>{{ langStore.t("recover_password") }}</h2>
@@ -190,7 +207,10 @@ const sex = ["Мужской", "Женский"];
         />
         <v-text-field
           :label="langStore.t('new_password')"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
+          :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+          @click:append-inner="showPassword = !showPassword"
+          :rules="passwordRules"
           v-model="registerForm.password"
           outlined
           dense
@@ -199,8 +219,11 @@ const sex = ["Мужской", "Женский"];
 
         <v-text-field
           :label="langStore.t('repeat_password')"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
+          :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+          @click:append-inner="showPassword = !showPassword"
           v-model="registerForm.password"
+          :rules="passwordRules"
           outlined
           dense
           class="custom-field"
@@ -244,7 +267,15 @@ const sex = ["Мужской", "Женский"];
           class="mt-4 mb-2 login-btn"
           block
         >
-          {{ langStore.t("save") }}
+          <v-progress-circular
+            :size="20"
+            v-if="buttonLoading"
+            color="primary"
+            :width="2"
+            indeterminate
+          />
+
+          <span v-else> {{ langStore.t("save") }}</span>
         </v-btn>
 
         <v-btn variant="text" class="back-btn" block @click="codePage = false">
@@ -281,7 +312,14 @@ const sex = ["Мужской", "Женский"];
           class="mt-4 mb-2 login-btn"
           block
         >
-          {{ langStore.t("confirm") }}
+          <v-progress-circular
+            :size="20"
+            v-if="buttonLoading"
+            color="primary"
+            :width="2"
+            indeterminate
+          />
+          <span v-else> {{ langStore.t("confirm") }}</span>
         </v-btn>
 
         <v-btn
@@ -334,7 +372,16 @@ const sex = ["Мужской", "Женский"];
             class="mt-4 mb-2 login-btn"
             block
           >
-            {{ langStore.t("login") }}
+            <v-progress-circular
+              :size="20"
+              v-if="buttonLoading"
+              color="primary"
+              :width="2"
+              indeterminate
+            />
+            <span v-else>
+              {{ langStore.t("login") }}
+            </span>
           </v-btn>
           <span class="error">{{ error }}</span>
         </form>

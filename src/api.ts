@@ -46,20 +46,16 @@ export const createChat = (id: string) => {
 export const getChats = () => {
   return handleRequest(api.get("/chats"));
 };
-export const createReview = async (
-  tripId: string,
-  targetUserId: string,
-  rating: any,
-  text: string,
-) => {
-  return handleRequest(
-    api.post("/reviews", {
-      tripId,
-      targetUserId,
-      rating,
-      text,
-    }),
-  );
+export const createReview = async (data: {
+  tripId: string;
+  targetUserId: string;
+  text: string;
+  rating: number;
+  driving?: number;
+  cleanliness?: number;
+  politeness?: number;
+}) => {
+  return handleRequest(api.post("/reviews", data));
 };
 export const getChatByID = (id: string) => {
   return handleRequest(api.get(`/chats/${id}`));

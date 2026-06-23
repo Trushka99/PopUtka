@@ -37,7 +37,7 @@ export type Passenger = {
   phone: string;
 };
 
-export type TripStatus = "active" | "completed" | "cancelled";
+export type TripStatus = "paid" | "completed" | "cancelled" | "created";
 export type UserRole = "driver" | "passenger";
 export type TTrip = {
   id: string;

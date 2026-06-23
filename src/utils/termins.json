@@ -256,7 +256,12 @@
     "return": "Return",
     "paymentfail": "Payment failed",
     "paymentfail2": "Failed to pay",
-    "paymentfail3": "Payment was not completed. Please try again or use a different payment method.."
+    "paymentfail3": "Payment was not completed. Please try again or use a different payment method..",
+    "man": "Male",
+    "feman": "Female",
+    "password_required": "Password is required",
+    "password_length": "Password must be 8–20 characters",
+    "password_latin_only": "Only Latin letters allowed (A–Z, a–z)"
   },
   "ru": {
     "user_not_found": "Пользователь не найден",
@@ -518,7 +523,12 @@
     "return": "Вернуться",
     "paymentfail": "Платеж неуспешен",
     "paymentfail2": "Не удалось оплатить",
-    "paymentfail3": "Платёж не был завершён. Попробуйте снова или используйте другой способ оплаты."
+    "paymentfail3": "Платёж не был завершён. Попробуйте снова или используйте другой способ оплаты.",
+    "man": "Мужской",
+    "feman": "Женский",
+    "password_required": "Требуется пароль",
+    "password_length": "Пароль должен состоять из 8–20 символов.",
+    "password_latin_only": "Разрешены только латинские буквы (A–Z, a–z)."
   },
   "uz": {
     "contact_pass": "Yo'lovchiga yozing",
@@ -779,6 +789,11 @@
     "return": "Qaytish",
     "paymentfail": "To'lov amalga oshmadi",
     "paymentfail2": "To'lov amalga oshmadi",
-    "paymentfail3": "To'lov amalga oshirilmadi. Qaytadan urinib ko'ring yoki boshqa to'lov usulidan foydalaning."
+    "paymentfail3": "To'lov amalga oshirilmadi. Qaytadan urinib ko'ring yoki boshqa to'lov usulidan foydalaning.",
+    "man": "Erkak",
+    "feman": "Ayol",
+    "password_required": "Parol talab qilinadi",
+    "password_length": "Parol uzunligi 8-20 belgidan iborat bo'lishi kerak.",
+    "password_latin_only": "Faqat lotin harflariga ruxsat beriladi (A–Z, a–z)"
   }
 }

@@ -10,7 +10,8 @@ const props = defineProps<{
     withUser?: { id: string; firstName: string; avatar: string | null };
   };
 }>();
-console.log(props.trip);
+const isDriver = props.trip.role === "passenger";
+
 const emit = defineEmits(["update:modelValue", "submit"]);
 const array = computed(() => {
   if (props.trip.role === "passenger") {
@@ -30,7 +31,6 @@ watch(
 watch(model, (v) => emit("update:modelValue", v));
 
 const close = () => (model.value = false);
-
 // select logic
 const selectedPassenger = ref<{
   id: string;
@@ -51,24 +51,34 @@ const clear = () => {
 };
 
 // остальное
-const rating = ref({ clean: 0, driving: 0, behaviour: 0 });
+const rating = ref(0);
+const driverRating = ref<{ clean: number; driving: number; behaviour: number }>(
+  { clean: 0, driving: 0, behaviour: 0 },
+);
+
 const comment = ref("");
 
 const submit = async () => {
   if (!selectedPassenger.value) return;
+  const body = {
+    tripId: props.trip.tripId,
+    targetUserId: selectedPassenger.value.id,
+    text: comment.value,
+    rating: rating.value,
+    ...(isDriver && {
+      driving: driverRating.value.driving,
+      cleanliness: driverRating.value.clean,
+      politeness: driverRating.value.behaviour,
+    }),
+  };
   try {
-    const res = await createReview(
-      props.trip.tripId,
-      selectedPassenger.value.id,
-      rating.value,
-      comment.value,
-    );
+    const res = await createReview(body);
     console.log(res);
   } catch {
     console.log("ERROR PIDORASINA");
   }
 
-  rating.value = { clean: 0, driving: 0, behaviour: 0 };
+  driverRating.value = { clean: 0, driving: 0, behaviour: 0 };
   comment.value = "";
   selectedPassenger.value = null;
   close();
@@ -137,51 +147,78 @@ const submit = async () => {
       </v-menu>
 
       <!-- Рейтинг -->
-      <div class="rating-box">
-        <div class="rating-label">Чистота салона</div>
+      <div v-if="isDriver">
+        <div class="rating-box">
+          <div class="rating-label">Чистота салона</div>
 
-        <v-rating
-          class="big-rating"
-          v-model="rating.clean"
-          length="5"
-          color="amber"
-          hover
-        />
+          <v-rating
+            class="big-rating"
+            v-model="driverRating.clean"
+            length="5"
+            color="amber"
+            hover
+          />
 
-        <div class="rating-hint">
-          {{ rating.clean ? `${rating.clean} из 5` : "Выберите оценку" }}
+          <div class="rating-hint">
+            {{
+              driverRating.clean
+                ? `${driverRating.clean} из 5`
+                : "Выберите оценку"
+            }}
+          </div>
+        </div>
+        <div class="rating-box">
+          <div class="rating-label">Вождение</div>
+
+          <v-rating
+            class="big-rating"
+            v-model="driverRating.driving"
+            length="5"
+            color="amber"
+            hover
+          />
+
+          <div class="rating-hint">
+            {{
+              driverRating.driving
+                ? `${driverRating.driving} из 5`
+                : "Выберите оценку"
+            }}
+          </div>
+        </div>
+        <div class="rating-box">
+          <div class="rating-label">Вежливость</div>
+
+          <v-rating
+            class="big-rating"
+            v-model="driverRating.behaviour"
+            length="5"
+            color="amber"
+            hover
+          />
+
+          <div class="rating-hint">
+            {{
+              driverRating.behaviour
+                ? `${driverRating.behaviour} из 5`
+                : "Выберите оценку"
+            }}
+          </div>
         </div>
       </div>
-      <div class="rating-box">
-        <div class="rating-label">Вождение</div>
+      <div v-else>
+        <div class="rating-box">
+          <v-rating
+            class="big-rating"
+            v-model="rating"
+            length="5"
+            color="amber"
+            hover
+          />
 
-        <v-rating
-          class="big-rating"
-          v-model="rating.driving"
-          length="5"
-          color="amber"
-          hover
-        />
-
-        <div class="rating-hint">
-          {{ rating.driving ? `${rating.driving} из 5` : "Выберите оценку" }}
-        </div>
-      </div>
-      <div v-if="props.trip?.role === 'passenger'" class="rating-box">
-        <div class="rating-label">Вежливость</div>
-
-        <v-rating
-          class="big-rating"
-          v-model="rating.behaviour"
-          length="5"
-          color="amber"
-          hover
-        />
-
-        <div class="rating-hint">
-          {{
-            rating.behaviour ? `${rating.behaviour} из 5` : "Выберите оценку"
-          }}
+          <div class="rating-hint">
+            {{ rating ? `${rating} из 5` : "Выберите оценку" }}
+          </div>
         </div>
       </div>
 
@@ -204,7 +241,7 @@ const submit = async () => {
         <v-btn
           color="primary"
           class="submit-btn"
-          :disabled="!rating || !selectedPassenger"
+          :disabled="!selectedPassenger || (!rating && !driverRating)"
           @click="submit"
         >
           Отправить
