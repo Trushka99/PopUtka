@@ -15,6 +15,74 @@ const codePage = ref<boolean>(false);
 const registCodePage = ref<boolean>(false);
 const showPassword = ref<boolean>(false);
 const error = ref<string | null>(null);
+const phoneRules = [
+  (v: string) => !!v || langStore.t("phone_required"),
+
+  (v: string) => /^\d{11,15}$/.test(v) || langStore.t("phone_length"),
+];
+const nameRules = [
+  (v: string) => !!v || langStore.t("name_required"),
+
+  (v: string) =>
+    /^[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳO‘o‘G‘g‘ʼʻ]+$/u.test(v) ||
+    langStore.t("name_letters_only"),
+
+  (v: string) => v.length <= 20 || langStore.t("name_max_length"),
+];
+const emailRules = [
+  (v: string) => !!v || langStore.t("email_required"),
+
+  (v: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || langStore.t("invalid_email"),
+
+  (v: string) => {
+    const allowedDomains = [
+      "gmail.com",
+      "mail.ru",
+      "yandex.ru",
+      "yandex.com",
+      "yahoo.com",
+      "outlook.com",
+      "icloud.com",
+      "umail.uz",
+    ];
+
+    const domain = v.split("@")[1]?.toLowerCase();
+
+    return (
+      allowedDomains.includes(domain) ||
+      domain?.endsWith(".uz") ||
+      langStore.t("email_domain_not_allowed")
+    );
+  },
+];
+const birthDateRules = [
+  (v: string) => !!v || langStore.t("birthdate_required"),
+
+  (v: string) => {
+    const date = new Date(v);
+
+    return date <= new Date() || langStore.t("birthdate_future");
+  },
+
+  (v: string) => {
+    const birth = new Date(v);
+    const today = new Date();
+
+    let age = today.getFullYear() - birth.getFullYear();
+
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+      age--;
+    }
+
+    return age >= 18 || langStore.t("must_be_18");
+  },
+];
 const confirmcode = async () => {
   try {
     buttonLoading.value = true;
@@ -79,16 +147,16 @@ const isLoginDisabled = computed(() => {
 });
 const isRegDisabled = computed(() => {
   return (
-    !registerForm.value.username.trim() ||
-    !registerForm.value.email.trim() ||
-    !registerForm.value.phone.trim() ||
-    !registerForm.value.role.trim() ||
-    !registerForm.value.firstName.trim() ||
-    !registerForm.value.lastName.trim() ||
-    !registerForm.value.gender.trim() ||
-    !registerForm.value.birthDate.trim() ||
-    !registerForm.value.password.trim() ||
-    !isPasswordValid.value
+    !registerForm.value.firstName ||
+    !registerForm.value.lastName ||
+    !registerForm.value.email ||
+    !registerForm.value.phone ||
+    !registerForm.value.birthDate ||
+    nameRules.some((rule) => rule(registerForm.value.firstName) !== true) ||
+    nameRules.some((rule) => rule(registerForm.value.lastName) !== true) ||
+    emailRules.some((rule) => rule(registerForm.value.email) !== true) ||
+    phoneRules.some((rule) => rule(registerForm.value.phone) !== true) ||
+    birthDateRules.some((rule) => rule(registerForm.value.birthDate) !== true)
   );
 });
 const loginHandle = async () => {
@@ -162,10 +230,13 @@ const handleRegister = async () => {
       birthDate,
       phone,
       password,
-      role: role === "Пользователь" ? "passenger" : "driver",
+      role:
+        role === "Пассажир" || "Passenger" || "Yo'lovchi"
+          ? "passenger"
+          : "driver",
       firstName,
       lastName,
-      gender: gender === "Мужской" ? "male" : "female",
+      gender: gender === "Erkak" || "Мужской" || "Male" ? "male" : "female",
     });
     console.log("Регистрация успешна", response.data);
     loginHandle();
@@ -390,6 +461,7 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
         <v-text-field
           :label="langStore.t('name')"
           outlined
+          :rules="nameRules"
           dense
           v-model="registerForm.firstName"
           class="custom-field"
@@ -397,6 +469,7 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
         <v-text-field
           :label="langStore.t('surname')"
           outlined
+          :rules="nameRules"
           dense
           v-model="registerForm.lastName"
           class="custom-field"
@@ -407,6 +480,7 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
           outlined
           dense
           v-model="registerForm.birthDate"
+          :rules="birthDateRules"
           class="custom-field"
         />
         <v-text-field
@@ -421,6 +495,7 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
           :label="langStore.t('phone')"
           outlined
           dense
+          :rules="phoneRules"
           prefix="+"
           maxlength="12"
           v-model="registerForm.phone"
@@ -430,6 +505,7 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
         <v-text-field
           :label="langStore.t('email')"
           outlined
+          :rules="emailRules"
           dense
           v-model="registerForm.email"
           class="custom-field"
