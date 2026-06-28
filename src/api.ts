@@ -8,6 +8,7 @@ export const billingApi = axios.create({
   baseURL: "https://billing.pop-utka.uz",
   withCredentials: true,
 });
+
 const handleRequest = async (request: any) => {
   const MOCK_MODE = false;
 
@@ -116,6 +117,38 @@ export const register = async (form?: {
       firstName: form.firstName,
       lastName: form.lastName,
       gender: form.gender,
+    }),
+  );
+};
+export const checkRegister = async (form?: {
+  username: string;
+  email: string;
+  phone: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+}) => {
+  if (!form) throw new Error("Form data is required");
+
+  return handleRequest(
+    api.post("/auth/check-register", {
+      username: form.username,
+      email: form.email,
+      phone: form.phone,
+      password: form.password,
+      firstName: form.firstName,
+      lastName: form.lastName,
+      birthDate: form.birthDate,
+    }),
+  );
+};
+export const checkRecover = async (phone: string) => {
+  if (!phone) throw new Error("Form data is required");
+
+  return handleRequest(
+    api.post("/auth/check-recover", {
+      phone: phone,
     }),
   );
 };

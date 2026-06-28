@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { register, login, createCode, confirmCode, resetPass } from "@/api";
+import { ref, computed, watch } from "vue";
+import {
+  register,
+  login,
+  createCode,
+  confirmCode,
+  resetPass,
+  checkRegister,
+  checkRecover,
+} from "@/api";
 import { useLangStore } from "@/stores/langStore";
 import { useRouter, useRoute } from "vue-router";
 import LanguagePicker from "@/components/LanguagePicker.vue";
 const router = useRouter();
 const route = useRoute();
+const repeatPassword = ref("");
 const redirectPath = route.query.redirect?.toString() || "/";
 const buttonLoading = ref<boolean>(false);
 const langStore = useLangStore();
@@ -83,6 +92,9 @@ const birthDateRules = [
     return age >= 18 || langStore.t("must_be_18");
   },
 ];
+watch([activeTab, recover, codePage, registCodePage], () => {
+  error.value = null;
+});
 const confirmcode = async () => {
   try {
     buttonLoading.value = true;
@@ -126,7 +138,13 @@ const passwordRules = [
     /^[A-Za-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/.test(v) ||
     langStore.t("password_latin_only"),
 ];
-
+const isRecoverDisabled = computed(() => {
+  return (
+    !registerForm.value.phone ||
+    !isPasswordValid.value ||
+    registerForm.value.password !== repeatPassword.value
+  );
+});
 const registerForm = ref({
   username: "",
   email: "",
@@ -177,20 +195,37 @@ const loginHandle = async () => {
   }
 };
 const forgot = async () => {
-  const res = await createCode({
-    phone: registerForm.value.phone,
-    type: "recover",
-  });
-  recover.value = false;
-  codePage.value = true;
+  try {
+    await checkRecover(registerForm.value.phone);
+    const res = await createCode({
+      phone: registerForm.value.phone,
+      type: "recover",
+    });
+    recover.value = false;
+    codePage.value = true;
+  } catch (err: any) {
+    const errText = err.response.data.code;
+    error.value = langStore.t(errText.toLowerCase());
+  }
 };
 const sendCodeRegistr = async () => {
   if (isRegDisabled.value) {
     return;
   }
+  const { username, email, phone, password, firstName, lastName, birthDate } =
+    registerForm.value;
   try {
     error.value = null;
-
+    const res = await checkRegister({
+      username,
+      email,
+      phone,
+      password,
+      firstName,
+      lastName,
+      birthDate,
+    });
+    console.log(res);
     await createCode({
       phone: registerForm.value.phone,
       type: "register",
@@ -202,7 +237,7 @@ const sendCodeRegistr = async () => {
 
     const errText = err?.response?.data?.code;
 
-    error.value = langStore.t(errText?.toLowerCase?.() || "unknown_error");
+    error.value = `${langStore.t(errText?.toLowerCase?.() || "unknown_error")}:${err?.response?.data?.meta?.conflicts} `;
   }
 };
 const handleRegister = async () => {
@@ -293,8 +328,12 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
           :type="showPassword ? 'text' : 'password'"
           :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
           @click:append-inner="showPassword = !showPassword"
-          v-model="registerForm.password"
-          :rules="passwordRules"
+          v-model="repeatPassword"
+          :rules="[
+            ...passwordRules,
+            (v) =>
+              v === registerForm.password || langStore.t('passwords_not_match'),
+          ]"
           outlined
           dense
           class="custom-field"
@@ -302,6 +341,7 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
 
         <v-btn
           @click="forgot"
+          :disabled="isRecoverDisabled"
           color="gradient-orange"
           class="mt-4 mb-2 login-btn"
           block

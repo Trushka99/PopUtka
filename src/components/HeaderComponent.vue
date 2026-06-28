@@ -108,19 +108,19 @@ const langOptions = [
   {
     label: "RU",
     name: "Русский",
-    flag: "https://flagcdn.com/w20/ru.png",
+    flag: "/images/russia.png",
     value: "ru",
   },
   {
     label: "EN",
     name: "English",
-    flag: "https://flagcdn.com/w20/gb.png",
+    flag: "/images/eng.png",
     value: "en",
   },
   {
     label: "UZ",
     name: "Ozbekcha",
-    flag: "https://flagcdn.com/w20/uz.png",
+    flag: "/images/uzbekistan.png",
     value: "uz",
   },
 ];
