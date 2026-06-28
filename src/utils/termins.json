@@ -1,5 +1,6 @@
 {
   "en": {
+    "user_already_exists": "User already exists",
     "recover_password": "Recover password",
     "reserved": "All rights reserved",
     "book_request": "Book request",
@@ -94,6 +95,8 @@
     "trip_updated_success": "Trip updated successfully",
     "trip_update_error": "Server error updating trip",
     "trip_delete_not_found_or_no_access": "Trip not found or you do not have rights to delete",
+    "passwords_not_match": "Passwords do not match",
+
     "trip_cancelled": "Trip cancelled",
     "trip_delete_error": "Server error deleting trip",
     "trip_not_found_or_no_access": "Trip not found or you do not have rights",
@@ -323,7 +326,7 @@
     "user_deleted_with_data": "Пользователь и все связанные данные удалены",
     "complaint_userid_reason_required": "ID пользователя и причина жалобы обязательны",
     "sms": "Введите код из смс",
-
+    "user_already_exists": "Пользователь с такими данными уже существует",
     "contact_pass": "Написать пассажиру",
     "contact_drive": "написать водителю",
     "cannot_complain_self": "Нельзя пожаловаться на самого себя",
@@ -482,6 +485,7 @@
     "maxTwoBackSeats": "Максимум двое сзади",
     "filters": "Фильтры",
     "filter": "Применить фильтры",
+    "passwords_not_match": "Пароли не совпадают",
     "cheap": "Самые дешевые поездки",
     "early": "Самые ранние поездки",
     "price": "Стоимость",
@@ -814,6 +818,8 @@
     "profile_update_error": "Profilni yangilashda server xatosi",
     "or": "yoki",
     "paymentfor": "Sayohat uchun to'lov",
+    "user_already_exists": "Bu tafsilotlarga ega foydalanuvchi allaqachon mavjud.",
+
     "paymethod": "To'lov usulini tanlang",
     "paymentsuc": "Muvaffaqiyat",
     "completed": "Tayyor",
@@ -847,6 +853,7 @@
 
     "birthdate_required": "Tug‘ilgan sanani kiriting",
     "birthdate_future": "Tug‘ilgan sana kelajakda bo‘lishi mumkin emas",
-    "must_be_18": "Siz kamida 18 yoshda bo‘lishingiz kerak"
+    "must_be_18": "Siz kamida 18 yoshda bo‘lishingiz kerak",
+    "passwords_not_match": "Parollar mos kelmaydi"
   }
 }
