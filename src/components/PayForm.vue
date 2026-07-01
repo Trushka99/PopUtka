@@ -33,7 +33,7 @@ const startPolling = (id: string) => {
       const status = res.data.data.status;
       console.log(status);
 
-      if (status === "pending" || status === "success") {
+      if (status === "paid" || status === "success") {
         clearInterval(interval!);
         interval = null;
 

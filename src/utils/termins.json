@@ -467,15 +467,12 @@
     "rejected_book": "отклонил бронь",
     "phone_required": "Введите номер телефона",
     "phone_length": "Номер телефона должен содержать от 11 до 15 цифр",
-
     "name_required": "Введите имя",
     "name_letters_only": "Допускаются только буквы",
     "name_max_length": "Максимальная длина — 20 символов",
-
     "email_required": "Введите адрес электронной почты",
     "invalid_email": "Некорректный формат электронной почты",
     "email_domain_not_allowed": "Этот домен электронной почты не поддерживается",
-
     "birthdate_required": "Укажите дату рождения",
     "birthdate_future": "Дата рождения не может быть в будущем",
     "must_be_18": "Вам должно быть не менее 18 лет",
@@ -737,7 +734,6 @@
     "booking_created": "Bron muvaffaqiyatli yaratildi",
     "booking_pending": "Bron so'rovi yuborildi. Haydovchi tasdiqlashini kuting",
     "enter_phone": "Telefon raqamingizni va yangi parolingizni kiriting",
-
     "booking_create_error": "Bron yaratishda server xatosi",
     "bookings_fetch_error": "Bronlarni olishda server xatosi",
     "booking_not_found": "Bron topilmadi",
@@ -819,7 +815,6 @@
     "or": "yoki",
     "paymentfor": "Sayohat uchun to'lov",
     "user_already_exists": "Bu tafsilotlarga ega foydalanuvchi allaqachon mavjud.",
-
     "paymethod": "To'lov usulini tanlang",
     "paymentsuc": "Muvaffaqiyat",
     "completed": "Tayyor",
@@ -842,15 +837,12 @@
     "selectDepartureTime": "Jo'nash vaqtini tanlang",
     "phone_required": "Telefon raqamini kiriting",
     "phone_length": "Telefon raqami 11–15 ta raqamdan iborat bo‘lishi kerak",
-
     "name_required": "Ismni kiriting",
     "name_letters_only": "Faqat harflardan foydalanish mumkin",
     "name_max_length": "Maksimal uzunlik — 20 ta belgi",
-
     "email_required": "Elektron pochta manzilini kiriting",
     "invalid_email": "Elektron pochta formati noto‘g‘ri",
     "email_domain_not_allowed": "Bu elektron pochta domeniga ruxsat berilmagan",
-
     "birthdate_required": "Tug‘ilgan sanani kiriting",
     "birthdate_future": "Tug‘ilgan sana kelajakda bo‘lishi mumkin emas",
     "must_be_18": "Siz kamida 18 yoshda bo‘lishingiz kerak",
