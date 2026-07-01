@@ -144,7 +144,7 @@
     "passengers": "Passengers",
     "driver": "Driver",
     "username": "Username",
-    "pass": "I am Passenger",
+    "pass": "Login",
     "edit car": "Edit car",
     "from": "From",
     "to": "To",
@@ -280,7 +280,10 @@
     "email_domain_not_allowed": "This email domain is not allowed",
     "birthdate_required": "Date of birth is required",
     "birthdate_future": "Date of birth cannot be in the future",
-    "must_be_18": "You must be at least 18 years old"
+    "must_be_18": "You must be at least 18 years old",
+    "addressFrom": "Pickup Address",
+    "addressTo": "Destination Address",
+    "tripCreated": "Trip created successfully"
   },
   "ru": {
     "user_not_found": "Пользователь не найден",
@@ -448,7 +451,7 @@
     "summary": "Краткая информация",
     "sex": "Пол",
     "driver": "Водитель",
-    "pass": "Я пассажир",
+    "pass": "Войти",
     "from": "Откуда",
     "to": "Куда",
     "or": "или",
@@ -563,7 +566,10 @@
     "selDest": "Выберите город назначения",
     "enterPrice": "Укажите стоимость",
     "departureMustBeFuture": "Дата и время отправления должны быть в будущем",
-    "selectDepartureTime": "Выберите время отправления"
+    "selectDepartureTime": "Выберите время отправления",
+    "addressFrom": "Адрес отправления",
+    "addressTo": "Адрес назначения",
+    "tripCreated": "Поездка успешно создана"
   },
   "uz": {
     "contact_pass": "Yo'lovchiga yozing",
@@ -614,7 +620,7 @@
     "subs": "Obuna",
     "passengers": "Yo'lovchilar",
     "driver": "Haydovchiman",
-    "pass": "Men yo'lovchiman",
+    "pass": "Kirish",
     "from": "Qayerdan",
     "sex": "Jins",
     "confirmed_book": "rezervlashni tasdiqladi",
@@ -846,6 +852,9 @@
     "birthdate_required": "Tug‘ilgan sanani kiriting",
     "birthdate_future": "Tug‘ilgan sana kelajakda bo‘lishi mumkin emas",
     "must_be_18": "Siz kamida 18 yoshda bo‘lishingiz kerak",
-    "passwords_not_match": "Parollar mos kelmaydi"
+    "passwords_not_match": "Parollar mos kelmaydi",
+    "addressFrom": "Jo'nash manzili",
+    "addressTo": "Belgilangan manzil",
+    "tripCreated": "Safar muvaffaqiyatli yaratildi"
   }
 }

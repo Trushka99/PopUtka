@@ -170,6 +170,9 @@ const isRegDisabled = computed(() => {
     !registerForm.value.email ||
     !registerForm.value.phone ||
     !registerForm.value.birthDate ||
+    !registerForm.value.role ||
+    !registerForm.value.gender ||
+    !registerForm.value.loginstr ||
     nameRules.some((rule) => rule(registerForm.value.firstName) !== true) ||
     nameRules.some((rule) => rule(registerForm.value.lastName) !== true) ||
     emailRules.some((rule) => rule(registerForm.value.email) !== true) ||
@@ -212,12 +215,12 @@ const sendCodeRegistr = async () => {
   if (isRegDisabled.value) {
     return;
   }
-  const { username, email, phone, password, firstName, lastName, birthDate } =
+  const { loginstr, email, phone, password, firstName, lastName, birthDate } =
     registerForm.value;
   try {
     error.value = null;
     const res = await checkRegister({
-      username,
+      loginstr,
       email,
       phone,
       password,
@@ -242,7 +245,7 @@ const sendCodeRegistr = async () => {
 };
 const handleRegister = async () => {
   const {
-    username,
+    loginstr,
     email,
     phone,
     password,
@@ -260,18 +263,21 @@ const handleRegister = async () => {
       inputCode: registerForm.value.code,
     });
     const response = await register({
-      username,
+      username: loginstr,
       email,
       birthDate,
       phone,
       password,
       role:
-        role === "Пассажир" || "Passenger" || "Yo'lovchi"
+        role === "Пассажир" || role === "Passenger" || role === "Yo'lovchi"
           ? "passenger"
           : "driver",
       firstName,
       lastName,
-      gender: gender === "Erkak" || "Мужской" || "Male" ? "male" : "female",
+      gender:
+        gender === "Erkak" || gender === "Мужской" || gender === "Male"
+          ? "male"
+          : "female",
     });
     console.log("Регистрация успешна", response.data);
     loginHandle();
@@ -527,7 +533,7 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
           :label="langStore.t('username')"
           outlined
           dense
-          v-model="registerForm.username"
+          v-model="registerForm.loginstr"
           class="custom-field"
         ></v-text-field>
 
