@@ -121,7 +121,7 @@ export const register = async (form?: {
   );
 };
 export const checkRegister = async (form?: {
-  username: string;
+  loginstr: string;
   email: string;
   phone: string;
   password: string;
@@ -133,7 +133,7 @@ export const checkRegister = async (form?: {
 
   return handleRequest(
     api.post("/auth/check-register", {
-      username: form.username,
+      username: form.loginstr,
       email: form.email,
       phone: form.phone,
       password: form.password,

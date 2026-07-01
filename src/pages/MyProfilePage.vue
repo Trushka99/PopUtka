@@ -474,7 +474,7 @@ const age = computed(() => {
         </div>
 
         <button
-          v-if="isMeRoute"
+          v-if="isMeRoute && langStore.user.role === 'driver'"
           class="btn btn-outline btn-sm"
           @click="openCarModal"
         >
