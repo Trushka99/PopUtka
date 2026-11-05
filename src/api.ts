@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://api.pop-utka.uz",
+  // Локально берётся из .env.development, в прод-сборке — api.pop-utka.uz
+  baseURL: import.meta.env.VITE_API_URL || "https://api.pop-utka.uz",
   withCredentials: true,
 });
 export const billingApi = axios.create({
