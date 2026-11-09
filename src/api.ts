@@ -45,6 +45,19 @@ export const createChat = (id: string) => {
     }),
   );
 };
+
+/**
+ * Открывает (или создаёт) чат с пользователем и возвращает id чата.
+ * Сервер для нового чата отвечает { chat }, а для уже существующего —
+ * самим чатом, поэтому id лежит в разных местах.
+ */
+export const openChatWith = async (userId: string): Promise<string> => {
+  const res = await createChat(userId);
+  const data = res.data?.data;
+  const id = data?.chat?.id ?? data?.id;
+  if (id === undefined || id === null) throw new Error("Chat id not found");
+  return String(id);
+};
 export const getChats = () => {
   return handleRequest(api.get("/chats"));
 };

@@ -1,139 +1,83 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from "vue";
-import { RouterLink } from "vue-router";
+import { ref, computed, watch, onBeforeUnmount } from "vue";
+import { RouterLink, useRouter } from "vue-router";
 import "@mdi/font/css/materialdesignicons.css";
-import { markUnreadAsRead } from "@/api";
-import { useRouter } from "vue-router";
-import { io } from "socket.io-client";
-const socket = io("https://api.pop-utka.uz", { withCredentials: true });
+import { useLangStore } from "@/stores/langStore";
+import { useSnackbarStore } from "@/stores/snackbarStore";
+import CreateTrip from "@/pages/CreateTrip.vue";
+import LangSwitcher from "@/components/LangSwitcher.vue";
+import NotificationsPanel from "@/components/NotificationsPanel.vue";
+import { socket } from "@/socket";
+import {
+  useNotifications,
+  type AppNotification,
+} from "@/composables/useNotifications";
+import { initialsOf, mediaUrl } from "@/utils/tripFormat";
+
+const langStore = useLangStore();
+const snackbar = useSnackbarStore();
+const router = useRouter();
 
 const menuOpen = ref(false);
-import { useLangStore } from "@/stores/langStore";
-const langStore = useLangStore();
-import CreateTrip from "@/pages/CreateTrip.vue";
 const tripDialog = ref<boolean>(false);
-const router = useRouter();
-type TNotif = {
-  createdAt: string;
-  id: string;
-  isRead: boolean;
-  message: string;
-  relatedBookingId: string;
-  title: string;
-  type: string;
-};
-const additionalAction = (n: TNotif) => {
-  if (
-    n.type === "booking_request" ||
-    n.type === "booking_confirmed" ||
-    n.type === "booking_rejected"
-  ) {
-    router.push({ name: "bookings", params: { id: n.relatedBookingId } });
-  }
-  toggleNotifications();
-};
-socket.on("connect", () => {
-  console.log("Socket connected!");
-});
-onUnmounted(() => {
-  socket.disconnect();
-});
-socket.on("new-notification", (notif) => {
-  console.log("🔥 New notification received:", notif);
 
-  langStore.setNotifications([notif, ...(langStore.notifications || [])]);
-});
-const menu = ref<boolean>(false);
-const toggleNotifications = async () => {
-  menu.value = !menu.value;
+// ---------- Меню пользователя ----------
+const isLoggedIn = computed(() => !!langStore.user?.id);
 
-  if (menu.value) {
-    const newValue = {
-      ...langStore.user.notifications.map((el: any) => ({
-        ...el,
-        isRead: true,
-      })),
-    };
-    langStore.setUser(newValue);
-    await markUnreadAsRead();
-  }
-};
-const unreadCount = computed(
+// Новые заявки пассажиров на поездки водителя
+const pendingRequests = computed(
   () =>
-    langStore.user?.notifications?.filter((n: any) => !n.isRead).length ?? 0,
+    (langStore.user?.activeTrips ?? []).reduce(
+      (sum: number, trip: any) =>
+        sum +
+        (trip.bookings ?? []).filter((b: any) => b.status === "pending").length,
+      0,
+    ) as number,
 );
 
-const getTypeIcon = (type: string) => {
-  switch (type) {
-    case "success":
-      return "mdi-check-circle";
-    case "error":
-      return "mdi-alert-circle";
-    case "info":
-      return "mdi-information";
-    default:
-      return "mdi-bell-circle";
-  }
-};
-
-// Цвет по типу
-const getTypeColor = (type: string) => {
-  switch (type) {
-    case "success":
-      return "green";
-    case "error":
-      return "red";
-    case "info":
-      return "blue";
-    default:
-      return "grey";
-  }
-};
-
-const markRead = (item: any) => {
-  item.isRead = true;
-};
-
-const formatDate = (dateStr: string) => {
-  const d = new Date(dateStr);
-  return d.toLocaleString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-    day: "2-digit",
-    month: "2-digit",
-  });
-};
-
-const langOptions = [
-  {
-    label: "RU",
-    name: "Русский",
-    flag: "/images/russia.png",
-    value: "ru",
-  },
-  {
-    label: "EN",
-    name: "English",
-    flag: "/images/eng.png",
-    value: "en",
-  },
-  {
-    label: "UZ",
-    name: "Ozbekcha",
-    flag: "/images/uzbekistan.png",
-    value: "uz",
-  },
-];
-const titles = computed<Record<string, string>>(() => ({
-  booking_request: langStore.t("book_request"),
-  booking_confirmed: langStore.t("payment_success"),
-  booking_rejected: langStore.t("booking_rejected"),
-}));
-const selectedLang = ref(langStore.currentLang || "ru");
-
-watch(selectedLang, (newLang) => {
-  langStore.setLang(newLang);
+const profileLink = (tab?: string) => ({
+  path: "/users/me",
+  query: tab ? { tab } : {},
 });
+
+const signOut = async () => {
+  menuOpen.value = false;
+  try {
+    await langStore.signOut();
+    router.push("/");
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// ---------- Уведомления ----------
+const notifOpen = ref(false);
+const { unreadCount, view, push } = useNotifications();
+
+// Живые уведомления приходят через общий сокет (тот же, что у чатов).
+// Подключаемся только после входа: без cookie сервер отклонит подключение.
+const onNewNotification = (n: AppNotification) => {
+  push(n);
+  const v = view(n);
+  snackbar.info(v.text ? `${v.title}: ${v.text}` : v.title);
+};
+
+socket.on("new-notification", onNewNotification);
+
+watch(
+  isLoggedIn,
+  (loggedIn) => {
+    if (loggedIn && !socket.connected) socket.connect();
+    if (!loggedIn && socket.connected) socket.disconnect();
+  },
+  { immediate: true },
+);
+
+onBeforeUnmount(() => {
+  socket.off("new-notification", onNewNotification);
+});
+
+const badge = computed(() => (unreadCount.value > 9 ? "9+" : unreadCount.value));
 </script>
 
 <template>
@@ -171,155 +115,124 @@ watch(selectedLang, (newLang) => {
           langStore.t("pass")
         }}</v-btn></RouterLink
       >
-      <v-select
-        v-model="selectedLang"
-        :items="langOptions"
-        item-title="name"
-        item-value="value"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="lang-select"
-        :menu-props="{ scrollStrategy: 'close' }"
+      <LangSwitcher />
+
+      <v-menu
+        v-if="isLoggedIn"
+        v-model="notifOpen"
+        location="bottom end"
+        offset="10"
+        :close-on-content-click="false"
       >
-        <template #item="{ props, item }">
-          <v-list-item v-bind="props">
-            <template #prepend>
-              <img
-                :src="item.raw.flag"
-                alt=""
-                width="28"
-                height="28"
-                style="border-radius: 50%; margin-right: 8px"
+        <template #activator="{ props }">
+          <button
+            type="button"
+            class="bell"
+            :class="{ 'bell--active': unreadCount }"
+            v-bind="props"
+            :aria-label="langStore.t('notifications')"
+          >
+            <v-icon size="22">{{
+              unreadCount ? "mdi-bell-ring-outline" : "mdi-bell-outline"
+            }}</v-icon>
+            <span v-if="unreadCount" class="bell__badge">{{ badge }}</span>
+          </button>
+        </template>
+
+        <NotificationsPanel @navigate="notifOpen = false" />
+      </v-menu>
+
+      <v-menu v-if="isLoggedIn" location="bottom end" offset="10">
+        <template #activator="{ props }">
+          <button
+            type="button"
+            class="user-chip"
+            v-bind="props"
+            :aria-label="langStore.t('profile')"
+          >
+            <v-avatar size="34" class="user-chip__avatar">
+              <v-img
+                v-if="langStore.user.avatar"
+                :src="mediaUrl(langStore.user.avatar)"
+                cover
               />
-            </template>
-          </v-list-item>
+              <span v-else>{{
+                initialsOf(langStore.user.firstName, langStore.user.lastName)
+              }}</span>
+            </v-avatar>
+            <span class="user-chip__name">{{ langStore.user.firstName }}</span>
+            <span v-if="pendingRequests" class="user-chip__dot"></span>
+            <v-icon size="18" class="user-chip__chevron">mdi-chevron-down</v-icon>
+          </button>
         </template>
-        <template #selection="{ item }">
-          <div style="display: flex; align-items: center">
-            <img
-              :src="item.raw.flag"
-              alt="flag"
-              width="28"
-              height="28"
-              style="border-radius: 50%; margin-right: 6px"
-            />
-            <span>{{ item.raw.label }}</span>
+
+        <v-card class="user-menu" min-width="260" rounded="xl" elevation="10">
+          <div class="user-menu__head">
+            <v-avatar size="42" class="user-chip__avatar">
+              <v-img
+                v-if="langStore.user.avatar"
+                :src="mediaUrl(langStore.user.avatar)"
+                cover
+              />
+              <span v-else>{{
+                initialsOf(langStore.user.firstName, langStore.user.lastName)
+              }}</span>
+            </v-avatar>
+            <div class="user-menu__who">
+              <div class="user-menu__name">
+                {{ langStore.user.firstName }} {{ langStore.user.lastName }}
+              </div>
+              <div class="user-menu__role">
+                {{
+                  langStore.user.role === "driver"
+                    ? langStore.t("driver")
+                    : langStore.t("passenger")
+                }}
+              </div>
+            </div>
           </div>
-        </template>
-      </v-select>
-      <v-btn @click="toggleNotifications" v-if="langStore.user">
-        <v-menu
-          v-model="menu"
-          location="bottom"
-          :menu-props="{ scrollStrategy: 'close' }"
-          :close-on-content-click="false"
-          scroll-strategy="close"
-        >
-          <template #activator="{ props }">
-            <v-badge
-              color="red"
-              :content="unreadCount"
-              v-if="unreadCount > 0"
-              offset-x="3"
-              offset-y="3"
+
+          <v-list density="comfortable" nav class="user-menu__list">
+            <v-list-item
+              prepend-icon="mdi-account-outline"
+              :title="langStore.t('profile')"
+              :to="profileLink()"
+              :active="false"
+            />
+            <v-list-item
+              prepend-icon="mdi-ticket-confirmation-outline"
+              :title="langStore.t('bookings')"
+              :to="profileLink('bookings')"
+              :active="false"
             >
-              <v-icon v-bind="props" color="info" size="x-large">
-                mdi-bell-circle-outline
-              </v-icon>
-            </v-badge>
+              <template v-if="pendingRequests" #append>
+                <span class="user-menu__badge">{{ pendingRequests }}</span>
+              </template>
+            </v-list-item>
+            <v-list-item
+              prepend-icon="mdi-map-marker-path"
+              :title="langStore.t('myTrips')"
+              :to="profileLink('trips')"
+              :active="false"
+            />
+          </v-list>
 
-            <v-icon
-              v-if="unreadCount === 0"
-              v-bind="props"
-              color="info"
-              size="x-large"
-            >
-              mdi-bell-circle-outline
-            </v-icon>
-          </template>
+          <v-divider />
 
-          <v-card min-width="350" elevation="10">
-            <v-list class="notifications-list">
-              <v-list-item
-                v-for="n in langStore.notifications.filter(
-                  (n: any) => !n.isRead,
-                )"
-                :key="n.id"
-                class="unread"
-              >
-                <template #prepend>
-                  <v-icon :color="getTypeColor(n.type)">
-                    {{ getTypeIcon(n.type) }}
-                  </v-icon>
-                </template>
-
-                <v-list-item-title :class="{ bold: !n.isRead }">
-                  {{ titles[String(n.type)] }}
-                </v-list-item-title>
-                <v-list-item-subtitle>
-                  {{
-                    n.type === "booking_request" &&
-                    langStore.user.role === "driver"
-                      ? `${n.params.passengerName} ${langStore.t("booked")} ${n.params.seats} ${langStore.t("seats")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)} `
-                      : n.type === "booking_request" &&
-                          langStore.user.role === "passenger"
-                        ? `${langStore.t("wait_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}  `
-                        : n.type === "booking_confirmed" &&
-                            langStore.user.role === "passenger"
-                          ? `${langStore.t("driver")} ${langStore.t("confirmed_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}`
-                          : n.type === "booking_rejected" &&
-                              langStore.user.role === "passenger"
-                            ? `${langStore.t("driver")} ${langStore.t("rejected_book")} ${langStore.t("from")} ${langStore.с(n.params.from)} ${langStore.t("to")}  ${langStore.с(n.params.to)}`
-                            : null
-                  }}
-                </v-list-item-subtitle>
-
-                <template #append>
-                  <v-btn
-                    icon="mdi-close"
-                    variant="text"
-                    density="compact"
-                    @click.stop="markRead(n)"
-                  />
-                  <v-btn
-                    icon="mdi-eye"
-                    variant="text"
-                    density="compact"
-                    @click="additionalAction(n)"
-                  />
-                </template>
-
-                <v-list-item-subtitle class="date">
-                  {{ formatDate(n.createdAt) }}
-                </v-list-item-subtitle>
-              </v-list-item>
-
-              <v-list-item
-                v-if="
-                  langStore.notifications.filter((n: any) => !n.isRead)
-                    .length === 0
-                "
-              >
-                <v-list-item-title>{{
-                  langStore.t("no_notif")
-                }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-card>
-        </v-menu></v-btn
-      >
-
-      <RouterLink v-if="langStore.user" class="header__link" to="/users/me">
-        <v-btn class="profile-btn" rounded="lg" variant="elevated">
-          <v-icon start>mdi-account-circle</v-icon>
-          {{ langStore.t("profile") || "Профиль" }}
-        </v-btn>
-      </RouterLink>
+          <v-list density="comfortable" nav class="user-menu__list">
+            <v-list-item
+              prepend-icon="mdi-logout"
+              :title="langStore.t('logout')"
+              class="user-menu__logout"
+              @click="signOut"
+            />
+          </v-list>
+        </v-card>
+      </v-menu>
       <v-dialog
         v-model="tripDialog"
         v-if="langStore.user.role === 'driver'"
-        max-width="750"
+        max-width="940"
       >
         <template v-slot:activator="{ props: activatorProps }">
           <v-btn
@@ -375,42 +288,15 @@ watch(selectedLang, (newLang) => {
       block
       >{{ langStore.t("pass") }}</v-btn
     >
-    <v-select
-      v-model="selectedLang"
-      :items="langOptions"
-      item-title="name"
-      item-value="value"
-      variant="outlined"
-      density="compact"
-      hide-details
-      class="lang-select"
-    >
-      <template #item="{ props, item }">
-        <v-list-item v-bind="props">
-          <template #prepend>
-            <img
-              :src="item.raw.flag"
-              alt=""
-              width="28"
-              height="28"
-              style="border-radius: 50%; margin-right: 8px"
-            />
-          </template>
-        </v-list-item>
-      </template>
-      <template #selection="{ item }">
-        <div style="display: flex; align-items: center">
-          <img
-            :src="item.raw.flag"
-            alt="flag"
-            width="28"
-            height="28"
-            style="border-radius: 50%; margin-right: 6px"
-          />
-          <span style="color: white">{{ item.raw.label }}</span>
-        </div>
-      </template>
-    </v-select>
+    <LangSwitcher variant="segmented" />
+
+    <template v-if="isLoggedIn">
+      <div class="header__mobile-divider"></div>
+      <button type="button" class="header__mobile-logout" @click="signOut">
+        <v-icon size="20">mdi-logout</v-icon>
+        {{ langStore.t("logout") }}
+      </button>
+    </template>
   </div>
 </template>
 
@@ -437,17 +323,213 @@ watch(selectedLang, (newLang) => {
   height: 40px;
 }
 
-.profile-btn {
-  text-transform: none;
-  background: linear-gradient(135deg, #1e88e5, #42a5f5);
-  font-weight: 600;
-  padding: 0 16px;
-  transition: 0.2s ease;
+/* Колокольчик уведомлений */
+.bell {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #d6e3f1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e9f1fa;
+  color: #2c4a6e;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
 }
 
-.profile-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(66, 165, 245, 0.5);
+.bell:hover,
+.bell[aria-expanded="true"] {
+  background: #dde9f6;
+  border-color: #bdd3ec;
+  box-shadow: 0 4px 12px rgba(30, 100, 180, 0.14);
+  color: #0b4fa8;
+}
+
+.bell--active {
+  color: #0b4fa8;
+}
+
+.bell--active .v-icon {
+  animation: bell-ring 3.2s ease-in-out infinite;
+  transform-origin: 50% 10%;
+}
+
+@keyframes bell-ring {
+  0%,
+  82%,
+  100% {
+    rotate: 0deg;
+  }
+  86% {
+    rotate: 14deg;
+  }
+  90% {
+    rotate: -12deg;
+  }
+  94% {
+    rotate: 8deg;
+  }
+  97% {
+    rotate: -4deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bell--active .v-icon {
+    animation: none;
+  }
+}
+
+.bell__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #ff6d00;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Кнопка-аватарка с меню пользователя */
+.user-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid #d6e3f1;
+  border-radius: 999px;
+  background: #e9f1fa;
+  color: #1d3a5c;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.user-chip:hover,
+.user-chip[aria-expanded="true"] {
+  background: #dde9f6;
+  border-color: #bdd3ec;
+  box-shadow: 0 4px 12px rgba(30, 100, 180, 0.14);
+}
+
+.user-chip__avatar {
+  border: 2px solid #fff;
+  background: #dbeafe;
+  color: #0b4fa8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.user-chip__name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.user-chip__dot {
+  position: absolute;
+  top: 2px;
+  left: 28px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #ff6d00;
+}
+
+.user-chip__chevron {
+  color: #6b7d94;
+  transition: transform 0.2s ease;
+}
+
+.user-chip[aria-expanded="true"] .user-chip__chevron {
+  transform: rotate(180deg);
+}
+
+.user-menu {
+  padding: 4px;
+}
+
+.user-menu__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 6px;
+}
+
+.user-menu__who {
+  min-width: 0;
+}
+
+.user-menu__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.user-menu__role {
+  font-size: 12px;
+  color: #66758a;
+}
+
+.user-menu__list {
+  padding: 4px;
+}
+
+.user-menu__badge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: #ff6d00;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.user-menu__logout {
+  color: #c0362c !important;
+}
+
+.header__mobile-divider {
+  height: 1px;
+  margin: 6px 0;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.header__mobile-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
 }
 .header__nav {
   display: flex;

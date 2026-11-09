@@ -55,6 +55,12 @@ export const useLangStore = defineStore("lang", {
       const res = await logout();
       return res;
     },
+    // Выход из аккаунта: запрос на сервер + очистка локального состояния
+    async signOut() {
+      await logout();
+      this.setUser({});
+      this.setNotifications([]);
+    },
     async initUser() {
       try {
         const res = await getMe();
