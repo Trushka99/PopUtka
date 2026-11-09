@@ -3,6 +3,7 @@ import { ref, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useLangStore } from "@/stores/langStore";
 import cities from "../utils/dictionary.json";
+import { PASSENGER_FORMS, pluralize } from "@/utils/tripFormat";
 const route = useRoute();
 
 const router = useRouter();
@@ -39,22 +40,23 @@ const date = ref(
       )}-${String(today.getDate()).padStart(2, "0")}`,
 );
 
+const displayDate = ref(date.value.split("-").reverse().join("."));
 watch(
   () => route.query.departureAt,
   (newDate) => {
-    if (newDate) date.value = String(newDate);
+    if (!newDate) return;
+    date.value = String(newDate);
+    // Обновляем и подпись в поле — иначе после смены дня чипами там старая дата
+    displayDate.value = date.value.split("-").reverse().join(".");
   },
 );
-const displayDate = ref(date.value.split("-").reverse().join("."));
 
 const passengers = ref(1);
-const passengersLabel = computed(() => {
-  return `${passengers.value} ${
-    passengers.value === 1
-      ? langStore.t("passenger")
-      : langStore.t("passengers")
-  }`;
-});
+// «1 пассажир», «3 пассажира», «5 пассажиров»
+const passengersLabel = computed(
+  () =>
+    `${passengers.value} ${pluralize(langStore.currentLang, passengers.value, PASSENGER_FORMS)}`,
+);
 const increase = () => {
   if (passengers.value < 8) {
     passengers.value++;
@@ -143,7 +145,7 @@ const onDateSelected = (val: string | Date) => {
           hide-details
           density="compact"
           variant="solo"
-          class="autocompl"
+          class="autocompl autocompl--date"
         />
       </template>
       <v-date-picker
@@ -160,7 +162,7 @@ const onDateSelected = (val: string | Date) => {
       density="compact"
       hide-details
       variant="solo"
-      class="autocompl"
+      class="autocompl autocompl--seats"
     >
       <template #append-inner>
         <v-btn icon :disabled="passengers === 1" @click="decrease" small>
@@ -191,6 +193,42 @@ const onDateSelected = (val: string | Date) => {
 }
 .autocompl {
   max-height: 80px;
+  /* Ширина поля не зависит от того, что в нём написано:
+     все делят строку по заданным долям, длинный текст обрезается */
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* У даты и пассажиров длина текста известна — даём им постоянную ширину,
+   а города делят оставшееся место поровну */
+.autocompl--date {
+  flex: 0 0 160px;
+}
+
+.autocompl--seats {
+  flex: 0 0 286px;
+}
+
+.search-bar :deep(.v-field__input) {
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.search-bar :deep(.v-field__input input) {
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+.search-bar :deep(.v-autocomplete__selection) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search_btn {
+  flex: none;
 }
 .search-bar {
   display: flex;
@@ -267,7 +305,9 @@ const onDateSelected = (val: string | Date) => {
     width: 90%;
   }
 
-  .search-bar .v-text-field {
+  .search-bar .v-text-field,
+  .autocompl {
+    flex: none;
     width: 100%;
     min-width: 0;
   }
