@@ -65,7 +65,9 @@ const tripDialog = ref(false);
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 60px;
+    /* На iPhone без кнопки «Домой» меню не должно уходить под полоску жестов */
+    height: calc(60px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
     background-color: #fff;
     border-top: 1px solid #ccc;
     z-index: 2000;

@@ -6,6 +6,7 @@ import { useLangStore } from "@/stores/langStore";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 import CreateTrip from "@/pages/CreateTrip.vue";
 import LangSwitcher from "@/components/LangSwitcher.vue";
+import InstallAppButton from "@/components/InstallAppButton.vue";
 import NotificationsPanel from "@/components/NotificationsPanel.vue";
 import { socket } from "@/socket";
 import {
@@ -115,6 +116,7 @@ const badge = computed(() => (unreadCount.value > 9 ? "9+" : unreadCount.value))
           langStore.t("pass")
         }}</v-btn></RouterLink
       >
+      <InstallAppButton variant="icon" />
       <LangSwitcher />
 
       <v-menu
@@ -288,6 +290,7 @@ const badge = computed(() => (unreadCount.value > 9 ? "9+" : unreadCount.value))
       block
       >{{ langStore.t("pass") }}</v-btn
     >
+    <InstallAppButton />
     <LangSwitcher variant="segmented" />
 
     <template v-if="isLoggedIn">

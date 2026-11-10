@@ -1,13 +1,17 @@
 <!doctype html>
-<html lang="">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <!-- Установка на телефон (PWA). manifest.webmanifest и service worker
+         подключает vite-plugin-pwa при сборке, см. vite.config.ts -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <link rel="icon" href="/images/лого.png" />
+    <meta name="apple-mobile-web-app-title" content="Pop.utka" />
+    <!-- default: на iPhone контент начинается под строкой с часами и не залезает под вырез экрана -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/logo.svg" sizes="any" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
