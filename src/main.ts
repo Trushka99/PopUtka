@@ -3,6 +3,10 @@ import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";
 import { ru } from "vuetify/locale";
+import { initPwaInstall } from "./composables/usePwaInstall";
+
+// Ловим событие установки PWA как можно раньше, до отрисовки кнопки
+initPwaInstall();
 
 // Vuetify
 import "vuetify/styles";

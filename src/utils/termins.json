@@ -418,7 +418,14 @@
     "less_seats": "Remove a seat",
     "booking_hint": "The driver will get your request and reply. Phone and Telegram open after confirmation.",
     "write_driver": "Message the driver",
-    "driver_comment": "Driver's comment"
+    "driver_comment": "Driver's comment",
+    "installApp": "Install app",
+    "appInstalled": "App installed",
+    "installIosTitle": "Install on iPhone",
+    "installIosStep1": "Open this site in Safari",
+    "installIosStep2": "Tap the Share button",
+    "installIosStep3": "Choose “Add to Home Screen”",
+    "close": "Close"
   },
   "ru": {
     "user_not_found": "Пользователь не найден",
@@ -839,7 +846,14 @@
     "less_seats": "Убрать место",
     "booking_hint": "Водитель получит заявку и ответит. Телефон и Telegram откроются после подтверждения.",
     "write_driver": "Написать водителю",
-    "driver_comment": "Комментарий водителя"
+    "driver_comment": "Комментарий водителя",
+    "installApp": "Установить приложение",
+    "appInstalled": "Приложение установлено",
+    "installIosTitle": "Как установить на iPhone",
+    "installIosStep1": "Откройте сайт в Safari",
+    "installIosStep2": "Нажмите кнопку «Поделиться»",
+    "installIosStep3": "Выберите «На экран „Домой“»",
+    "close": "Закрыть"
   },
   "uz": {
     "contact_pass": "Yo'lovchiga yozing",
@@ -1260,6 +1274,13 @@
     "less_seats": "O‘rinni kamaytirish",
     "booking_hint": "Haydovchi so‘rovni oladi va javob beradi. Telefon va Telegram tasdiqlangandan keyin ochiladi.",
     "write_driver": "Haydovchiga yozish",
-    "driver_comment": "Haydovchi izohi"
+    "driver_comment": "Haydovchi izohi",
+    "installApp": "Ilovani o'rnatish",
+    "appInstalled": "Ilova o'rnatildi",
+    "installIosTitle": "iPhone'ga o'rnatish",
+    "installIosStep1": "Saytni Safari brauzerida oching",
+    "installIosStep2": "«Ulashish» (Share) tugmasini bosing",
+    "installIosStep3": "«На экран „Домой“» / «Add to Home Screen» bandini tanlang",
+    "close": "Yopish"
   }
 }
