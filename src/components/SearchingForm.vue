@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useLangStore } from "@/stores/langStore";
 import cities from "../utils/dictionary.json";
@@ -28,6 +28,61 @@ const cityList = computed(() => {
 const from = ref(null);
 const to = ref(null);
 const dateMenu = ref(false);
+const fromMenu = ref(false);
+const toMenu = ref(false);
+const searchBar = ref<HTMLElement | null>(null);
+
+// Выпадающий список городов: скруглённый и с небольшим отступом от поля
+const cityMenuProps = { contentClass: "search-bar__menu", offset: 8 };
+
+// На телефоне клавиатуру можно спрятать, не снимая фокус с поля
+// (например, кнопкой «назад» на Android). Vuetify закрывает список только
+// при потере фокуса, поэтому ловим момент, когда клавиатура исчезла,
+// и сами закрываем список и снимаем фокус.
+const KEYBOARD_MIN_HEIGHT = 150;
+let viewportWidth = 0;
+let fullViewportHeight = 0;
+let keyboardOpen = false;
+
+const closeCityMenus = () => {
+  fromMenu.value = false;
+  toMenu.value = false;
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && searchBar.value?.contains(active)) {
+    active.blur();
+  }
+};
+
+const onViewportResize = () => {
+  const vv = window.visualViewport;
+  // При зуме пальцами высота тоже меняется — это не клавиатура
+  if (!vv || vv.scale > 1.01) return;
+
+  // Повернули экран — начинаем замер заново
+  if (vv.width !== viewportWidth) {
+    viewportWidth = vv.width;
+    fullViewportHeight = vv.height;
+    keyboardOpen = false;
+    return;
+  }
+
+  fullViewportHeight = Math.max(fullViewportHeight, vv.height);
+  const isOpen = fullViewportHeight - vv.height > KEYBOARD_MIN_HEIGHT;
+  if (keyboardOpen && !isOpen) closeCityMenus();
+  keyboardOpen = isOpen;
+};
+
+onMounted(() => {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  viewportWidth = vv.width;
+  fullViewportHeight = vv.height;
+  vv.addEventListener("resize", onViewportResize);
+});
+
+onBeforeUnmount(() => {
+  window.visualViewport?.removeEventListener("resize", onViewportResize);
+});
 
 const today = new Date();
 
@@ -105,11 +160,13 @@ const onDateSelected = (val: string | Date) => {
 </script>
 
 <template>
-  <div class="search-bar">
+  <div ref="searchBar" class="search-bar">
     <v-autocomplete
       v-model="from"
+      v-model:menu="fromMenu"
       :items="cityList"
       :label="langStore.t('from')"
+      :menu-props="cityMenuProps"
       density="compact"
       hide-details
       variant="solo"
@@ -121,8 +178,10 @@ const onDateSelected = (val: string | Date) => {
     </v-autocomplete>
     <v-autocomplete
       v-model="to"
+      v-model:menu="toMenu"
       :items="cityList"
       :label="langStore.t('to')"
+      :menu-props="cityMenuProps"
       prepend-inner-icon="mdi-map-marker-outline"
       density="compact"
       hide-details
@@ -259,6 +318,15 @@ const onDateSelected = (val: string | Date) => {
 
 .search-bar :deep(.v-input__control) {
   padding: 0 !important;
+}
+
+/* Список городов рендерится в body (телепорт), поэтому стиль глобальный */
+:global(.v-menu > .v-overlay__content.search-bar__menu) {
+  border-radius: 20px;
+}
+
+:global(.v-menu > .v-overlay__content.search-bar__menu > .v-list) {
+  padding: 6px 0;
 }
 
 .search-bar :deep(.v-field__input) {

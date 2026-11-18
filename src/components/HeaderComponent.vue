@@ -8,6 +8,7 @@ import CreateTrip from "@/pages/CreateTrip.vue";
 import LangSwitcher from "@/components/LangSwitcher.vue";
 import InstallAppButton from "@/components/InstallAppButton.vue";
 import NotificationsPanel from "@/components/NotificationsPanel.vue";
+import MobileSidebar from "@/components/MobileSidebar.vue";
 import { socket } from "@/socket";
 import {
   useNotifications,
@@ -255,52 +256,26 @@ const badge = computed(() => (unreadCount.value > 9 ? "9+" : unreadCount.value))
       </v-dialog>
     </div>
 
-    <!-- Кнопка гамбургер для мобилки -->
-    <v-btn class="header__hamburger" icon @click="menuOpen = !menuOpen">
+    <!-- Кнопка гамбургер для мобилки: открывает сайдбар -->
+    <v-btn
+      class="header__hamburger"
+      icon
+      variant="text"
+      :aria-label="langStore.t('menu')"
+      :aria-expanded="menuOpen"
+      aria-controls="mobile-sidebar"
+      @click="menuOpen = true"
+    >
       <v-icon>mdi-menu</v-icon>
     </v-btn>
   </header>
-  <!-- Мобильное меню -->
-  <div v-if="menuOpen" class="header__mobile-menu">
-    <RouterLink class="header__link" to="/">{{
-      langStore.t("home")
-    }}</RouterLink>
-    <RouterLink
-      class="header__link"
-      :to="`/search?departureAt=${new Date().toISOString().split('T')[0]}`"
-    >
-      <span class="header__link">{{ langStore.t("rides") }}</span></RouterLink
-    >
-    <span class="header__link">{{ langStore.t("about us") }}</span>
-    <span class="header__link">{{ langStore.t("contacts") }}</span>
-    <RouterLink
-      v-if="Object.keys(langStore.user).length === 0"
-      class="header__link"
-      to="/login"
-    >
-      <v-btn class="header__driver" block>{{
-        langStore.t("driver")
-      }}</v-btn></RouterLink
-    >
-    <v-btn
-      v-if="Object.keys(langStore.user).length === 0"
-      to="/login"
-      class="header__driver"
-      color="#5865f2"
-      block
-      >{{ langStore.t("pass") }}</v-btn
-    >
-    <InstallAppButton />
-    <LangSwitcher variant="segmented" />
 
-    <template v-if="isLoggedIn">
-      <div class="header__mobile-divider"></div>
-      <button type="button" class="header__mobile-logout" @click="signOut">
-        <v-icon size="20">mdi-logout</v-icon>
-        {{ langStore.t("logout") }}
-      </button>
-    </template>
-  </div>
+  <!-- Мобильный сайдбар -->
+  <MobileSidebar
+    v-model="menuOpen"
+    :pending-requests="pendingRequests"
+    @logout="signOut"
+  />
 </template>
 
 <style scoped>
@@ -516,24 +491,6 @@ const badge = computed(() => (unreadCount.value > 9 ? "9+" : unreadCount.value))
   color: #c0362c !important;
 }
 
-.header__mobile-divider {
-  height: 1px;
-  margin: 6px 0;
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.header__mobile-logout {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border: none;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
-  font-size: 18px;
-  cursor: pointer;
-}
 .header__nav {
   display: flex;
   gap: 20px;
@@ -587,28 +544,6 @@ const badge = computed(() => (unreadCount.value > 9 ? "9+" : unreadCount.value))
   }
   .header__menu-btn {
     display: flex;
-  }
-  .header__mobile-menu {
-    position: absolute;
-    top: 110px;
-    right: 0;
-    background-color: rgb(26, 115, 232);
-    width: 100%;
-    flex-direction: column;
-    margin-top: -50px;
-    display: flex;
-    padding: 35px 20px;
-    gap: 10px;
-    z-index: 1;
-  }
-  .header__mobile-menu .header__link {
-    color: white;
-    font-size: 18px;
-    text-decoration: none;
-  }
-  .header__mobile-menu .header__driver,
-  .header__mobile-menu .header__select {
-    width: 100%;
   }
 }
 .create-trip-btn {
