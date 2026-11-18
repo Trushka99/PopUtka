@@ -8,7 +8,7 @@ import { usePwaInstall } from "@/composables/usePwaInstall";
 // Сама прячется, если браузер не умеет ставить сайт или приложение уже установлено.
 withDefaults(
   defineProps<{
-    /** icon — круглая кнопка-иконка (шапка на ПК), button — кнопка с текстом (мобильное меню) */
+    /** icon — круглая кнопка-иконка (шапка на ПК), button — кнопка с текстом (мобильный сайдбар) */
     variant?: "icon" | "button";
   }>(),
   { variant: "button" },
@@ -58,9 +58,10 @@ const install = async () => {
       v-else
       block
       class="install-btn"
-      color="white"
+      color="#e9f1fa"
       variant="flat"
-      rounded="lg"
+      rounded="pill"
+      height="48"
       prepend-icon="mdi-cellphone-arrow-down"
       @click="install"
     >

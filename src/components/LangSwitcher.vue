@@ -4,8 +4,8 @@ import { useLangStore } from "@/stores/langStore";
 
 withDefaults(
   defineProps<{
-    /** menu — кнопка с выпадающим списком (шапка), segmented — три кнопки в ряд */
-    variant?: "menu" | "segmented";
+    /** menu — кнопка с выпадающим списком (шапка), flags — три круглых флажка в ряд (мобильный сайдбар) */
+    variant?: "menu" | "flags";
   }>(),
   { variant: "menu" },
 );
@@ -64,20 +64,21 @@ const choose = (value: string) => {
     </div>
   </v-menu>
 
-  <!-- Мобильное меню: три кнопки в ряд -->
-  <div v-else class="lang-seg" role="radiogroup">
+  <!-- Мобильный сайдбар: три круглых флажка в ряд -->
+  <div v-else class="lang-flags" role="radiogroup">
     <button
       v-for="lang in LANGS"
       :key="lang.value"
       type="button"
       role="radio"
       :aria-checked="lang.value === current.value"
-      class="lang-seg__item"
-      :class="{ 'lang-seg__item--active': lang.value === current.value }"
+      :aria-label="lang.name"
+      :title="lang.name"
+      class="lang-flags__item"
+      :class="{ 'lang-flags__item--active': lang.value === current.value }"
       @click="choose(lang.value)"
     >
-      <img class="lang-flag" :src="lang.flag" alt="" />
-      {{ lang.label }}
+      <img class="lang-flag lang-flag--big" :src="lang.flag" alt="" />
     </button>
   </div>
 </template>
@@ -187,38 +188,45 @@ const choose = (value: string) => {
   color: #1e88e5;
 }
 
-/* --- Сегменты (мобильное меню на синем фоне) --- */
-.lang-seg {
+/* --- Флажки (мобильный сайдбар) --- */
+.lang-flags {
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  gap: 10px;
 }
 
-.lang-seg__item {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 40px;
-  border: none;
-  border-radius: 999px;
+.lang-flags__item {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 2px solid transparent;
+  border-radius: 50%;
   background: transparent;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
   cursor: pointer;
   transition:
     background 0.2s ease,
-    color 0.2s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+
+  .lang-flag {
+    width: 30px;
+    height: 30px;
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1e88e5;
+    outline-offset: 2px;
+  }
 
   &--active {
-    background: #fff;
-    color: #0b4fa8;
-    box-shadow: 0 4px 12px rgba(0, 30, 80, 0.2);
+    background: #e8f1fd;
+    border-color: #9cc6f5;
+    box-shadow: 0 4px 12px rgba(30, 100, 180, 0.18);
   }
 }
 </style>

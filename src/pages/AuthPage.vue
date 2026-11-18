@@ -128,15 +128,20 @@ const isPasswordValid = computed(() => {
     (rule) => rule(registerForm.value.password) === true,
   );
 });
+// Те же правила, что и на бэкенде: 8–18 символов, только латиница, цифры и . _ -,
+// хотя бы одна латинская буква и одна цифра
 const passwordRules = [
   (v: string) => !!v || langStore.t("password_required"),
 
   (v: string) =>
-    (v && v.length >= 8 && v.length <= 20) || langStore.t("password_length"),
+    (v.length >= 8 && v.length <= 18) || langStore.t("password_length"),
 
   (v: string) =>
-    /^[A-Za-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/.test(v) ||
-    langStore.t("password_latin_only"),
+    /^[A-Za-z0-9._-]+$/.test(v) || langStore.t("password_latin_only"),
+
+  (v: string) => /[A-Za-z]/.test(v) || langStore.t("password_need_letter"),
+
+  (v: string) => /\d/.test(v) || langStore.t("password_need_digit"),
 ];
 const isRecoverDisabled = computed(() => {
   return (
@@ -173,6 +178,7 @@ const isRegDisabled = computed(() => {
     !registerForm.value.role ||
     !registerForm.value.gender ||
     !registerForm.value.loginstr ||
+    !isPasswordValid.value ||
     nameRules.some((rule) => rule(registerForm.value.firstName) !== true) ||
     nameRules.some((rule) => rule(registerForm.value.lastName) !== true) ||
     emailRules.some((rule) => rule(registerForm.value.email) !== true) ||
@@ -239,8 +245,9 @@ const sendCodeRegistr = async () => {
     console.error(err);
 
     const errText = err?.response?.data?.code;
+    const conflicts = err?.response?.data?.meta?.conflicts;
 
-    error.value = `${langStore.t(errText?.toLowerCase?.() || "unknown_error")}:${err?.response?.data?.meta?.conflicts} `;
+    error.value = `${langStore.t(errText?.toLowerCase?.() || "unknown_error")}${conflicts ? `: ${conflicts}` : ""}`;
   }
 };
 const handleRegister = async () => {
@@ -640,10 +647,14 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
   }
 }
 .background {
+  /* Отступы сверху и снизу: на телефоне сверху место под переключатель языка */
+  --pad-top: calc(env(safe-area-inset-top) + 16px);
+  --pad-bottom: calc(env(safe-area-inset-bottom) + 16px);
+
   background-image: url("/images/background.png");
   width: 100%;
   min-height: 100dvh;
-  padding: env(safe-area-inset-top) 1rem env(safe-area-inset-bottom) 1rem;
+  padding: var(--pad-top) 1rem var(--pad-bottom);
   inset: 0;
   background-size: cover;
   background-position: center;
@@ -652,7 +663,7 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
   justify-content: center;
   align-items: center;
   @media (max-width: 768px) {
-    min-height: 113dvh;
+    --pad-top: calc(env(safe-area-inset-top) + 76px);
   }
 }
 
@@ -660,7 +671,9 @@ const sex = computed(() => [langStore.t("man"), langStore.t("feman")]);
   width: 460px;
   padding: 32px;
   border-radius: 25px;
-  max-height: 600px;
+  /* Карточка всегда помещается в экран — длинная форма прокручивается внутри,
+     а сама страница не скроллится */
+  max-height: min(600px, calc(100dvh - var(--pad-top) - var(--pad-bottom)));
   &::-webkit-scrollbar {
     width: 6px;
   }

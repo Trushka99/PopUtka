@@ -124,9 +124,15 @@ const seatsText = computed(
 );
 
 const PRICE_STEP = 5000;
+// Не больше 10 млн за место — так же проверяет бэкенд
+const MAX_PRICE = 10_000_000;
 const changePrice = (delta: number) => {
-  price.value = Math.max(0, (price.value ?? 0) + delta);
+  price.value = Math.min(
+    MAX_PRICE,
+    Math.max(0, (price.value ?? 0) + delta),
+  );
 };
+const priceTooHigh = computed(() => (price.value ?? 0) > MAX_PRICE);
 
 // ---------- Прогресс (по нему едет машинка) ----------
 const stepRouteDone = computed(
@@ -136,7 +142,8 @@ const stepWhenDone = computed(
   () => !!departure.value && departure.value.getTime() > Date.now(),
 );
 const stepSeatsDone = computed(
-  () => (price.value ?? 0) > 0 && availableSeats.value >= 1,
+  () =>
+    (price.value ?? 0) > 0 && !priceTooHigh.value && availableSeats.value >= 1,
 );
 const progress = computed(
   () =>
@@ -166,6 +173,7 @@ const validationError = computed(() => {
   if (!departure.value || departure.value.getTime() <= Date.now())
     return t("departureMustBeFuture");
   if (!price.value || price.value <= 0) return t("enterPrice");
+  if (priceTooHigh.value) return t("price_too_high");
   return "";
 });
 
@@ -499,7 +507,7 @@ const duckLeft = computed(
               <span class="seats__text">{{ seatsText }}</span>
             </div>
 
-            <div class="price">
+            <div class="price" :class="{ 'price--invalid': priceTooHigh }">
               <button
                 type="button"
                 class="price__btn"
@@ -514,19 +522,25 @@ const duckLeft = computed(
                 type="number"
                 inputmode="numeric"
                 min="0"
+                :max="MAX_PRICE"
                 :step="PRICE_STEP"
                 placeholder="0"
                 :aria-label="t('price')"
+                :aria-invalid="priceTooHigh"
               />
               <span class="price__unit">UZS · {{ t("per_seat") }}</span>
               <button
                 type="button"
                 class="price__btn"
                 aria-label="+"
+                :disabled="(price ?? 0) >= MAX_PRICE"
                 @click="changePrice(PRICE_STEP)"
               >
                 <v-icon size="18">mdi-plus</v-icon>
               </button>
+            </div>
+            <div v-if="priceTooHigh" class="price__hint" role="alert">
+              {{ t("price_too_high") }}
             </div>
 
             <div class="chips">
@@ -1186,6 +1200,20 @@ const duckLeft = computed(
     border-color: #64b5f6;
     box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15);
   }
+
+  &--invalid,
+  &--invalid:focus-within {
+    border-color: #e5484d;
+    box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.15);
+  }
+}
+
+.price__hint {
+  margin-top: -4px;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #b42318;
 }
 
 .price__btn {
@@ -1200,8 +1228,13 @@ const duckLeft = computed(
   color: #0b4fa8;
   cursor: pointer;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #dde9f6;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 }
 
