@@ -100,14 +100,14 @@ const confirmcode = async () => {
     buttonLoading.value = true;
     error.value = null;
 
-    await confirmCode({
+    const verified = await confirmCode({
       phone: registerForm.value.phone,
       type: "recover",
       inputCode: registerForm.value.code,
     });
 
     await resetPass({
-      phone: registerForm.value.phone,
+      resetToken: verified.data.data.resetToken,
       newPassword: registerForm.value.password,
     });
 
@@ -197,8 +197,8 @@ const loginHandle = async () => {
     const res = await login(loginstr, password);
     router.push(redirectPath);
   } catch (err: any) {
-    const errText = err.response.data.code;
-    error.value = langStore.t(errText.toLowerCase());
+    const errText = err?.response?.data?.code;
+    error.value = langStore.t(errText?.toLowerCase?.() || "unknown_error");
   } finally {
     buttonLoading.value = false;
   }
@@ -213,8 +213,8 @@ const forgot = async () => {
     recover.value = false;
     codePage.value = true;
   } catch (err: any) {
-    const errText = err.response.data.code;
-    error.value = langStore.t(errText.toLowerCase());
+    const errText = err?.response?.data?.code;
+    error.value = langStore.t(errText?.toLowerCase?.() || "unknown_error");
   }
 };
 const sendCodeRegistr = async () => {
@@ -264,12 +264,13 @@ const handleRegister = async () => {
   } = registerForm.value;
   try {
     buttonLoading.value = true;
-    await confirmCode({
+    const verified = await confirmCode({
       phone: registerForm.value.phone,
       type: "register",
       inputCode: registerForm.value.code,
     });
     const response = await register({
+      otpToken: verified.data.data.otpToken,
       username: loginstr,
       email,
       birthDate,
@@ -290,8 +291,8 @@ const handleRegister = async () => {
     loginHandle();
   } catch (err: any) {
     console.error("Ошибка регистрации", err);
-    const errText = err.response.data.code;
-    error.value = langStore.t(errText.toLowerCase());
+    const errText = err?.response?.data?.code;
+    error.value = langStore.t(errText?.toLowerCase?.() || "unknown_error");
   } finally {
     buttonLoading.value = false;
   }

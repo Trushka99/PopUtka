@@ -108,6 +108,7 @@ export const getTrips = async (filters?: {
   );
 };
 export const register = async (form?: {
+  otpToken: string;
   username: string;
   email: string;
   birthDate: string;
@@ -131,6 +132,8 @@ export const register = async (form?: {
       firstName: form.firstName,
       lastName: form.lastName,
       gender: form.gender,
+      // Токен из /otp/verify (type=register): бек без него регистрацию не пустит
+      otpToken: form.otpToken,
     }),
   );
 };
@@ -240,16 +243,17 @@ export const confirmCode = async ({
   );
 };
 
+// resetToken выдаёт /otp/verify с type=recover; номер бек берёт из токена
 export const resetPass = async ({
-  phone,
+  resetToken,
   newPassword,
 }: {
-  phone: string;
+  resetToken: string;
   newPassword: string;
 }) => {
   return handleRequest(
     api.post("/pass/reset", {
-      phone,
+      resetToken,
       newPassword,
     }),
   );
