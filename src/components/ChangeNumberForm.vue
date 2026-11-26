@@ -23,17 +23,18 @@ const sendCode = async () => {
   try {
     loading.value = true;
     error.value = "";
-    const res = await createCode({
+    await createCode({
       phone: form.value.phone,
       type: "change_phone",
     });
-    langStore.user.phone = form.value.phone;
-    console.log(res);
-  } catch (err: any) {
-    loading.value = false;
-    error.value = "Ошибка отправки кода";
-  } finally {
+    // На шаг ввода кода — только если код реально ушёл
     step.value = "code";
+  } catch (err: any) {
+    const errCode = err?.response?.data?.code;
+    error.value = errCode
+      ? langStore.t(errCode.toLowerCase())
+      : "Ошибка отправки кода";
+  } finally {
     loading.value = false;
   }
 };
@@ -43,20 +44,26 @@ const sendConfirm = async () => {
     loading.value = true;
     error.value = "";
 
-    const code = await confirmCode({
+    const verified = await confirmCode({
       phone: form.value.phone,
       type: "change_phone",
       inputCode: form.value.code,
     });
-    console.log(code);
-    const res = updateProfile({ phone: form.value.phone });
-    console.log(res);
+    // otpToken из /otp/verify подтверждает бэку, что номер наш
+    await updateProfile({
+      phone: form.value.phone,
+      otpToken: verified.data.data.otpToken,
+    });
+    // Номер в профиле меняем только после успешного ответа сервера
+    langStore.user.phone = form.value.phone;
+    closeDialog();
   } catch (err: any) {
-    loading.value = false;
-    error.value = "Неверный код";
+    const errCode = err?.response?.data?.code;
+    error.value = errCode
+      ? langStore.t(errCode.toLowerCase())
+      : "Неверный код";
   } finally {
     loading.value = false;
-    closeDialog();
   }
 };
 const closeDialog = () => {

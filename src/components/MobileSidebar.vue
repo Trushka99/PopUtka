@@ -64,6 +64,17 @@ const items = computed<NavItem[]>(() => [
     label: langStore.t("contacts"),
     active: false,
   },
+  ...(langStore.user?.role === "admin"
+    ? [
+        {
+          key: "admin",
+          icon: "mdi-shield-account-outline",
+          label: "Админка",
+          to: "/admin",
+          active: route.path.startsWith("/admin"),
+        },
+      ]
+    : []),
 ]);
 
 const close = () => {

@@ -187,9 +187,11 @@ const badge = computed(() => (unreadCount.value > 9 ? "9+" : unreadCount.value))
               </div>
               <div class="user-menu__role">
                 {{
-                  langStore.user.role === "driver"
-                    ? langStore.t("driver")
-                    : langStore.t("passenger")
+                  langStore.user.role === "admin"
+                    ? "Админ"
+                    : langStore.user.role === "driver"
+                      ? langStore.t("driver")
+                      : langStore.t("passenger")
                 }}
               </div>
             </div>
@@ -216,6 +218,13 @@ const badge = computed(() => (unreadCount.value > 9 ? "9+" : unreadCount.value))
               prepend-icon="mdi-map-marker-path"
               :title="langStore.t('myTrips')"
               :to="profileLink('trips')"
+              :active="false"
+            />
+            <v-list-item
+              v-if="langStore.user.role === 'admin'"
+              prepend-icon="mdi-shield-account-outline"
+              title="Админка"
+              to="/admin"
               :active="false"
             />
           </v-list>

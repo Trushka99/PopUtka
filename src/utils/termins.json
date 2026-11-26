@@ -96,7 +96,6 @@
     "trip_update_error": "Server error updating trip",
     "trip_delete_not_found_or_no_access": "Trip not found or you do not have rights to delete",
     "passwords_not_match": "Passwords do not match",
-
     "trip_cancelled": "Trip cancelled",
     "trip_delete_error": "Server error deleting trip",
     "trip_not_found_or_no_access": "Trip not found or you do not have rights",
@@ -432,7 +431,15 @@
     "close": "Close",
     "myProfile": "My profile",
     "guest": "Guest",
-    "menu": "Menu"
+    "menu": "Menu",
+    "otp_required_fields": "Please check the phone number",
+    "otp_send_error": "Could not send the SMS. Please try later",
+    "otp_not_found": "Request a code first",
+    "otp_expired": "The code has expired, request a new one",
+    "otp_too_many_attempts": "Too many attempts, request a new code",
+    "otp_invalid_code": "Incorrect code",
+    "phone_not_verified": "Please confirm your phone number with the SMS code",
+    "unknown_error": "Something went wrong. Please try again"
   },
   "ru": {
     "user_not_found": "Пользователь не найден",
@@ -536,7 +543,6 @@
     "notification_deleted": "Уведомление удалено",
     "notification_delete_error": "Ошибка сервера при удалении уведомления",
     "booked": "забронировал",
-
     "review_fields_required": "Все пEmailоля обязательны: tripId, targetUserId, rating, text",
     "review_rating_invalid": "Рейтинг должен быть от 1 до 5",
     "review_not_allowed": "Вы не можете оставить отзыв для этой поездки",
@@ -867,7 +873,15 @@
     "close": "Закрыть",
     "myProfile": "Мой профиль",
     "guest": "Гость",
-    "menu": "Меню"
+    "menu": "Меню",
+    "otp_required_fields": "Проверьте номер телефона",
+    "otp_send_error": "Не удалось отправить SMS. Попробуйте позже",
+    "otp_not_found": "Сначала запросите код",
+    "otp_expired": "Код истёк, запросите новый",
+    "otp_too_many_attempts": "Слишком много попыток, запросите новый код",
+    "otp_invalid_code": "Неверный код",
+    "phone_not_verified": "Подтвердите номер телефона кодом из SMS",
+    "unknown_error": "Что-то пошло не так. Попробуйте ещё раз"
   },
   "uz": {
     "contact_pass": "Yo'lovchiga yozing",
@@ -878,7 +892,6 @@
     "verification_code_not_sent": "Kod yuborilmadi",
     "invalid_verification_code": "Noto'g'ri tasdiqlash kodi",
     "wait_book": "Rezervasyon tasdiqlanishini kuting",
-
     "verification_code_expired": "Kod muddati tugagan",
     "repeat_password": "Parolni qayta kiriting",
     "email_verified_success": "Email muvaffaqiyatli tasdiqlandi!",
@@ -1302,6 +1315,14 @@
     "close": "Yopish",
     "myProfile": "Mening profilim",
     "guest": "Mehmon",
-    "menu": "Menyu"
+    "menu": "Menyu",
+    "otp_required_fields": "Telefon raqamini tekshiring",
+    "otp_send_error": "SMS yuborib bo‘lmadi. Keyinroq urinib ko‘ring",
+    "otp_not_found": "Avval kodni so‘rang",
+    "otp_expired": "Kod muddati tugadi, yangisini so‘rang",
+    "otp_too_many_attempts": "Juda ko‘p urinish, yangi kod so‘rang",
+    "otp_invalid_code": "Kod noto‘g‘ri",
+    "phone_not_verified": "Telefon raqamini SMS-kod bilan tasdiqlang",
+    "unknown_error": "Nimadir xato ketdi. Qayta urinib ko‘ring"
   }
 }
