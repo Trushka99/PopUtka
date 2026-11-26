@@ -57,6 +57,13 @@ const routes = [
     component: NotificationsPage,
     meta: { layout: "default", requiresAuth: true },
   },
+  {
+    // Отдельный чанк: обычные пользователи код админки не скачивают
+    path: "/admin",
+    name: "admin",
+    component: () => import("@/pages/AdminPage.vue"),
+    meta: { layout: "default", requiresAuth: true, requiresAdmin: true },
+  },
 ];
 
 const router = createRouter({
@@ -73,6 +80,9 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.requiresAuth && !langStore.user?.id) {
     next({ path: "/login", query: { redirect: to.fullPath } });
+  } else if (to.meta.requiresAdmin && langStore.user?.role !== "admin") {
+    // Защита на фронте только косметическая — сами ручки /admin проверяет бек
+    next({ path: "/" });
   } else {
     next();
   }

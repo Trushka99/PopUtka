@@ -323,3 +323,63 @@ export const createTrip = async ({
     }),
   );
 };
+
+// ---------- Админка (все ручки ниже — только для role=admin) ----------
+export type AdminRole = "" | "driver" | "passenger" | "admin";
+export type ReportStatus = "pending" | "reviewed" | "resolved";
+
+export const adminGetStats = () => handleRequest(api.get("/admin/stats"));
+
+export const adminGetGrowth = () =>
+  handleRequest(api.get("/admin/stats/growth"));
+
+export const adminGetUsers = (params: {
+  page: number;
+  limit: number;
+  search?: string;
+  role?: AdminRole;
+}) => handleRequest(api.get("/admin/users", { params }));
+
+export const adminBanUser = (
+  userId: string,
+  body: { reason?: string; days?: number },
+) => handleRequest(api.post(`/admin/users/${userId}/ban`, body));
+
+export const adminUnbanUser = (userId: string) =>
+  handleRequest(api.post(`/admin/users/${userId}/unban`));
+
+export const adminDeleteUser = (userId: string) =>
+  handleRequest(api.delete(`/admin/users/${userId}`));
+
+export const adminGetReports = (params: {
+  page: number;
+  limit: number;
+  status: ReportStatus | "all";
+}) => handleRequest(api.get("/admin/reports", { params }));
+
+export const adminUpdateReport = (
+  targetUserId: string,
+  reportId: string,
+  body: { status: ReportStatus; adminNote?: string },
+) =>
+  handleRequest(
+    api.patch(`/admin/reports/${targetUserId}/${reportId}`, body),
+  );
+
+/** Excel со статистикой пользователей. Качаем через axios, чтобы ушла авторизация. */
+export const adminDownloadUsersXlsx = async () => {
+  const res = await handleRequest(
+    api.get("/admin/export/users.xlsx", { responseType: "blob" }),
+  );
+  const disposition: string = res.headers["content-disposition"] || "";
+  const name =
+    /filename="?([^"]+)"?/.exec(disposition)?.[1] || "pop-utka-users.xlsx";
+  const url = URL.createObjectURL(res.data);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
